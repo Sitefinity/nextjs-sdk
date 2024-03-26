@@ -10,7 +10,7 @@ import { TextFieldViewModel } from './text-field-viewmodel';
 
 const InvalidDefaultValidationMessage = '{0} field is invalid';
 
-export async function TextField(props: WidgetContext<TextFieldEntity>) {
+export function TextField(props: WidgetContext<TextFieldEntity>) {
     const entity = props.model.Properties;
     const viewModel: TextFieldViewModel = {
         CssClass: classNames(entity.CssClass, (StylingConfig.FieldSizeClasses as { [key: string]: string })[('Width' + entity.FieldSize)]) || null,

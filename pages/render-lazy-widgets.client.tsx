@@ -4,20 +4,22 @@
 import { RenderWidgetService } from '../services/render-widget-service';
 import { widgetRegistry } from '@widgetregistry';
 import { ServiceMetadataDefinition, ServiceMetadata } from '../rest-sdk/service-metadata';
+import { SdkItem } from '../rest-sdk/dto/sdk-item';
 
-export function RenderLazyWidgetsClient({ metadata }: { metadata: ServiceMetadataDefinition, url :string }) {
+export function RenderLazyWidgetsClient({ metadata, taxonomies }: { metadata: ServiceMetadataDefinition, taxonomies: SdkItem[], url :string }) {
     RenderWidgetService.widgetRegistry = widgetRegistry;
     ServiceMetadata.serviceMetadataCache = metadata;
+    ServiceMetadata.taxonomies = taxonomies;
 
     if (typeof window === 'undefined') {
         return <></>;
     }
 
-    let correlationId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+    const correlationId = Date.now().toString(36) + Math.random().toString(36).substring(2);
     (window as any)['sfCorrelationId'] = correlationId;
 
     if (typeof window !== 'undefined') {
-        let renderLazyWidgetsUrl = `/render-lazy?pageUrl=${encodeURIComponent(window.location.href)}&correlationId=${correlationId}&referer=${encodeURIComponent(document.referrer)}&`;
+        const renderLazyWidgetsUrl = `/render-lazy?pageUrl=${encodeURIComponent(window.location.href)}&correlationId=${correlationId}&referer=${encodeURIComponent(document.referrer)}&`;
 
         const sendRequest = function () {
             fetch(renderLazyWidgetsUrl).then((response) => {
@@ -35,7 +37,7 @@ export function RenderLazyWidgetsClient({ metadata }: { metadata: ServiceMetadat
                         childrenLazyWidgets.forEach((lazyWidgetContainer) => {
                             const widgetId = lazyWidgetContainer.getAttribute('id');
                             if (widgetId) {
-                                let element = document.getElementById(widgetId);
+                                const element = document.getElementById(widgetId);
                                 if (element) {
                                     const renderResult = lazyWidgetContainer.firstElementChild;
                                     if (renderResult) {
@@ -44,7 +46,7 @@ export function RenderLazyWidgetsClient({ metadata }: { metadata: ServiceMetadat
                                             element.parentNode.removeChild(element);
                                         }
 
-                                        let event = new CustomEvent('widgetLoaded', {
+                                        const event = new CustomEvent('widgetLoaded', {
                                             detail: {
                                                 element: renderResult,
                                                 model: undefined

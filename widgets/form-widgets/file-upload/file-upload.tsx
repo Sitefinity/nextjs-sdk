@@ -1,6 +1,4 @@
 import React from 'react';
-import { FileTypes } from './interface/file-types';
-import { NumericRange } from '../common/numeric-range';
 import { FileUploadClient, FileUploadViewModel } from './file-upload-client';
 import { getUniqueId } from '../../../editor/utils/getUniqueId';
 import { htmlAttributes } from '../../../editor/widget-framework/attributes';
@@ -22,7 +20,7 @@ const getAcceptedFileTypes = (entity: FileUploadEntity): string[] | null => {
 
             const types = fileTypes.Type.split(',').map(x => x.trim());
 
-            for (let type of types) {
+            for (const type of types) {
                 if (predefinedAcceptValues[type]) {
                     parsedArray.push(...predefinedAcceptValues[type]);
                 }
@@ -40,7 +38,7 @@ const getAcceptedFileTypes = (entity: FileUploadEntity): string[] | null => {
             return parsedArray;
         };
 
-export async function FileUpload(props: WidgetContext<FileUploadEntity>) {
+export function FileUpload(props: WidgetContext<FileUploadEntity>) {
     const entity = props.model.Properties;
     const context = props.requestContext;
     const allowedFileTypes = getAcceptedFileTypes(entity);

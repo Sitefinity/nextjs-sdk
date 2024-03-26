@@ -1,5 +1,5 @@
 import { SanitizerService } from '../../../services/sanitizer-service';
-import { DetailViewModel } from '../../content-lists-common/content-list-detail-model';
+import { DetailViewModel } from '../../content-lists-common/content-list-models';
 
 export function NewsItemDetail(viewModel: DetailViewModel) {
     const author = viewModel.DetailItem.Author;

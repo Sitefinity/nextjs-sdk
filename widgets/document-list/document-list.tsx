@@ -12,7 +12,6 @@ import { DocumentDetailItem } from './document-list-detail-item';
 import { DocumentListViewModel } from './interfaces/document-list-view-model';
 import { ContentListsCommonRestService } from '../content-lists-common/content-lists-rest.setvice';
 import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
-import { Pager } from '../pager/pager';
 import { DetailItem } from '../../editor/detail-item';
 import { RequestContext } from '../../editor/request-context';
 import { classNames } from '../../editor/utils/classNames';
@@ -21,6 +20,7 @@ import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { getPageNumber } from '../pager/pager-view-model';
+import { RenderWidgetService } from '../../services/render-widget-service';
 
 export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
     const entity = props.model.Properties;
@@ -31,22 +31,31 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
     const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
     let defaultClass =  '';
     const isGrid = entity.SfViewName === 'DocumentTable';
+    const pageNumber = getPageNumber(entity.PagerMode, props.requestContext, entity.PagerQueryTemplate, entity.PagerTemplate);
     const viewModel: DocumentListViewModel = {
         detailModel: null,
-        listModel: null
+        listModel: null,
+        pagerMode: entity.ListSettings?.DisplayMode || ListDisplayMode.All,
+        renderLinks: !(entity.ContentViewDisplayMode === ContentViewDisplayMode.Master && entity.DetailPageMode === DetailPageSelectionMode.SamePage),
+        downloadLinkLabel: entity.DownloadLinkLabel,
+        sizeColumnLabel: entity.SizeColumnLabel,
+        titleColumnLabel: entity.TitleColumnLabel,
+        typeColumnLabel: entity.TypeColumnLabel,
+        pagerProps: {
+            context,
+            currentPage: pageNumber,
+            itemsTotalCount: 0,
+            itemsPerPage: entity.ListSettings?.ItemsPerPage,
+            pagerMode: entity.PagerMode,
+            pagerQueryTemplate: entity.PagerQueryTemplate,
+            pagerTemplate: entity.PagerTemplate
+        }
     };
-    viewModel.RenderLinks = !(entity.ContentViewDisplayMode === ContentViewDisplayMode.Master &&
-         entity.DetailPageMode === DetailPageSelectionMode.SamePage);
-    viewModel.DownloadLinkLabel = entity.DownloadLinkLabel;
-    viewModel.SizeColumnLabel = entity.SizeColumnLabel;
-    viewModel.TitleColumnLabel = entity.TitleColumnLabel;
-    viewModel.TypeColumnLabel = entity.TypeColumnLabel;
 
     if (entity.SelectedItems?.Content?.length && entity.SelectedItems?.Content[0].Variations) {
         setHideEmptyVisual(dataAttributes, true);
     }
 
-    const pageNumber = getPageNumber(entity.PagerMode, props.requestContext, entity.PagerQueryTemplate, entity.PagerTemplate);
 
      if (entity.ContentViewDisplayMode === ContentViewDisplayMode.Automatic) {
          if (context.detailItem) {
@@ -57,7 +66,8 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
             const fieldName = isGrid ? 'Document table' : 'Document list';
             const viewCss = entity.CssClasses?.find(x => x.FieldName === fieldName);
             defaultClass = viewCss ? viewCss.CssClass : '';
-             viewModel.listModel = await handleListView(entity, context, pageNumber);
+            viewModel.listModel = await handleListView(entity, context, pageNumber);
+            viewModel.pagerProps.itemsTotalCount = viewModel.listModel?.Items.TotalCount;
          }
      } else if (entity.ContentViewDisplayMode === ContentViewDisplayMode.Detail) {
         if (entity.SelectedItems && entity.SelectedItems.Content && entity.SelectedItems.Content.length > 0) {
@@ -74,6 +84,7 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
         }
     } else if (entity.ContentViewDisplayMode === ContentViewDisplayMode.Master) {
         viewModel.listModel = await handleListView(entity, context, pageNumber);
+        viewModel.pagerProps.itemsTotalCount = viewModel.listModel?.Items.TotalCount;
     }
 
    let url: string = '';
@@ -94,40 +105,29 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
         queryString = getPageQueryString(page as PageItem);
     }
 
+    viewModel.url = url;
+    viewModel.queryString = queryString;
+
     dataAttributes['className'] = classNames(
         defaultClass,
         marginClass,
         documentListCustomAttributes.class
     );
 
+    const templates = RenderWidgetService.widgetRegistry.widgets['SitefinityDocumentList']?.templates;
+    const detailTemplate = (templates && templates[entity.SfDetailViewName]) || DocumentDetailItem;
+    const masterTemplate = (templates && templates[entity.SfViewName]) || (isGrid ? DocumentListGrid : DocumentListList);
+
     return (
       <div
         {...documentListCustomAttributes}
         {...dataAttributes}
       >
-        { viewModel.detailModel && <DocumentDetailItem entity={entity} viewModel={viewModel} /> }
-        { viewModel.listModel && (isGrid
-            ?  <DocumentListGrid url={url} queryString={queryString}  viewModel={viewModel} />
-            :  <DocumentListList url={url} queryString={queryString} viewModel={viewModel} />)
-        }
-
-        { viewModel.listModel && entity.ListSettings?.DisplayMode === ListDisplayMode.Paging &&
-        <div>
-          <Pager
-            currentPage={pageNumber}
-            itemsTotalCount={viewModel.listModel.Items.TotalCount}
-            itemsPerPage={entity.ListSettings?.ItemsPerPage}
-            pagerMode={entity.PagerMode}
-            pagerQueryTemplate={entity.PagerQueryTemplate}
-            pagerTemplate={entity.PagerTemplate}
-            context={context}
-            />
-        </div>
-        }
+        { viewModel.detailModel && detailTemplate({viewModel}) }
+        { viewModel.listModel && masterTemplate({viewModel}) }
       </div>
     );
 }
-
 
  const handleDetailView = async (
     detailItem: DetailItem,

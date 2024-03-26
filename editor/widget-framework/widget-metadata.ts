@@ -6,4 +6,5 @@ export interface WidgetMetadata {
     editorMetadata?: EditorMetadata;
     entity?: any;
     ssr?: boolean;
+    templates?: { [key: string]: Function }
 }

@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
-import { ContentListModelMaster } from '../../content-lists-common/content-list-master-model';
-import { ContentListModelbase } from './content-list-model-base';
+import { ContentListModelMaster } from '../../content-lists-common/content-list-models';
+import { ContentListModelbase, ContentListViewModel } from './content-list-model-base';
 import { ListWithSummaryItemModel, ListWithSummaryModel } from './list-with-summary/list-with-summary-model';
 import { ListWithImage } from './list-with-image/list-with-image';
 import { ListWithImageModel } from './list-with-image/list-with-image-model';
@@ -9,10 +9,13 @@ import { ContentListEntity } from '../content-list-entity';
 import { CardsList } from './cards-list/cards-list';
 import { CardsListModel } from './cards-list/cards-list-model';
 import { ImageItem } from '../../../rest-sdk/dto/image-item';
+import { RenderWidgetService } from '../../../services/render-widget-service';
+import { SdkItem } from '../../../rest-sdk/dto/sdk-item';
 
-export function ContentListMaster(props: { model: ContentListModelMaster, entity?: ContentListEntity }) {
+export function ContentListMaster(props: { viewModel: ContentListViewModel }) {
     let data: { viewName?: string, model?: ContentListModelbase} = {};
-    const model = props.model;
+    const entity = props.viewModel.entity;
+    const model = props.viewModel.listModel!;
 
     let attributes: { [key: string]: string } = {};
     if (model.Attributes) {
@@ -92,20 +95,51 @@ export function ContentListMaster(props: { model: ContentListModelMaster, entity
         };
 
         data = { viewName: model.ViewName, model: viewModel };
+    } else {
+        const fieldMap = model.FieldMap || {};
+        const fieldCssMap = model.FieldCssClassMap || {};
+        data = {
+            viewName: model.ViewName,
+            model: {
+                Attributes: attributes,
+                OpenDetails: model.OpenDetails,
+                Items: dataItems.Items.map(dataItem => {
+                    const item: {Original: SdkItem, [key: string]: any} = { Original: dataItem };
+                    Object.keys(fieldMap).forEach(field => {
+                        const key = field.split(' ').map(x => x.charAt(0).toUpperCase() + x.slice(1)).join('');
+                        item[key] = {
+                            Value: dataItem[fieldMap[field]],
+                            Css: fieldCssMap[field]
+                        };
+                    });
+                    return item;
+                })
+            }
+        };
+    }
+
+    const templates = RenderWidgetService.widgetRegistry.widgets['SitefinityContentList']?.templates;
+
+    if (templates && data?.model && data?.viewName && templates[data?.viewName]) {
+        return (
+          <Fragment>
+            {templates[data?.viewName]({entity: entity, model: data?.model})}
+          </Fragment>
+        );
     }
 
     return (
       <Fragment>
         {(data?.model && data?.viewName === 'ListWithImage') &&
-        <ListWithImage entity={props.entity} model={data?.model as ListWithImageModel} />
+        <ListWithImage entity={entity} model={data?.model as ListWithImageModel} />
             }
 
         {(data?.model && data?.viewName === 'ListWithSummary') &&
-        <ListWithSummary entity={props.entity} model={data?.model as ListWithSummaryModel} />
+        <ListWithSummary entity={entity} model={data?.model as ListWithSummaryModel} />
             }
 
         {(data?.model && data?.viewName === 'CardsList') &&
-        <CardsList entity={props.entity} model={data?.model as CardsListModel} />
+        <CardsList entity={entity} model={data?.model as CardsListModel} />
             }
       </Fragment>
     );

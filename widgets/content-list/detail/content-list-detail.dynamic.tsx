@@ -1,4 +1,4 @@
-import { DetailViewModel } from '../../content-lists-common/content-list-detail-model';
+import { DetailViewModel } from '../../content-lists-common/content-list-models';
 
 export function DynamicDetail(viewModel: DetailViewModel) {
     return (

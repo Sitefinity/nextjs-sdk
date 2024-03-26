@@ -1,9 +1,8 @@
 import React from 'react';
 import { ContentListEntity } from './content-list-entity';
 import { ContentListDetail } from './detail/content-list-detail';
-import { ContentListModelDetail } from '../content-lists-common/content-list-detail-model';
 import { ContentListMaster } from './master/content-list-master';
-import { ContentListModelMaster } from '../content-lists-common/content-list-master-model';
+import { ContentListModelMaster, ContentListModelDetail } from '../content-lists-common/content-list-models';
 import { ContentListsCommonRestService } from '../content-lists-common/content-lists-rest.setvice';
 import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
 import { Pager } from '../pager/pager';
@@ -14,32 +13,40 @@ import { RequestContext } from '../../editor/request-context';
 import { ContentViewDisplayMode } from '../content-lists-common/content-view-display-mode';
 import { DetailPageSelectionMode } from '../content-lists-common/detail-page-selection-mode';
 import { getPageNumber } from '../pager/pager-view-model';
-
-interface ContentListViewModel {
-    detailModel?: ContentListModelDetail | null;
-    listModel?: ContentListModelMaster | null;
-}
+import { ContentListViewModel } from './master/content-list-model-base';
 
 export async function ContentList(props: WidgetContext<ContentListEntity>) {
     const attributes = htmlAttributes(props);
     const properties = props.model.Properties;
     const context = props.requestContext;
-    let viewModel: ContentListViewModel = {
+    const pageNumber = getPageNumber(properties.PagerMode, props.requestContext, properties.PagerQueryTemplate, properties.PagerTemplate);
+    const viewModel: ContentListViewModel = {
         detailModel: null,
-        listModel: null
+        listModel: null,
+        entity: properties,
+        pagerProps: {
+            currentPage: pageNumber,
+            itemsTotalCount: 0,
+            pagerMode: properties.PagerMode,
+            itemsPerPage: properties.ListSettings?.ItemsPerPage || 20,
+            pagerQueryTemplate: properties.PagerQueryTemplate,
+            pagerTemplate: properties.PagerTemplate,
+            context: context
+        },
+        requestContext: context
     };
 
     if (properties.SelectedItems?.Content?.length && properties.SelectedItems?.Content[0].Variations) {
         setHideEmptyVisual(attributes, true);
     }
 
-    const pageNumber = getPageNumber(properties.PagerMode, props.requestContext, properties.PagerQueryTemplate, properties.PagerTemplate);
 
     if (properties.ContentViewDisplayMode === ContentViewDisplayMode.Automatic) {
         if (context.detailItem) {
             viewModel.detailModel = await handleDetailView(context.detailItem, props);
         } else {
             viewModel.listModel = await handleListView(props, context, pageNumber);
+            viewModel.pagerProps!.itemsTotalCount = viewModel.listModel.Items.TotalCount;
         }
     } else if (properties.ContentViewDisplayMode === ContentViewDisplayMode.Detail) {
         if (properties.SelectedItems && properties.SelectedItems.Content && properties.SelectedItems.Content.length > 0) {
@@ -54,12 +61,13 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
         }
     } else if (properties.ContentViewDisplayMode === ContentViewDisplayMode.Master) {
         viewModel.listModel = await handleListView(props, context, pageNumber);
+        viewModel.pagerProps!.itemsTotalCount = viewModel.listModel.Items.TotalCount;
     }
 
     return (
       <div {...attributes}>
-        {viewModel.detailModel && <ContentListDetail entity={properties} detailModel={viewModel.detailModel} context={context} />}
-        {viewModel.listModel && <ContentListMaster  entity={properties} model={viewModel.listModel} />}
+        { viewModel.detailModel && <ContentListDetail viewModel={viewModel} /> }
+        { viewModel.listModel && <ContentListMaster viewModel={viewModel} /> }
         { viewModel.listModel && properties.ListSettings?.DisplayMode === ListDisplayMode.Paging &&
         <div className="mt-2">
           <Pager

@@ -5,7 +5,7 @@ import { htmlAttributes } from '../../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { CheckboxesEntity } from './checkboxes.entity';
 
-export async function Checkboxes(props: WidgetContext<CheckboxesEntity>) {
+export function Checkboxes(props: WidgetContext<CheckboxesEntity>) {
     const dataAttributes = htmlAttributes(props);
 
     const defaultRendering = (<CheckboxesDefaultRender entity={props.model.Properties} />);
@@ -14,7 +14,7 @@ export async function Checkboxes(props: WidgetContext<CheckboxesEntity>) {
         :defaultRendering);
 }
 
-export async function CheckboxesDefaultRender(props: { entity: CheckboxesEntity }) {
+export function CheckboxesDefaultRender(props: { entity: CheckboxesEntity }) {
     const checkboxUniqueId = props.entity.SfFieldName as string;
     const entity = props.entity;
 
@@ -30,7 +30,7 @@ export async function CheckboxesDefaultRender(props: { entity: CheckboxesEntity 
 
     let layoutClass = '';
     let innerColumnClass = '';
-    let parsed = parseInt(entity.ColumnsNumber.toString(), 10);
+    const parsed = parseInt(entity.ColumnsNumber.toString(), 10);
     switch (parsed) {
         case 0:
             layoutClass = 'd-flex flex-wrap';

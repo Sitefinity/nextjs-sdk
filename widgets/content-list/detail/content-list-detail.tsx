@@ -1,5 +1,4 @@
-import { ContentListModelDetail, DetailViewModel } from '../../content-lists-common/content-list-detail-model';
-import { ContentListEntity } from '../content-list-entity';
+import { DetailViewModel } from '../../content-lists-common/content-list-models';
 import { BlogPostDetail } from './content-list-detail.blog-post';
 import { DynamicDetail } from './content-list-detail.dynamic';
 import { EventDetail } from './content-list-detail.event';
@@ -7,12 +6,13 @@ import { ListItemDetail } from './content-list-detail.list-item';
 import { NewsItemDetail } from './content-list-detail.news';
 import { SdkItem } from '../../../rest-sdk/dto/sdk-item';
 import { RestClient } from '../../../rest-sdk/rest-client';
-import { RequestContext } from '../../../editor/request-context';
+import { RenderWidgetService } from '../../../services/render-widget-service';
+import { ContentListViewModel } from '../master/content-list-model-base';
 
-export async function ContentListDetail(props: { detailModel: ContentListModelDetail, entity?: ContentListEntity, context: RequestContext }) {
-    const model = props.detailModel;
+export async function ContentListDetail(props: { viewModel: ContentListViewModel }) {
+    const model = props.viewModel.detailModel!;
 
-    let queryParams: { [key: string]: string } = props.context.searchParams || {};
+    const queryParams: { [key: string]: string } = props.viewModel.requestContext.searchParams || {};
     let dataItem: SdkItem;
     if (queryParams.hasOwnProperty('sf-content-action')) {
         dataItem = await RestClient.getItemWithStatus({
@@ -29,7 +29,7 @@ export async function ContentListDetail(props: { detailModel: ContentListModelDe
         });
     }
     let detailViewModel: DetailViewModel;
-    let attributes: { [key: string]: string } = {};
+    const attributes: { [key: string]: string } = {};
     if (model.Attributes) {
         model.Attributes.forEach((pair) => {
             attributes[pair.Key] = pair.Value;
@@ -42,8 +42,18 @@ export async function ContentListDetail(props: { detailModel: ContentListModelDe
         DetailItem: dataItem
     };
 
+    const templates = RenderWidgetService.widgetRegistry.widgets['SitefinityContentList']?.templates;
+    
+    if (templates && detailViewModel?.ViewName && templates[detailViewModel?.ViewName]) {
+        return (
+          <div {...detailViewModel?.Attributes}>
+            {templates[detailViewModel?.ViewName](detailViewModel)}
+          </div>
+        );
+    }
+
     return (
-      <div {...detailViewModel?.Attributes as any}>
+      <div {...detailViewModel?.Attributes}>
         {detailViewModel?.ViewName === 'Details.BlogPosts.Default' && BlogPostDetail(detailViewModel)}
         {detailViewModel?.ViewName === 'Details.Dynamic.Default' && DynamicDetail(detailViewModel)}
         {detailViewModel?.ViewName === 'Details.Events.Default' && EventDetail(detailViewModel)}

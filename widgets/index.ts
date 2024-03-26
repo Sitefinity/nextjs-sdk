@@ -42,8 +42,7 @@ export * from './content-list/master/list-with-image/list-with-image-model';
 export * from './content-list/master/list-with-summary/list-with-summary';
 export * from './content-list/master/list-with-summary/list-with-summary-model';
 
-export * from './content-lists-common/content-list-detail-model';
-export * from './content-lists-common/content-list-master-model';
+export * from './content-lists-common/content-list-models';
 export * from './content-lists-common/content-lists-base.entity';
 export * from './content-lists-common/content-lists-rest.setvice';
 export * from './content-lists-common/content-view-display-mode';

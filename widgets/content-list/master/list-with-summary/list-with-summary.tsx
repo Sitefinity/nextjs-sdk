@@ -1,9 +1,9 @@
 import React, { Fragment } from 'react';
 import { ListWithSummaryModel } from './list-with-summary-model';
 import { OpenDetailsAnchor } from '../open-details-anchor';
-import { ContentListEntity } from '../../content-list-entity';
+import { ContentListEntityBase } from '../../../content-lists-common/content-lists-base.entity';
 
-export function ListWithSummary(props: { model: ListWithSummaryModel, entity?: ContentListEntity }) {
+export function ListWithSummary(props: { model: ListWithSummaryModel, entity?: ContentListEntityBase }) {
     const model = props.model;
     return (
       <Fragment>

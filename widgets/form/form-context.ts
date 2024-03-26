@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { FormViewModel } from './form';
+import { FormViewModel } from './form-view-model';
 import { StylingConfig } from '../styling/styling-config';
 
 export const FormContext = createContext<{

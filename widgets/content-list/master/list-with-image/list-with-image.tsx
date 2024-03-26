@@ -1,9 +1,9 @@
 import React, { Fragment } from 'react';
 import { ListWithImageModel } from './list-with-image-model';
 import { OpenDetailsAnchor } from '../open-details-anchor';
-import { ContentListEntity } from '../../content-list-entity';
+import { ContentListEntityBase } from '../../../content-lists-common/content-lists-base.entity';
 
-export function ListWithImage(props: { model: ListWithImageModel, entity?: ContentListEntity }) {
+export function ListWithImage(props: { model: ListWithImageModel, entity?: ContentListEntityBase }) {
     const model = props.model;
 
     return (

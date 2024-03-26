@@ -11,17 +11,16 @@ import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { WidgetModel } from '../../editor/widget-framework/widget-model';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { LayoutServiceResponse } from '../../rest-sdk/dto/layout-service.response';
-import { FormRuleAction } from './interfaces/form-rule-action';
+import { FormViewModel, getFormRulesViewModel, getFormHiddenFields } from './form-view-model';
 import { FormEntity } from './form.entity';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 
-
 export async function Form(props: WidgetContext<FormEntity>) {
     const entity = props.model.Properties;
-
     const context = props.requestContext;
     const searchParams = context.searchParams;
+    const queryParams = { ...searchParams };
 
     const viewModel: FormViewModel = {
         CustomSubmitAction: false,
@@ -29,7 +28,6 @@ export async function Form(props: WidgetContext<FormEntity>) {
         InvalidClass: StylingConfig.InvalidClass
     };
 
-    const queryParams = { ...searchParams };
     if (entity.SelectedItems && entity.SelectedItems.ItemIdsOrdered && entity.SelectedItems.ItemIdsOrdered.length > 0) {
         let formDto: FormDto | null = null;
         try {
@@ -64,6 +62,8 @@ export async function Form(props: WidgetContext<FormEntity>) {
         viewModel.FormModel = formModel;
         viewModel.Rules = getFormRulesViewModel(formDto);
         viewModel.SubmitUrl = `/forms/submit/${formDto.Name}/${context.culture}?${QueryParamNames.Site}=${context.layout.SiteId}&${QueryParamNames.SiteTempFlag}=true`;
+        viewModel.HiddenFields = getFormHiddenFields(viewModel.FormModel).join(',');
+        viewModel.Attributes = entity.Attributes;
 
         if (entity.FormSubmitAction === FormSubmitAction.Redirect && entity.RedirectPage) {
             const redirectPage = await RestClientForContext.getItem<PageItem>(entity.RedirectPage, { type: RestSdkTypes.Pages });
@@ -71,19 +71,13 @@ export async function Form(props: WidgetContext<FormEntity>) {
                 viewModel.CustomSubmitAction = true;
                 viewModel.RedirectUrl = await redirectPage.ViewUrl;
             }
-
-
         } else if (entity.FormSubmitAction === FormSubmitAction.Message) {
             viewModel.CustomSubmitAction = true;
             viewModel.SuccessMessage = entity.SuccessMessage as string;
         }
-
-        viewModel.HiddenFields = getHiddenFields(viewModel.FormModel).join(',');
-        viewModel.Attributes = entity.Attributes;
     }
 
     const formDataAttributes = htmlAttributes(props);
-
     const defaultClass = entity.CssClass;
     const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
     const containerClass = classNames(
@@ -130,54 +124,4 @@ export async function Form(props: WidgetContext<FormEntity>) {
         </>}
       </>
     );
-}
-
-const formRuleActionsToEncrypt: { [key: string]: number } = {
-    [FormRuleAction.ShowMessage]: 0,
-    [FormRuleAction.SendNotification]: 0
-};
-
-
-function getFormRulesViewModel(form: FormDto): string {
-    if (!form.Rules) {
-        return form.Rules;
-    }
-
-    const actionIndexList = { ...formRuleActionsToEncrypt };
-    const rules = JSON.parse(form.Rules);
-    for (let rule of rules) {
-        for (let action of rule['Actions']) {
-            let ruleAction = action['Action'];
-            if (Object.keys(formRuleActionsToEncrypt).includes(ruleAction)) {
-                action['Target'] = `sf_${ruleAction}_${actionIndexList[ruleAction]}`;
-                actionIndexList[ruleAction]++;
-            }
-        }
-    }
-
-    return JSON.stringify(rules);
-}
-
-function getHiddenFields(formModel: LayoutServiceResponse) {
-    const hiddenFields = formModel.ComponentContext.Components
-        .filter((x: WidgetModel<any>) => x.Properties.Hidden === 'True' || x.Properties.Hidden === 'true')
-        .map((x: WidgetModel<any>) => x.Properties.SfFieldName);
-
-    return hiddenFields;
-}
-
-export interface FormViewModel {
-    CssClass?: string;
-    FormModel?: LayoutServiceResponse;
-    SubmitUrl?: string;
-    CustomSubmitAction: boolean;
-    RedirectUrl?: string;
-    SuccessMessage?: string;
-    Warning?: string;
-    SkipDataSubmission?: boolean;
-    Rules?: string;
-    InvalidClass?: string;
-    HiddenFields?: string;
-    Attributes?: { [key: string]: Array<{ Key: string, Value: string }> };
-    VisibilityClasses: { [key: string]: string };
 }

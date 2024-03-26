@@ -11,7 +11,7 @@ export class DropdownEntity extends ChoiceEntityBase {
     @DataType('string')
     @DisplayName('Label ')
     @ContentSection(ContentSectionTitles.LabelsAndContent, 1)
-    Label: string = 'Untitled';
+    Label: string | null = 'Untitled';
 
     @TableView({Selectable: true, Reorderable: true}, DROPWDOWN_PREDEFINED_LIST)
     Choices: ChoiceOption[] | null = [{ Name: 'Select' }, { Name: 'First choice', Value: '1' }, { Name: 'Second choice', Value: '2' }];

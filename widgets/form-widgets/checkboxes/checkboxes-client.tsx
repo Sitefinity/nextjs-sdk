@@ -132,7 +132,7 @@ export function CheckboxesClient(props: CheckboxesClientProps) {
       }
       <div className={layoutClass}>
         { inputValues.map((choiceOption: ChoiceOption, idx: number)=>{
-                let choiceOptionId = `choiceOption-${idx}-${inputCheckboxUniqueId}`;
+                const choiceOptionId = `choiceOption-${idx}-${inputCheckboxUniqueId}`;
 
                 return (<div className={`form-check ${innerColumnClass}`} key={idx}>
                   <input className="form-check-input" type="checkbox" name={checkboxUniqueId} id={choiceOptionId}

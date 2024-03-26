@@ -1,8 +1,6 @@
 'use client';
 
 import React from 'react';
-import { FileTypes } from './interface/file-types';
-import { NumericRange } from '../common/numeric-range';
 import { StylingConfig } from '../../styling/styling-config';
 import { VisibilityStyle } from '../../styling/visibility-style';
 import { classNames } from '../../../editor/utils/classNames';
@@ -120,10 +118,9 @@ export function FileUploadClient(props: {
             }
 
             if (hasFiles && (validationRestrictions.maxSize || validationRestrictions.minSize)) {
-
-                let minSize = validationRestrictions.minSize * 1000 * 1000;
-                let maxSize = validationRestrictions.maxSize * 1000 * 1000;
-                let file = fileInput.files![0];
+                const minSize = validationRestrictions.minSize * 1000 * 1000;
+                const maxSize = validationRestrictions.maxSize * 1000 * 1000;
+                const file = fileInput.files![0];
                 const isFileOutOfSize = (minSize > 0 && file.size < minSize) || (maxSize > 0 && file.size > maxSize);
 
                 if (isFileOutOfSize) {
@@ -143,9 +140,9 @@ export function FileUploadClient(props: {
             if (hasFiles && validationRestrictions.allowedFileTypes) {
 
                 if (fileInput.value) {
-                    let stopIndex = fileInput.value.lastIndexOf('.');
+                    const stopIndex = fileInput.value.lastIndexOf('.');
                     if (stopIndex >= 0) {
-                        let extension = fileInput.value.substring(stopIndex).toLowerCase();
+                        const extension = fileInput.value.substring(stopIndex).toLowerCase();
                         if (validationRestrictions.allowedFileTypes.indexOf(extension) < 0) {
                             newInputs[fileInput.id] = {
                                 ...newInputs[fileInput.id],

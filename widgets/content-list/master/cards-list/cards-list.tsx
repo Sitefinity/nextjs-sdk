@@ -1,10 +1,10 @@
 import React from 'react';
 import { CardsListModel } from './cards-list-model';
 import { OpenDetailsAnchor } from '../open-details-anchor';
-import { ContentListEntity } from '../../content-list-entity';
 import { SanitizerService } from '../../../../services/sanitizer-service';
+import { ContentListEntityBase } from '../../../content-lists-common/content-lists-base.entity';
 
-export function CardsList(props: { model: CardsListModel, entity?: ContentListEntity }) {
+export function CardsList(props: { model: CardsListModel, entity?: ContentListEntityBase }) {
     const model = props.model;
     const items = model.Items;
     return (

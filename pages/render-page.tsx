@@ -16,7 +16,7 @@ export async function RenderPage({ params, searchParams }: { params: { slug: str
     const isPreview = searchParams['sfaction'] === 'preview';
     const isLive = !(isEdit || isPreview);
 
-    let appState : AppState = {
+    const appState : AppState = {
         requestContext: {
             layout: layout,
             searchParams: searchParams,
@@ -38,9 +38,9 @@ export async function RenderPage({ params, searchParams }: { params: { slug: str
     const liveUrl = params.slug.join('/') + '?' + new URLSearchParams(searchParams).toString();
     return (
       <>
-        <RenderPageScripts layout={layout} />
-        {isEdit && <RenderPageClient metadata={ServiceMetadata.serviceMetadataCache} layout={layout} context={appState.requestContext} />}
-        {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} url={liveUrl} />}
+        <RenderPageScripts layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} />
+        {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} />}
+        {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} />}
         {appState.widgets.map((child) => {
                 return RenderWidgetService.createComponent(child, appState.requestContext);
             })}

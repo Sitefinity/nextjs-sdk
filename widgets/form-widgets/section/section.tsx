@@ -6,7 +6,7 @@ import { FormSectionColumnHolder, FormSectionComponentContainer } from './sectio
 
 const ColumnNamePrefix = 'Column';
 
-export async function FormSection(props: WidgetContext<FormSectionEntity>) {
+export function FormSection(props: WidgetContext<FormSectionEntity>) {
     props.model.Properties.ColumnProportionsInfo = props.model.Properties.ColumnProportionsInfo || ['12'];
 
     const columns = populateColumns(props);
@@ -26,16 +26,16 @@ export async function FormSection(props: WidgetContext<FormSectionEntity>) {
 }
 
 function populateColumns(context: WidgetContext<FormSectionEntity>): FormSectionColumnHolder[] {
-    let columns: FormSectionColumnHolder[] = [];
+    const columns: FormSectionColumnHolder[] = [];
     const properties = context.model.Properties;
 
     for (let i = 0; i < properties.ColumnsCount; i++) {
-        let currentName = `${ColumnNamePrefix}${i + 1}`;
+        const currentName = `${ColumnNamePrefix}${i + 1}`;
 
         let children: Array<FormSectionComponentContainer> = [];
         if (context.model.Children) {
             children = context.model.Children.filter(x => x.PlaceHolder === currentName).map((x => {
-                let ret: WidgetContext<any> = {
+                const ret: WidgetContext<any> = {
                     model: x,
                     metadata: RenderWidgetService.widgetRegistry.widgets[x.Name],
                     requestContext: context.requestContext

@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { FormViewModel } from './form';
 import { StylingConfig } from '../styling/styling-config';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { FormRulesExecutor } from './rules/form-rules-executor';
 import { classNames } from '../../editor/utils/classNames';
 import { FormContext } from './form-context';
+import { FormViewModel } from './form-view-model';
 
 
 const generateHiddenFields = (fields: string[]) =>{
@@ -150,8 +150,8 @@ export function FormClient(props: FromContainerProps) {
             return false;
         }
 
-        let headerName = 'X-SF-ANTIFORGERY-REQUEST';
-        let headers: {[key: string]: string} = {};
+        const headerName = 'X-SF-ANTIFORGERY-REQUEST';
+        const headers: {[key: string]: string} = {};
         headers[headerName] = '';
 
         fetch('/sitefinity/anticsrf', { headers: headers }).then(function (csrfResponse) {
@@ -160,7 +160,7 @@ export function FormClient(props: FromContainerProps) {
                     headers[headerName] = headerValue;
                 }
 
-                let formData = new FormData(form);
+                const formData = new FormData(form);
                 formData.set('sf_antiforgery', headerValue || '');
 
                 fetch(viewModel.SubmitUrl!, { method: 'POST', body: formData }).then(function (formSubmitResponse) {

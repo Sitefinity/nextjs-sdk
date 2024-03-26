@@ -56,6 +56,312 @@ import { TextFieldEntity } from './form-widgets/textfield/text-field.entity';
 import { FormSectionEntity } from './form-widgets/section/section.entity';
 import { FormContentBlockEntity } from './form-widgets/content-block/content-block.entity';
 import { DynamicListEntity } from './form-widgets/dynamic-list/dynamic-list.entity';
+import { BlogPostDetail } from './content-list/detail/content-list-detail.blog-post';
+import { DynamicDetail } from './content-list/detail/content-list-detail.dynamic';
+import { EventDetail } from './content-list/detail/content-list-detail.event';
+import { ListItemDetail } from './content-list/detail/content-list-detail.list-item';
+import { NewsItemDetail } from './content-list/detail/content-list-detail.news';
+import { CardsList } from './content-list/master/cards-list/cards-list';
+import { ListWithImage } from './content-list/master/list-with-image/list-with-image';
+import { ListWithSummary } from './content-list/master/list-with-summary/list-with-summary';
+import { DocumentDetailItem } from './document-list/document-list-detail-item';
+import { DocumentListGrid } from './document-list/document-list-grid';
+import { DocumentListList } from './document-list/document-list-list';
+import { FormCSR } from './form/form.csr';
+import { DynamicListCSR } from './form-widgets/dynamic-list/dynamic-list.csr';
+import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
+
+export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
+    'SitefinityForm': {
+        entity: FormEntity,
+        componentType: FormCSR,
+        editorMetadata: {
+            Title: 'Form',
+            EmptyIcon: 'plus-circle',
+            EmptyIconAction: 'Edit',
+            EmptyIconText: 'Select a form',
+            Section: 'Basic',
+            HasQuickEditOperation: true
+        },
+        ssr: false
+    },
+    'SitefinityFormSection': {
+        entity: FormSectionEntity,
+        componentType: FormSection,
+        editorMetadata: {
+            Title: 'Section',
+            Toolbox: 'Forms',
+            Category: 'Layout & Presets',
+            InitialProperties: {
+                SfFieldType: 'FormSection'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityCheckboxes': {
+        entity: CheckboxesEntity,
+        componentType: Checkboxes,
+        editorMetadata: {
+            Title: 'Checkboxes',
+            Toolbox: 'Forms',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityFormContentBlock': {
+        entity: FormContentBlockEntity,
+        componentType: FormContentBlock,
+        editorMetadata: {
+            Title: 'Content Block',
+            Toolbox: 'Forms',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'ContentBlock'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityDropdown': {
+        entity: DropdownEntity,
+        componentType: Dropdown,
+        editorMetadata: {
+            Title: 'Dropdown',
+            Toolbox: 'Forms',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Dropdown'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityDynamicList': {
+        entity: DynamicListEntity,
+        componentType: DynamicListCSR,
+        editorMetadata: {
+            Title: 'Dynamic List',
+            Toolbox: 'Forms',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityFileField': {
+        entity: FileUploadEntity,
+        componentType: FileUpload,
+        editorMetadata: {
+            Title: 'File Upload',
+            Toolbox: 'Forms',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'File'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityMultipleChoice': {
+        entity: MultipleChoiceEntity,
+        componentType: MultipleChoice,
+        editorMetadata: {
+            Title: 'Multiple Choice',
+            Toolbox: 'Forms',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'MultipleChoice'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityParagraph': {
+        entity: ParagraphEntity,
+        componentType: Paragraph,
+        editorMetadata: {
+            Title: 'Paragraph',
+            Toolbox: 'Forms',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'Paragraph'
+            }
+        },
+        ssr: false
+    },
+    'SitefinitySubmitButton': {
+        entity: SubmitButtonEntity,
+        componentType: SubmitButton,
+        editorMetadata: {
+            Title: 'Submit Button',
+            Toolbox: 'Forms',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'SubmitButton'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityTextField': {
+        entity: TextFieldEntity,
+        componentType: TextField,
+        editorMetadata: {
+            Title: 'Textbox',
+            Toolbox: 'Forms',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'ShortText'
+            }
+        },
+        ssr: false
+    }
+};
+
+export const SSRFormComponents: {[key: string]: WidgetMetadata} = {
+    'SitefinityForm': {
+        entity: FormEntity,
+        componentType: Form,
+        editorMetadata: {
+            Title: 'Form',
+            EmptyIcon: 'plus-circle',
+            EmptyIconAction: 'Edit',
+            EmptyIconText: 'Select a form',
+            Section: 'Basic',
+            HasQuickEditOperation: true
+        },
+        ssr: true
+    },
+    'SitefinityFormSection': {
+        entity: FormSectionEntity,
+        componentType: FormSection,
+        editorMetadata: {
+            Title: 'Section',
+            Toolbox: 'Forms',
+            Category: 'Layout & Presets',
+            InitialProperties: {
+                SfFieldType: 'FormSection'
+            }
+        },
+        ssr: true
+    },
+    'SitefinityCheckboxes': {
+        entity: CheckboxesEntity,
+        componentType: Checkboxes,
+        editorMetadata: {
+            Title: 'Checkboxes',
+            Toolbox: 'Forms',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            }
+        },
+        ssr: true
+    },
+    'SitefinityFormContentBlock': {
+        entity: FormContentBlockEntity,
+        componentType: FormContentBlock,
+        editorMetadata: {
+            Title: 'Content Block',
+            Toolbox: 'Forms',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'ContentBlock'
+            }
+        },
+        ssr: true
+    },
+    'SitefinityDropdown': {
+        entity: DropdownEntity,
+        componentType: Dropdown,
+        editorMetadata: {
+            Title: 'Dropdown',
+            Toolbox: 'Forms',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Dropdown'
+            }
+        },
+        ssr: true
+    },
+    'SitefinityDynamicList': {
+        entity: DynamicListEntity,
+        componentType: DynamicList,
+        editorMetadata: {
+            Title: 'Dynamic List',
+            Toolbox: 'Forms',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            }
+        },
+        ssr: true
+    },
+    'SitefinityFileField': {
+        entity: FileUploadEntity,
+        componentType: FileUpload,
+        editorMetadata: {
+            Title: 'File Upload',
+            Toolbox: 'Forms',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'File'
+            }
+        },
+        ssr: true
+    },
+    'SitefinityMultipleChoice': {
+        entity: MultipleChoiceEntity,
+        componentType: MultipleChoice,
+        editorMetadata: {
+            Title: 'Multiple Choice',
+            Toolbox: 'Forms',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'MultipleChoice'
+            }
+        },
+        ssr: true
+    },
+    'SitefinityParagraph': {
+        entity: ParagraphEntity,
+        componentType: Paragraph,
+        editorMetadata: {
+            Title: 'Paragraph',
+            Toolbox: 'Forms',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'Paragraph'
+            }
+        },
+        ssr: true
+    },
+    'SitefinitySubmitButton': {
+        entity: SubmitButtonEntity,
+        componentType: SubmitButton,
+        editorMetadata: {
+            Title: 'Submit Button',
+            Toolbox: 'Forms',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'SubmitButton'
+            }
+        },
+        ssr: true
+    },
+    'SitefinityTextField': {
+        entity: TextFieldEntity,
+        componentType: TextField,
+        editorMetadata: {
+            Title: 'Textbox',
+            Toolbox: 'Forms',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'ShortText'
+            }
+        },
+        ssr: true
+    }
+};
 
 export const defaultWidgetRegistry: WidgetRegistry = {
     widgets: {
@@ -209,7 +515,17 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 EmptyIconText: 'Select content',
                 EmptyIcon: 'plus-circle'
             },
-            ssr: true
+            ssr: true,
+            templates: {
+                'ListWithImage': ListWithImage,
+                'ListWithSummary': ListWithSummary,
+                'CardsList': CardsList,
+                'Details.BlogPosts.Default': BlogPostDetail,
+                'Details.Dynamic.Default': DynamicDetail,
+                'Details.Events.Default': EventDetail,
+                'Details.ListItems.Default': ListItemDetail,
+                'Details.News.Default': NewsItemDetail
+            }
         },
         'SitefinityDocumentList': {
             entity: DocumentListEntity,
@@ -222,7 +538,12 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 EmptyIconAction: 'Edit',
                 HasQuickEditOperation: true
             },
-            ssr: true
+            ssr: true,
+            templates: {
+                'DocumentList': DocumentListList,
+                'DocumentTable': DocumentListGrid,
+                'Details.DocumentDetails': DocumentDetailItem
+            }
         },
         'SitefinitySearchResults': {
             entity: SearchResultsEntity,
@@ -250,149 +571,6 @@ export const defaultWidgetRegistry: WidgetRegistry = {
             },
             ssr: true
         },
-        'SitefinityForm': {
-            entity: FormEntity,
-            componentType: Form,
-            editorMetadata: {
-                Title: 'Form',
-                EmptyIcon: 'plus-circle',
-                EmptyIconAction: 'Edit',
-                EmptyIconText: 'Select a form',
-                Section: 'Basic',
-                HasQuickEditOperation: true
-            },
-            ssr: true
-        },
-        'SitefinityFormSection': {
-            entity: FormSectionEntity,
-            componentType: FormSection,
-            editorMetadata: {
-                Title: 'Section',
-                Toolbox: 'Forms',
-                Category: 'Layout & Presets',
-                InitialProperties: {
-                    SfFieldType: 'FormSection'
-                }
-            },
-            ssr: true
-        },
-        'SitefinityCheckboxes': {
-            entity: CheckboxesEntity,
-            componentType: Checkboxes,
-            editorMetadata: {
-                Title: 'Checkboxes',
-                Toolbox: 'Forms',
-                Section: 'Choices',
-                InitialProperties: {
-                    SfFieldType: 'Checkboxes'
-                }
-            },
-            ssr: true
-        },
-        'SitefinityFormContentBlock': {
-            entity: FormContentBlockEntity,
-            componentType: FormContentBlock,
-            editorMetadata: {
-                Title: 'Content Block',
-                Toolbox: 'Forms',
-                Section: 'Other',
-                InitialProperties: {
-                    SfFieldType: 'ContentBlock'
-                }
-            },
-            ssr: true
-        },
-        'SitefinityDropdown': {
-            entity: DropdownEntity,
-            componentType: Dropdown,
-            editorMetadata: {
-                Title: 'Dropdown',
-                Toolbox: 'Forms',
-                Section: 'Choices',
-                InitialProperties: {
-                    SfFieldType: 'Dropdown'
-                }
-            },
-            ssr: true
-        },
-        'SitefinityDynamicList': {
-            entity: DynamicListEntity,
-            componentType: DynamicList,
-            editorMetadata: {
-                Title: 'Dynamic List',
-                Toolbox: 'Forms',
-                Section: 'Choices',
-                InitialProperties: {
-                    SfFieldType: 'Checkboxes'
-                }
-            },
-            ssr: true
-        },
-        'SitefinityFileField': {
-            entity: FileUploadEntity,
-            componentType: FileUpload,
-            editorMetadata: {
-                Title: 'File Upload',
-                Toolbox: 'Forms',
-                Section: 'Other',
-                InitialProperties: {
-                    SfFieldType: 'File'
-                }
-            },
-            ssr: true
-        },
-        'SitefinityMultipleChoice': {
-            entity: MultipleChoiceEntity,
-            componentType: MultipleChoice,
-            editorMetadata: {
-                Title: 'Multiple Choice',
-                Toolbox: 'Forms',
-                Section: 'Choices',
-                InitialProperties: {
-                    SfFieldType: 'MultipleChoice'
-                }
-            },
-            ssr: true
-        },
-        'SitefinityParagraph': {
-            entity: ParagraphEntity,
-            componentType: Paragraph,
-            editorMetadata: {
-                Title: 'Paragraph',
-                Toolbox: 'Forms',
-                Section: 'Basic',
-                InitialProperties: {
-                    SfFieldType: 'Paragraph'
-                }
-            },
-            ssr: true
-        },
-        'SitefinitySubmitButton': {
-            entity: SubmitButtonEntity,
-            componentType: SubmitButton,
-            editorMetadata: {
-                Title: 'Submit Button',
-                Toolbox: 'Forms',
-                Section: 'Basic',
-                InitialProperties: {
-                    SfFieldType: 'SubmitButton'
-                }
-            },
-            ssr: true
-        },
-        'SitefinityTextField': {
-            entity: TextFieldEntity,
-            componentType: TextField,
-            editorMetadata: {
-                Title: 'Textbox',
-                Toolbox: 'Forms',
-                Section: 'Basic',
-                InitialProperties: {
-                    SfFieldType: 'ShortText'
-                }
-            },
-            ssr: true
-        },
         'LanguageSelector': {
             designerMetadata: sitefinityLanguageSelectorJson,
             componentType: LanguageSelector,
@@ -400,6 +578,7 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Title: 'Language Selector'
             },
             ssr: true
-        }
+        },
+        ...SSRFormComponents
     }
 };

@@ -141,7 +141,7 @@ export function MultipleChoiceClient(props: MultipleChoiceClientProps) {
         }
         <div className={layoutClass}>
           { inputValues.map((choiceOption: ChoiceOption, idx: number)=>{
-                let choiceOptionId = `choiceOption-${idx}-${inputMultipleChoiceUniqueId}`;
+                const choiceOptionId = `choiceOption-${idx}-${inputMultipleChoiceUniqueId}`;
 
                 return (<div className={`form-check ${innerColumnClass}`} key={idx}>
                   <input className="form-check-input" type="radio" name={multipleChoiceUniqueId} id={choiceOptionId}

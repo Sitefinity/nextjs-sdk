@@ -1,18 +1,17 @@
 import { getExtension, getFileExtensionCssClass, getFileSize } from './common/utils';
-import { DocumentListEntity } from './document-list-entity';
 import { DocumentListViewModel } from './interfaces/document-list-view-model';
 
-export function DocumentDetailItem(props: { entity: DocumentListEntity, viewModel: DocumentListViewModel }) {
+export function DocumentDetailItem(props: { viewModel: DocumentListViewModel }) {
     const { viewModel } = props;
     const detailModel = viewModel.detailModel;
-    const entity = detailModel!.item;
-    const title = entity['Title'];
-    const author = entity['Author'];
-    const publicationDate = entity['PublicationDate'] ? new Date(entity['PublicationDate']) : '';
-	const description = entity['Description'];
-    const fileSize = getFileSize(entity);
-    const extension = getExtension(entity);
-    const downloadUrl = entity['Url'];
+    const sdkItem = detailModel!.item;
+    const title = sdkItem['Title'];
+    const author = sdkItem['Author'];
+    const publicationDate = sdkItem['PublicationDate'] ? new Date(sdkItem['PublicationDate']) : '';
+	  const description = sdkItem['Description'];
+    const fileSize = getFileSize(sdkItem);
+    const extension = getExtension(sdkItem);
+    const downloadUrl = sdkItem['Url'];
     const extensionStyle = {
         backgroundColor: `var(${getFileExtensionCssClass(extension)})`
     };
@@ -20,7 +19,7 @@ export function DocumentDetailItem(props: { entity: DocumentListEntity, viewMode
       <>
         <h1>{title} </h1>
         <div className="text-muted">
-          {entity['PublicationDate'] && publicationDate.toLocaleString()}
+          {sdkItem['PublicationDate'] && publicationDate.toLocaleString()}
           {
             author ? author : null  // sanitize
           }
@@ -41,7 +40,7 @@ export function DocumentDetailItem(props: { entity: DocumentListEntity, viewMode
           </div>
           <div className="flex-grow-1">
             <div>
-              <a href={downloadUrl} target="_blank">{viewModel.DownloadLinkLabel}</a>
+              <a href={downloadUrl} target="_blank">{viewModel.downloadLinkLabel}</a>
               <span className="text-muted small">({extension})</span>
             </div>
             <span className="text-muted small">{fileSize}</span>

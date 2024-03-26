@@ -4,7 +4,7 @@ import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { SubmitButtonClient } from './submit-button-client';
 import { SubmitButtonEntity } from './submit-button.entity';
 
-export async function SubmitButton(props: WidgetContext<SubmitButtonEntity>) {
+export function SubmitButton(props: WidgetContext<SubmitButtonEntity>) {
     const entity = props.model.Properties;
 
     const dataAttributes = htmlAttributes(props);

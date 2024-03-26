@@ -4,7 +4,7 @@ import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { MultipleChoiceClient, MultipleChoiceClientViewModel } from './multiple-choice-client';
 import { MultipleChoiceEntity } from './multiple-choice.entity';
 
-export async function MultipleChoice(props: WidgetContext<MultipleChoiceEntity>) {
+export function MultipleChoice(props: WidgetContext<MultipleChoiceEntity>) {
     const entity = props.model.Properties;
     const viewModel: MultipleChoiceClientViewModel = {
         Choices: entity.Choices || [],

@@ -5,7 +5,7 @@ import { htmlAttributes } from '../../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { DropdownEntity } from './dropdown.entity';
 
-export async function Dropdown(props: WidgetContext<DropdownEntity>) {
+export function Dropdown(props: WidgetContext<DropdownEntity>) {
     const dataAttributes = htmlAttributes(props);
     const defaultRendering = (<DropdownDefaultRender entity={props.model.Properties} />);
      return (props.requestContext.isEdit
@@ -13,7 +13,7 @@ export async function Dropdown(props: WidgetContext<DropdownEntity>) {
         :defaultRendering);
 }
 
-export async function DropdownDefaultRender(props: { entity: DropdownEntity }) {
+export function DropdownDefaultRender(props: { entity: DropdownEntity }) {
     const entity = props.entity;
     const dropdownUniqueId = entity.SfFieldName as string;
 
@@ -21,7 +21,7 @@ export async function DropdownDefaultRender(props: { entity: DropdownEntity }) {
         Choices: entity.Choices || [],
         CssClass: entity.CssClass || '',
         InstructionalText: entity.InstructionalText!,
-        Label: entity.Label,
+        Label: entity.Label || '',
         Required: entity.Required,
         RequiredErrorMessage: entity.RequiredErrorMessage || ''
       };

@@ -4,6 +4,7 @@ import { CombinedFilter } from '../../rest-sdk/filters/combined-filter';
 import { FilterClause } from '../../rest-sdk/filters/filter-clause';
 import { RelationFilter } from '../../rest-sdk/filters/relation-filter';
 import { PagerMode } from '../common/page-mode';
+import { DetailPageSelectionMode } from './detail-page-selection-mode';
 
 
 export interface ContentListEntityBase {
@@ -17,4 +18,6 @@ export interface ContentListEntityBase {
     PagerTemplate: string;
     PagerQueryTemplate: string;
     PagerMode: PagerMode;
+    DetailPage: MixedContentContext | null;
+    DetailPageMode: DetailPageSelectionMode;
 }

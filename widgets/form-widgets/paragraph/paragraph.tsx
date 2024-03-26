@@ -9,7 +9,7 @@ import { TextFieldViewModel } from '../textfield/text-field-viewmodel';
 
 const InvalidDefaultValidationMessage = '{0} field is invalid';
 
-export async function Paragraph(props: WidgetContext<ParagraphEntity>) {
+export function Paragraph(props: WidgetContext<ParagraphEntity>) {
     const entity = props.model.Properties;
 
     const viewModel: TextFieldViewModel = {

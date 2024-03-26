@@ -14,8 +14,9 @@ export * from './dropdown/dropdown-predefined-list';
 export * from './dropdown/dropdown.entity';
 
 export * from './dynamic-list/dynamic-list';
+export * from './dynamic-list/dynamic-list.csr';
 export * from './dynamic-list/dynamic-list.entity';
-export * from './dynamic-list/dynamic-list.viewmodel';
+export * from './dynamic-list/dynamic-list-view-model';
 export * from './dynamic-list/selection-modes';
 
 export * from './file-upload/file-upload';

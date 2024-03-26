@@ -22,7 +22,7 @@ export const addConditionEvaluators = (ruleSettings: FormRulesSettings) => {
         return currentValue.search(new RegExp(ruleValue, 'i')) === -1;
     });
 
-    let isFilledFunction = function (currentValue: number | string): boolean {
+    const isFilledFunction = function (currentValue: number | string): boolean {
         // Check if currentValue is NaN
         if (typeof currentValue === 'number' && currentValue !== currentValue) {
             return false;

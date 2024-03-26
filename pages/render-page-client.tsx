@@ -6,11 +6,13 @@ import { RequestContext } from '../editor/request-context';
 import { ServiceMetadataDefinition, ServiceMetadata } from '../rest-sdk/service-metadata';
 import { LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
 import { widgetRegistry } from '@widgetregistry';
+import { SdkItem } from '../rest-sdk/dto/sdk-item';
 
-export function RenderPageClient({ layout, metadata, context }: { layout: LayoutServiceResponse, metadata: ServiceMetadataDefinition, context: RequestContext }) {
+export function RenderPageClient({ layout, metadata, taxonomies, context }: { layout: LayoutServiceResponse, metadata: ServiceMetadataDefinition, taxonomies: SdkItem[], context: RequestContext }) {
     RenderWidgetService.widgetRegistry = widgetRegistry;
 
     ServiceMetadata.serviceMetadataCache = metadata;
+    ServiceMetadata.taxonomies = taxonomies;
 
     if (context.isEdit && typeof window !== 'undefined') {
         const timeout = 2000;
