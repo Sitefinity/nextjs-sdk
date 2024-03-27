@@ -2,9 +2,12 @@
 import { RenderWidgetService } from '../services/render-widget-service';
 import { RequestContext } from '../editor/request-context';
 import { RestClient } from '../rest-sdk/rest-client';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key: string]: string } }) {
+    const headersList = headers();
+    RestClient.host = headersList.get('host');
+
     const pageUrl = searchParams['pageUrl'];
     let cookie = cookies().toString();
     const lazyWidgets = await RestClient.getLazyWidgets({

@@ -8,8 +8,11 @@ import { RenderPageScripts } from './render-page-scripts';
 import { Dictionary } from '../typings/dictionary';
 import { ServiceMetadata } from '../rest-sdk/service-metadata';
 import { RestClient } from '../rest-sdk/rest-client';
+import { headers } from 'next/headers';
 
 export async function RenderPage({ params, searchParams }: { params: { slug: string[] }, searchParams: Dictionary }) {
+    const headersList = headers();
+    RestClient.host = headersList.get('host');
 
     const layout = await pageLayout({ params, searchParams });
     const isEdit = searchParams['sfaction'] === 'edit';

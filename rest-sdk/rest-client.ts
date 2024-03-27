@@ -45,6 +45,7 @@ import { ErrorCodeException } from './errors/error-code.exception';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
+    public static host: string | null;
 
     public static getItemWithFallback<T extends SdkItem>(args: ItemArgs): Promise<T> {
         let queryParams: Dictionary = {
@@ -545,10 +546,12 @@ export class RestClient {
         let headers: { [key: string]: string } = args.additionalHeaders || {};
         if (args.cookie) {
             headers['Cookie'] = args.cookie;
-            const proxyHeaders = getProxyHeaders();
-            Object.keys(proxyHeaders).forEach((header) => {
-                headers[header] = proxyHeaders[header];
-            });
+            if (typeof window === 'undefined') {
+                const proxyHeaders = getProxyHeaders(RestClient.host);
+                Object.keys(proxyHeaders).forEach((header) => {
+                    headers[header] = proxyHeaders[header];
+                });
+            }
         }
 
         let requestData: RequestData = { url: RootUrlService.getServerCmsUrl() + url, headers: headers, method: 'GET' };
@@ -755,10 +758,12 @@ export class RestClient {
             headers['Content-Type'] = 'application/json';
         }
 
-        const proxyHeaders = getProxyHeaders();
-        Object.keys(proxyHeaders).forEach((headerKey) => {
-            headers[headerKey] = proxyHeaders[headerKey];
-        });
+        if (typeof window === 'undefined') {
+            const proxyHeaders = getProxyHeaders(RestClient.host);
+            Object.keys(proxyHeaders).forEach((headerKey) => {
+                headers[headerKey] = proxyHeaders[headerKey];
+            });
+        }
 
         if (!requestData.headers) {
             return headers;

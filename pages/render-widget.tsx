@@ -3,11 +3,14 @@ import { RenderWidgetService } from '../services/render-widget-service';
 import { RequestContext } from '../editor/request-context';
 import { RestClient } from '../rest-sdk/rest-client';
 import { initRestSdk } from '../rest-sdk/init';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
 
 export async function RenderWidget({ searchParams }: { searchParams: { [key: string]: string } }) {
+    const headersList = headers();
+    RestClient.host = headersList.get('host');
+
     await initRestSdk();
     const widgetId = searchParams['widgetId'];
     const itemId = searchParams['itemId'];
@@ -15,13 +18,6 @@ export async function RenderWidget({ searchParams }: { searchParams: { [key: str
     const widgetSegmentId = searchParams['widgetSegmentId'];
     const segmentId = searchParams['segment'];
 
-    const widgetModel = await RestClient.getWidgetModel({
-        id: itemId,
-        type: itemType,
-        widgetId,
-        widgetSegmentId,
-        segmentId,
-        additionalHeaders: {'Cookie': cookies().toString()} });
 
     const isEdit = searchParams['sfaction'] === 'edit';
     const isPreview = searchParams['sfaction'] === 'preview';
@@ -45,14 +41,22 @@ export async function RenderWidget({ searchParams }: { searchParams: { [key: str
         cookie: cookies().toString()
     }) as LayoutServiceResponse;
 
-    if (!widgetModel) {
-        notFound();
-    }
-
     RestClient.contextQueryParams = {
         sf_culture: layout.Culture,
         sf_site: isEdit ? layout.SiteId : ''
     };
+
+    const widgetModel = await RestClient.getWidgetModel({
+        id: itemId,
+        type: itemType,
+        widgetId,
+        widgetSegmentId,
+        segmentId,
+        additionalHeaders: {'Cookie': cookies().toString()} });
+
+    if (!widgetModel) {
+        notFound();
+    }
 
     const requestContext: RequestContext = {
         layout: layout,
