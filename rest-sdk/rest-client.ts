@@ -21,7 +21,7 @@ import { RelateArgs } from './args/relate.args';
 import { ScheduleArgs } from './args/schedule.args';
 import { UpdateArgs } from './args/update.args';
 import { UploadMediaArgs } from './args/upload.args';
-import { LayoutServiceResponse } from './dto/layout-service.response';
+import { LayoutResponse, LayoutServiceResponse } from './dto/layout-service.response';
 import { ODataFilterSerializer } from './services/odata-filter-serializer';
 import { GetFormLayoutArgs } from './args/get-form-layout.args';
 import { UserDto } from './dto/user-item';
@@ -42,6 +42,8 @@ import { GetHierarchicalWidgetModelArgs } from './args/get-hierarchical-widget-m
 import { CommonArgs } from './args/common.args';
 import { GetLazyWidgetsArgs } from './args/get-lazy-widgets.args';
 import { ErrorCodeException } from './errors/error-code.exception';
+import { notFound } from 'next/navigation';
+import { RedirectResponse } from './dto/redirect.response';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
@@ -481,116 +483,83 @@ export class RestClient {
         return RestClient.sendRequest<{ Components: Array<WidgetModel<any>> }>({ url: lazyComponentsUrl, headers }).then(x => x.Components);
     }
 
-    public static async getPageLayout(args: GetPageLayoutArgs): Promise<LayoutServiceResponse> {
+    public static async getPageLayout(args: GetPageLayoutArgs): Promise<LayoutResponse> {
         const pagePath = args.pagePath;
-        const queryParams = args.queryParams || {};
-        let url = null;
-
-        const whiteListedParams = ['sfaction', 'sf_version', 'segment', 'isBackend', 'sf_site', 'sf_site_temp', 'sf-auth', 'abTestVariationKey', 'sf-content-action', 'sf-lc-status'];
-        let whitelistedParamDic: { [key:string]: string | undefined } = {};
-        whiteListedParams.forEach(x => {
-            whitelistedParamDic[x] = queryParams[x];
-        });
-
-        let indexOfSitefinityForms = pagePath.indexOf('Sitefinity/Forms/');
-        if (indexOfSitefinityForms !== -1) {
-            let name = null;
-            let indexOfFormName = indexOfSitefinityForms + 'Sitefinity/Forms/'.length;
-            let nextIndexOfSlash = pagePath.indexOf('/', indexOfFormName);
-            if (nextIndexOfSlash === -1) {
-                name = pagePath.substring(indexOfFormName);
-            } else {
-                name = pagePath.substring(indexOfFormName, nextIndexOfSlash);
-            }
-
-            const headers: {[key: string]: string} = {};
-
-            RestClient.addAuthHeaders(args.cookie, headers);
-
-            const formResponse = await RestClient.sendRequest<{ value: SdkItem[] }>({
-                url: RootUrlService.getServerCmsUrl() + `/sf/system/forms?$filter=Name eq \'${name}\'`,
-                headers
-            });
-
-            url = `/api/default/forms(${formResponse.value[0].Id})/Default.Model()`;
-        } else {
-            let indexOfSitefinityTemplate = pagePath.indexOf('Sitefinity/Template/');
-            if (indexOfSitefinityTemplate > -1) {
-                let id = null;
-                let indexOfGuid = indexOfSitefinityTemplate + 'Sitefinity/Template/'.length;
-                let nextIndexOfSlash = pagePath.indexOf('/', indexOfGuid);
-                if (nextIndexOfSlash === -1) {
-                    id = pagePath.substring(indexOfGuid);
-                } else {
-                    id = pagePath.substring(indexOfGuid, nextIndexOfSlash);
-                }
-
-                url = `/api/default/templates/${id}/Default.Model()`;
-            } else {
-                url = '/api/default/pages/Default.Model(url=@param)';
-
-                let pageParamsDic: { [key:string]: string | undefined } = {};
-                Object.keys(queryParams).filter(x => !whiteListedParams.some(y => y === x)).forEach(x => {
-                    pageParamsDic[x] = queryParams[x];
-                });
-
-                let pagePramsQueryString = RestClient.buildQueryParams(pageParamsDic);
-
-                whitelistedParamDic['@param'] = `'${encodeURIComponent(pagePath + pagePramsQueryString)}'`;
-            }
-        }
-
-        let sysParamsQueryString = RestClient.buildQueryParams(whitelistedParamDic);
-        url += `${sysParamsQueryString}`;
 
         let headers: { [key: string]: string } = args.additionalHeaders || {};
         if (args.cookie) {
             headers['Cookie'] = args.cookie;
             if (typeof window === 'undefined') {
-                const proxyHeaders = getProxyHeaders(RestClient.host);
+                const proxyHeaders = getProxyHeaders(RestClient.host!);
                 Object.keys(proxyHeaders).forEach((header) => {
                     headers[header] = proxyHeaders[header];
                 });
             }
         }
 
+        const queryParams = args.queryParams || {};
+        let sysParamsQueryString = RestClient.buildQueryParams(queryParams);
+        const url = `/${pagePath}${sysParamsQueryString}`;
+
         let requestData: RequestData = { url: RootUrlService.getServerCmsUrl() + url, headers: headers, method: 'GET' };
-        headers = this.buildHeaders(requestData);
 
         const requestInit: RequestInit = { headers, method: requestData.method, redirect: 'manual' };
-        let layoutResponse;
-        try {
-            layoutResponse = await fetch(requestData.url, requestInit).then((x) => {
-                if (x.status === 302 && x.headers.has('urlparameters')) {
-                    const urlParameters = (x.headers.get('urlparameters') as string).split('/');
-                    args.pagePath = x.headers.get('location') as string;
-                    return this.getPageLayout(args).then(y => {
-                        y.UrlParameters = urlParameters;
-                        return y;
-                    });
-                }
 
-                return RestClient.handleApiResponse<LayoutServiceResponse>(x, requestData, true);
-            });
+        let httpLayoutResponse: Response | null = null;
+        try {
+            httpLayoutResponse = await fetch(requestData.url, requestInit);
         } catch (error) {
             if (error instanceof ErrorCodeException && error.code === 'NotFound') {
                 throw error;
             }
 
-            if (error  instanceof ErrorCodeException && error.code === 'Unauthorized') {
+            if (error instanceof ErrorCodeException && error.code === 'Unauthorized') {
                 throw `Could not authorize fetching layout for url '${pagePath}'. Contact your system administator or check your access token.`;
             }
         }
 
-        if (!layoutResponse) {
-            throw `Could not fetch layout for url -> ${pagePath}`;
+        if (!httpLayoutResponse) {
+            throw 'Error while fetching the page';
         }
 
-        return layoutResponse!;
+        if (httpLayoutResponse.status === 302 && httpLayoutResponse.headers.has('urlparameters')) {
+            let urlParameters = (httpLayoutResponse.headers.get('urlparameters') as string).split('/');
+            args.pagePath = httpLayoutResponse.headers.get('location') as string;
+            const layoutRecursive = await this.getPageLayout(args);
+            layoutRecursive.layout!.UrlParameters = urlParameters;
+            return layoutRecursive;
+        }
+
+        if ((httpLayoutResponse.status === 301 || httpLayoutResponse.status === 302)) {
+            const location = httpLayoutResponse.headers.get('location') as string;
+            if (!args.followRedirects) {
+                return {
+                    isRedirect: true,
+                    redirect: {
+                        Location: location,
+                        Permenant: httpLayoutResponse.status === 301
+                    }
+                };
+            } else {
+                args.pagePath = location;
+                const layoutRecursive = await this.getPageLayout(args);
+                return layoutRecursive;
+            }
+        }
+
+        if (httpLayoutResponse.status === 404) {
+            throw new ErrorCodeException('NotFound', 'page not found');
+        }
+
+        const layoutResponse = await RestClient.handleApiResponse<LayoutServiceResponse>(httpLayoutResponse, requestData, true);
+        return {
+            isRedirect: false,
+            layout: layoutResponse
+        };
     }
 
     public static async getTemplates(args: GetTemplatesArgs): Promise<PageTemplateCategoryDto[]> {
-        const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/${args.type}/Default.GetPageTemplates(selectedPages=[${args.selectedPages.join(',')}])${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+        const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/${args.type}/Default.GetPageTemplates(selectedPages=[${args.selectedPages.map(x => `'${x}'`).join(',')}])${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
         return RestClient.sendRequest<{ value: PageTemplateCategoryDto[] } >({ url: wholeUrl, headers: args.additionalHeaders }).then(x => x.value);
     }
 
@@ -759,7 +728,7 @@ export class RestClient {
         }
 
         if (typeof window === 'undefined') {
-            const proxyHeaders = getProxyHeaders(RestClient.host);
+            const proxyHeaders = getProxyHeaders(RestClient.host!);
             Object.keys(proxyHeaders).forEach((headerKey) => {
                 headers[headerKey] = proxyHeaders[headerKey];
             });

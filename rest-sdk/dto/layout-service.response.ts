@@ -1,5 +1,6 @@
 import { DetailItem } from '../../editor/detail-item';
 import { WidgetModel } from '../../editor/widget-framework/widget-model';
+import { RedirectResponse } from './redirect.response';
 import { PageScript } from './scripts';
 
 export interface LayoutServiceResponse {
@@ -25,6 +26,12 @@ export interface LayoutServiceResponse {
     Scripts: PageScript[],
     Fields: { [key: string]: any },
     Site: any
+}
+
+export interface LayoutResponse {
+    isRedirect: boolean;
+    redirect?: RedirectResponse;
+    layout?: LayoutServiceResponse;
 }
 
 export interface ComponentContext {

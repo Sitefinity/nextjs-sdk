@@ -9,12 +9,45 @@ import { Dictionary } from '../typings/dictionary';
 import { ServiceMetadata } from '../rest-sdk/service-metadata';
 import { RestClient } from '../rest-sdk/rest-client';
 import { headers } from 'next/headers';
+import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
+import { notFound, permanentRedirect, redirect } from 'next/navigation';
+import { LayoutResponse, LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
+import { RedirectResponse } from '../rest-sdk/dto/redirect.response';
 
 export async function RenderPage({ params, searchParams }: { params: { slug: string[] }, searchParams: Dictionary }) {
     const headersList = headers();
     RestClient.host = headersList.get('host');
 
-    const layout = await pageLayout({ params, searchParams });
+    let layoutResponse: LayoutResponse | null = null;
+
+    try {
+        layoutResponse = await pageLayout({ params, searchParams });
+    } catch (error) {
+        if (error instanceof ErrorCodeException && error.code === 'NotFound') {
+            return notFound();
+        }
+    }
+
+    if (!layoutResponse) {
+        throw layoutResponse;
+    }
+
+    // nasty hack
+    if (layoutResponse.isRedirect) {
+        const redirectResponse = layoutResponse.redirect!;
+        if (redirectResponse.Permenant) {
+            return permanentRedirect(redirectResponse.Location);
+        } else {
+            return redirect(redirectResponse.Location);
+        }
+
+    }
+
+    if (!layoutResponse.layout) {
+        return notFound();
+    }
+
+    const layout = layoutResponse.layout;
     const isEdit = searchParams['sfaction'] === 'edit';
     const isPreview = searchParams['sfaction'] === 'preview';
     const isLive = !(isEdit || isPreview);

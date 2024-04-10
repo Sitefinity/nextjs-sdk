@@ -1,19 +1,20 @@
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 
-import { notFound } from 'next/navigation';
+import { RedirectType, notFound, permanentRedirect, redirect } from 'next/navigation';
 import { PageParams } from './page-params';
 import { ServiceMetadata } from '../rest-sdk/service-metadata';
 import { RenderWidgetService } from '../services/render-widget-service';
 import { RestClient } from '../rest-sdk/rest-client';
 import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { GetAllArgs } from '../rest-sdk/args/get-all.args';
-import { LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
+import { LayoutResponse, LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
 import { initRestSdk } from '../rest-sdk/init';
 import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 import { GetPageLayoutArgs } from '../rest-sdk/args/get-page-layout.args';
+import { RedirectResponse } from '../rest-sdk/dto/redirect.response';
 
-export async function pageLayout({ params, searchParams }: PageParams): Promise<LayoutServiceResponse> {
+export async function pageLayout({ params, searchParams }: PageParams): Promise<LayoutResponse> {
     if (params) {
         if (params.slug.some(x => x === '_next') || params.slug[params.slug.length - 1].indexOf('.') !== -1) {
             notFound();
@@ -27,7 +28,8 @@ export async function pageLayout({ params, searchParams }: PageParams): Promise<
         const args: GetPageLayoutArgs = {
             pagePath: params.slug.join('/'),
             queryParams: searchParams,
-            cookie: cookies().toString()
+            cookie: cookies().toString(),
+            followRedirects: false
         };
 
         // adding X-SF-Access-Key header so the layout service can return responce in edit
@@ -36,7 +38,6 @@ export async function pageLayout({ params, searchParams }: PageParams): Promise<
         }
 
         const layout = await RestClient.getPageLayout(args);
-
         return layout;
     } catch (error) {
         if (error instanceof ErrorCodeException) {
@@ -54,7 +55,12 @@ export async function pageLayout({ params, searchParams }: PageParams): Promise<
 }
 
 export async function pageMetadata({ params, searchParams }: PageParams): Promise<Metadata> {
-    const layout = await pageLayout({ params, searchParams });
+    const layoutResponse = await pageLayout({ params, searchParams });
+    if (layoutResponse.isRedirect) {
+        return {};
+    }
+
+    const layout = layoutResponse.layout;
     if (layout?.MetaInfo) {
         return {
             title: layout.MetaInfo.Title,

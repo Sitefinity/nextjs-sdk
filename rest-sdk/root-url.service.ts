@@ -1,6 +1,6 @@
 export class RootUrlService {
     public static getClientCmsUrl() {
-        let publicUrl = `${process.env['NEXT_PUBLIC_CMS_URL'] || ''}`;
+        let publicUrl = `${process.env['NEXT_PUBLIC_SF_CMS_URL'] || ''}`;
         if (publicUrl.endsWith('/')) {
             publicUrl.substring(0, publicUrl.length - 1);
         }
@@ -13,13 +13,7 @@ export class RootUrlService {
     }
 
     public static getServerCmsUrl() {
-        let rootUrl: string = '';
-        if (process.env.NODE_ENV === 'development') {
-            rootUrl = process.env['PROXY_URL'] as string;
-        } else {
-            rootUrl = process.env['SF_CMS_URL'] as string;
-        }
-
+        let rootUrl: string = process.env['SF_CMS_URL'] as string;
         if (rootUrl && rootUrl.endsWith('/')) {
             rootUrl.substring(0, rootUrl.length - 1);
         }

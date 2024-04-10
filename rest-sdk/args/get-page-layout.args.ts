@@ -5,4 +5,5 @@ export interface GetPageLayoutArgs {
     queryParams?: Dictionary;
     cookie?: string;
     additionalHeaders?: {[key: string]: string};
+    followRedirects: boolean;
 }

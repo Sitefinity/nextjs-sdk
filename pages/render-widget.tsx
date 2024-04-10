@@ -35,11 +35,14 @@ export async function RenderWidget({ searchParams }: { searchParams: { [key: str
     let params = new URLSearchParams(query);
     const paramsAsObject = Object.fromEntries(params);
 
-    const layout = await RestClient.getPageLayout({
+    const layoutResponse = await RestClient.getPageLayout({
         pagePath: path,
         queryParams: paramsAsObject,
-        cookie: cookies().toString()
-    }) as LayoutServiceResponse;
+        cookie: cookies().toString(),
+        followRedirects: true
+    });
+
+    const layout = layoutResponse.layout!;
 
     RestClient.contextQueryParams = {
         sf_culture: layout.Culture,

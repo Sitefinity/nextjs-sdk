@@ -3,6 +3,7 @@ import { RenderWidgetService } from '../services/render-widget-service';
 import { RequestContext } from '../editor/request-context';
 import { RestClient } from '../rest-sdk/rest-client';
 import { cookies, headers } from 'next/headers';
+import { LayoutResponse, LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
 
 export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key: string]: string } }) {
     const headersList = headers();
@@ -30,11 +31,14 @@ export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key
     let params = new URLSearchParams(query);
     const paramsAsObject = Object.fromEntries(params);
 
-    const layout = await RestClient.getPageLayout({
+    const layoutResponse = await RestClient.getPageLayout({
         pagePath: path,
         queryParams: paramsAsObject,
-        cookie: cookie
-    });
+        cookie: cookie,
+        followRedirects: true
+    }) as LayoutResponse;
+
+    const layout = layoutResponse.layout!;
 
     RestClient.contextQueryParams = {
         sf_culture: layout.Culture,
