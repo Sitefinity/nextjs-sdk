@@ -35,8 +35,8 @@ export async function ContentBlock(props: WidgetContext<ContentBlockEntity>) {
         cssClasses.push(StyleGenerator.getMarginClasses(props.model.Properties.Margins));
     }
 
-    if (cssClasses.length > 0) {
-        dataAttributes['className'] = cssClasses.join(' ');
+    if (cssClasses.filter(x => x).length > 0) {
+        dataAttributes['className'] = cssClasses.filter(x => x).join(' ');
     }
 
     const customAttributes = getCustomAttributes(props.model.Properties.Attributes, 'ContentBlock');

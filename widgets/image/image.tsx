@@ -87,11 +87,13 @@ export async function Image(props: WidgetContext<ImageEntity>) {
 
     let viewModelCssClass = entity.CssClass;
     if (entity.Margins) {
-        let margins = StyleGenerator.getMarginClasses(entity.Margins);
-        if (viewModelCssClass) {
-            viewModelCssClass = `${viewModelCssClass} ${margins}`;
-        } else {
-            viewModelCssClass = margins;
+        let margins = StyleGenerator.getMarginClasses(entity.Margins)?.trim();
+        if (margins) {
+            if (viewModelCssClass) {
+                viewModelCssClass = `${viewModelCssClass} ${margins}`;
+            } else {
+                viewModelCssClass = margins;
+            }
         }
     }
 

@@ -2,7 +2,7 @@ export class RootUrlService {
     public static getClientCmsUrl() {
         let publicUrl = `${process.env['NEXT_PUBLIC_SF_CMS_URL'] || ''}`;
         if (publicUrl.endsWith('/')) {
-            publicUrl.substring(0, publicUrl.length - 1);
+            publicUrl = publicUrl.substring(0, publicUrl.length - 1);
         }
 
         return publicUrl;
@@ -15,7 +15,7 @@ export class RootUrlService {
     public static getServerCmsUrl() {
         let rootUrl: string = process.env['SF_CMS_URL'] as string;
         if (rootUrl && rootUrl.endsWith('/')) {
-            rootUrl.substring(0, rootUrl.length - 1);
+            rootUrl = rootUrl.substring(0, rootUrl.length - 1);
         }
 
         return rootUrl;

@@ -20,11 +20,17 @@ export async function RenderPage({ params, searchParams }: { params: { slug: str
 
     let layoutResponse: LayoutResponse | null = null;
 
+    if (params) {
+        if (params.slug.some(x => x === '_next') || params.slug[params.slug.length - 1].indexOf('.') !== -1) {
+            notFound();
+        }
+    }
+
     try {
         layoutResponse = await pageLayout({ params, searchParams });
     } catch (error) {
         if (error instanceof ErrorCodeException && error.code === 'NotFound') {
-            return notFound();
+            notFound();
         }
     }
 

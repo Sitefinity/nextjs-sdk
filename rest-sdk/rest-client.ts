@@ -48,6 +48,7 @@ import { RedirectResponse } from './dto/redirect.response';
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
     public static host: string | null;
+    public static additionalFetchData: any;
 
     public static getItemWithFallback<T extends SdkItem>(args: ItemArgs): Promise<T> {
         let queryParams: Dictionary = {
@@ -125,7 +126,7 @@ export class RestClient {
         };
 
         const wholeUrl = `${this.buildItemBaseUrl(args.type)}${this.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
-        return this.sendRequest<{ value: T[], '@odata.count'?: number }>({ url: wholeUrl }).then((x) => {
+        return this.sendRequest<{ value: T[], '@odata.count'?: number }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData }).then((x) => {
             return <CollectionResponse<T>>{ Items: x.value, TotalCount: x['@odata.count'] };
         });
     }
@@ -489,12 +490,13 @@ export class RestClient {
         let headers: { [key: string]: string } = args.additionalHeaders || {};
         if (args.cookie) {
             headers['Cookie'] = args.cookie;
-            if (typeof window === 'undefined') {
-                const proxyHeaders = getProxyHeaders(RestClient.host!);
-                Object.keys(proxyHeaders).forEach((header) => {
-                    headers[header] = proxyHeaders[header];
-                });
-            }
+        }
+
+        if (typeof window === 'undefined') {
+            const proxyHeaders = getProxyHeaders(RestClient.host!);
+            Object.keys(proxyHeaders).forEach((header) => {
+                headers[header] = proxyHeaders[header];
+            });
         }
 
         const queryParams = args.queryParams || {};
@@ -744,8 +746,12 @@ export class RestClient {
     public static sendRequest<T>(request: RequestData): Promise<T> {
         const headers = this.buildHeaders(request);
 
+        if (process.env.NODE_ENV === 'test') {
+            RestClient.addAuthHeaders(undefined, headers);
+        }
+
         request.method = request.method || 'GET';
-        const args: RequestInit = { headers, method: request.method };
+        let args: RequestInit = { headers, method: request.method };
         if (request.data && headers['Content-Type'] === 'application/json') {
             args.body = JSON.stringify(request.data);
         }
@@ -754,8 +760,12 @@ export class RestClient {
             args.body = request.data;
         }
 
-        if (process.env.NODE_ENV === 'development') {
-            args.cache = 'no-cache';
+        if (RestClient.additionalFetchData) {
+            args = Object.assign(args, RestClient.additionalFetchData);
+        }
+
+        if (request.additionalFetchData) {
+            args = Object.assign(args, request.additionalFetchData);
         }
 
         return fetch(request.url, args).then((x => {
@@ -823,4 +833,5 @@ interface RequestData {
     method?: string;
     headers?: { [key: string]: string };
     data?: any;
+    additionalFetchData?: any;
 }

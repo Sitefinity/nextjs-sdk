@@ -3,7 +3,7 @@ export interface GetNavigationArgs {
     showParentPage?: boolean;
     currentPage?: string;
     selectedPages?: string[];
-    levelsToInclude?: string;
+    levelsToInclude?: number;
     selectedPageId?: string;
     culture?: string;
 }

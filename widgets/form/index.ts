@@ -1,7 +1,6 @@
 export * from './form';
 export * from './form.csr';
 export * from './form-client';
-export * from './form-context';
 export * from './form.entity';
 export * from './form-view-model';
 export * from './interfaces/action';

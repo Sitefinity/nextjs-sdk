@@ -17,14 +17,14 @@ export class NavigationEntity {
         { Title: 'Custom selection of pages...', Value: 'SelectedPages' }])
     SelectionMode?: string;
 
-    @Content({ Type: 'Telerik.Sitefinity.Pages.Model.PageNode' })
+    @Content({ Type: 'Telerik.Sitefinity.Pages.Model.PageNode', AllowMultipleItemsSelection: false })
     @ContentSection('Select pages')
     @DisplayName('')
     @ConditionalVisibility('{\u0022conditions\u0022:[{\u0022fieldName\u0022:\u0022SelectionMode\u0022,\u0022operator\u0022:\u0022Equals\u0022,\u0022value\u0022:\u0022SelectedPageChildren\u0022}],\u0022inline\u0022:\u0022true\u0022}')
     SelectedPage?: MixedContentContext;
 
     @ContentSection('Select pages')
-    @Content({ Type: 'Telerik.Sitefinity.Pages.Model.PageNode' })
+    @Content({ Type: 'Telerik.Sitefinity.Pages.Model.PageNode', OpenMultipleItemsSelection: true })
     @DisplayName('')
     @ConditionalVisibility('{\u0022conditions\u0022:[{\u0022fieldName\u0022:\u0022SelectionMode\u0022,\u0022operator\u0022:\u0022Equals\u0022,\u0022value\u0022:\u0022SelectedPages\u0022}],\u0022inline\u0022:\u0022true\u0022}')
     CustomSelectedPages?: MixedContentContext;
@@ -35,22 +35,22 @@ export class NavigationEntity {
     @DataType(KnownFieldTypes.ChipChoice)
     @Choice({
         Choices: [
-            { Title: '1 level', Value:  '1' },
-            { Title: '2 levels', Value: '2' },
-            { Title: '3 levels', Value: '3' },
-            { Title: '4 levels', Value: '4' },
-            { Title: '5 levels', Value: '5' },
+            { Title: '1 level', Name: '1', Value:  1 },
+            { Title: '2 levels', Name: '2', Value: 2 },
+            { Title: '3 levels', Name: '3', Value: 3 },
+            { Title: '4 levels', Name: '4', Value: 4 },
+            { Title: '5 levels', Name: '5', Value: 5 },
             { Title: 'All levels', Name: 'All', Value: null }],
         NotResponsive: true
     })
-    LevelsToInclude?: string;
+    LevelsToInclude?: number;
 
-    @ContentSection('Display settings', 0)
+    @ContentSection('Display settings', 1)
     @Margins('Navigation')
     Margins?: OffsetStyle;
 
     // Display settings
-    @ContentSection('Display settings', 1)
+    @ContentSection('Display settings', 2)
     @DisplayName('View')
     @DataType('viewSelector')
     @DefaultValue('Horizontal')

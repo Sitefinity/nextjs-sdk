@@ -15,12 +15,6 @@ import { GetPageLayoutArgs } from '../rest-sdk/args/get-page-layout.args';
 import { RedirectResponse } from '../rest-sdk/dto/redirect.response';
 
 export async function pageLayout({ params, searchParams }: PageParams): Promise<LayoutResponse> {
-    if (params) {
-        if (params.slug.some(x => x === '_next') || params.slug[params.slug.length - 1].indexOf('.') !== -1) {
-            notFound();
-        }
-    }
-
     await initRestSdk();
     const pagePath = params.slug.join('/');
 
@@ -41,9 +35,7 @@ export async function pageLayout({ params, searchParams }: PageParams): Promise<
         return layout;
     } catch (error) {
         if (error instanceof ErrorCodeException) {
-            if (error.code && error.code === 'NotFound') {
-                notFound();
-            }
+            throw error;
         }
 
         if (typeof error === 'string') {
@@ -55,7 +47,15 @@ export async function pageLayout({ params, searchParams }: PageParams): Promise<
 }
 
 export async function pageMetadata({ params, searchParams }: PageParams): Promise<Metadata> {
-    const layoutResponse = await pageLayout({ params, searchParams });
+
+    let layoutResponse: LayoutResponse | null = null;
+
+    try {
+        layoutResponse = await pageLayout({ params, searchParams });
+    } catch (error) {
+        return {};
+    }
+
     if (layoutResponse.isRedirect) {
         return {};
     }

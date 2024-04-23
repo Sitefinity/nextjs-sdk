@@ -107,7 +107,6 @@ export * from './search-facets/search-facets-client';
 export * from './search-facets/components/facet-group';
 export * from './search-facets/components/facet-custom-number-range';
 export * from './search-facets/components/utils';
-export * from './search-facets/facets-context';
 export * from './search-facets/search-facets-model-builder';
 export * from './search-facets/search-facets-viewmodel';
 export * from './search-facets/search-facets.entity';
