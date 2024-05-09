@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import { ListWithSummaryModel } from './list-with-summary-model';
 import { OpenDetailsAnchor } from '../open-details-anchor';
 import { ContentListEntityBase } from '../../../content-lists-common/content-lists-base.entity';
+import { formatDate } from '../../../common/utils';
 
 export function ListWithSummary(props: { model: ListWithSummaryModel, entity?: ContentListEntityBase }) {
     const model = props.model;
@@ -24,7 +25,7 @@ export function ListWithSummary(props: { model: ListWithSummaryModel, entity?: C
                         </h5>}
                       {item.PublicationDate &&
                         <p className={item.PublicationDate.Css}>
-                          <small>{item.PublicationDate.Value}</small>
+                          <small>{formatDate(item.PublicationDate.Value, model.Culture)}</small>
                         </p>
                             }
                       {item.Text && <p className={item.Text.Css}>{item.Text.Value}</p>}

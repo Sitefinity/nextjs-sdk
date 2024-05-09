@@ -27,3 +27,4 @@ export * from './services/render-widget-service';
 export * from './services/renderer-contract';
 export * from './services/rest-client-for-context';
 export * from './services/sanitizer-service';
+export * from './widgets/search-box/utils';

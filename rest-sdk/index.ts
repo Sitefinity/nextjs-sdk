@@ -46,7 +46,12 @@ export * from './dto/sdk-item';
 export * from './dto/search-results-document-dto';
 export * from './dto/sitefinity-facet-type';
 export * from './dto/taxon-dto';
+export * from './dto/taxonomy-dto';
+export * from './dto/taxonomy-type';
 export * from './dto/thumbnail-item';
 export * from './dto/video-item';
 export * from './dto/widget';
+
+export * from './dto/user-item';
+export * from './dto/site-item';
 

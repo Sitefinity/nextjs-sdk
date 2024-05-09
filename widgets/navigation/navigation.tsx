@@ -4,7 +4,6 @@ import { StyleGenerator } from '../styling/style-generator.service';
 import { Horizontal } from './horizontal';
 import { Accordion } from './accordion';
 import { Vertical } from './vertical';
-import { VerticalSitemap } from './vertical-sitemap';
 import { Tabs } from './tabs';
 import { NavigationEntity } from './navigation.entity';
 import { RestClient } from '../../rest-sdk/rest-client';
@@ -38,7 +37,6 @@ export async function Navigation(props: WidgetContext<NavigationEntity>) {
         { viewName === 'Horizontal' && <Horizontal items={navItems} {...navCustomAttributes}/>}
         { viewName === 'Tabs' && <Tabs items={navItems} {...navCustomAttributes}/>}
         { viewName === 'Vertical' && <Vertical items={navItems} {...navCustomAttributes}/>}
-        { viewName === 'VerticalSitemap' && <VerticalSitemap items={navItems}{...navCustomAttributes}/>}
       </div>
     );
 }

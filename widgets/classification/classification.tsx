@@ -7,10 +7,10 @@ import { RestClient } from '../../rest-sdk/rest-client';
 import { SdkItem } from '../../rest-sdk/dto/sdk-item';
 import { TaxonDto } from '../../rest-sdk/dto/taxon-dto';
 
-const mapTaxonProperties = (taxon: TaxonDto, taxonomyName: string, viewUrl?: string, searchParams?: { [key: string]: string; }) =>{
+const mapTaxonProperties = (taxon: TaxonDto, taxonomyName: string, viewUrl?: string, searchParams?: { [key: string]: string; }) => {
     const children: TaxonDto[] = [];
 
-    taxon.SubTaxa.forEach((child: TaxonDto) =>{
+    taxon.SubTaxa.forEach((child: TaxonDto) => {
         child.SubTaxa = mapTaxonProperties(child, taxonomyName);
         child.UrlName = getTaxaUrl(taxonomyName, child.UrlName, viewUrl, searchParams);
         children.push(child);
@@ -27,7 +27,7 @@ const getTaxaUrl = (taxonomyName: string, taxonUrl: string, viewUrl?: string, se
     let queryString = '';
 
     if (searchParams && Object.keys(searchParams).length) {
-        const whitelistedQueryParams = ['sf_site','sfaction','sf_provider','sf_culture'];
+        const whitelistedQueryParams = ['sf_site', 'sfaction', 'sf_provider', 'sf_culture'];
         const filteredQueryCollection: { [key: string]: string; } = {};
         whitelistedQueryParams.forEach(param => {
             const searchParamValue = searchParams[param];
@@ -47,7 +47,7 @@ const getTaxaUrl = (taxonomyName: string, taxonUrl: string, viewUrl?: string, se
         taxonUrl = taxonUrl.substring(1);
     }
 
-     return `${viewUrl}/-in-${taxonomyName},${taxonUrl.replaceAll('/', ',')}` + queryString;
+    return `${viewUrl}/-in-${taxonomyName},${taxonUrl.replaceAll('/', ',')}` + queryString;
 };
 
 const getTaxa = (entity: ClassificationEntity): Promise<TaxonDto[] | null> => {
@@ -57,7 +57,7 @@ const getTaxa = (entity: ClassificationEntity): Promise<TaxonDto[] | null> => {
 
         if (orderBy === 'Custom') {
             orderBy = entity.SortExpression || '';
-        } else if (orderBy === 'Manually'){
+        } else if (orderBy === 'Manually') {
             orderBy = 'Ordinal';
         }
 
@@ -77,6 +77,10 @@ const getTaxa = (entity: ClassificationEntity): Promise<TaxonDto[] | null> => {
 export async function Classification(props: WidgetContext<ClassificationEntity>) {
     const model = props.model;
     const properties = model.Properties;
+    if (props.requestContext.isEdit && !model.Caption && properties?.ClassificationSettings?.selectedTaxonomyId) {
+        model.Caption = `Classification - ${properties.ClassificationSettings.selectedTaxonomyTitle}`;
+    }
+
     const settings = properties.ClassificationSettings;
     const dataAttributes = htmlAttributes(props);
     const taxa = await getTaxa(model.Properties);
@@ -95,8 +99,8 @@ export async function Classification(props: WidgetContext<ClassificationEntity>)
         setHideEmptyVisual(dataAttributes, true);
     }
 
-    const showItemCount = properties.ShowItemCount || true;
-    const defaultClass =  properties.CssClass;
+    const showItemCount = properties.ShowItemCount;
+    const defaultClass = properties.CssClass;
     const marginClass = properties.Margins && StyleGenerator.getMarginClasses(properties.Margins);
     const classificationCustomAttributes = getCustomAttributes(properties.Attributes, 'Classification');
     dataAttributes['className'] = classNames(defaultClass, marginClass);
@@ -104,39 +108,41 @@ export async function Classification(props: WidgetContext<ClassificationEntity>)
     dataAttributes['data-sf-role'] = 'classification';
 
     const renderSubTaxa = (taxa: TaxonDto[], show: boolean) => {
-        return (<ul>
-          {
-            taxa.map((t: TaxonDto, idx: number) =>{
-               const count = show ? `(${t.AppliedTo})` : '';
-               return (<li key={idx} className="list-unstyled">
-                 <a className="text-decoration-none" href={t.UrlName}>{t.Title}</a>
-                 {count}
-                 {
-                        t.SubTaxa && renderSubTaxa(t.SubTaxa, show)
-                    }
-               </li>);
-              })
-            }
-        </ul>);
+        return (
+            taxa && taxa.length > 0 ? <ul>
+              {
+                    taxa.map((t: TaxonDto, idx: number) => {
+                        const count = show ? `(${t.AppliedTo})` : '';
+                        return (<li key={idx} className="list-unstyled">
+                          <a className="text-decoration-none" href={t.UrlName}>{t.Title}</a>
+                          {count}
+                          {
+                                t.SubTaxa && renderSubTaxa(t.SubTaxa, show)
+                            }
+                        </li>);
+                    })
+                }
+            </ul> : null
+        );
     };
 
     return (
       <ul
         {...dataAttributes}
         {...classificationCustomAttributes}
-            >
+        >
         {
-            updatedTokens.map((item: TaxonDto, idx: number) => {
+                updatedTokens.map((item: TaxonDto, idx: number) => {
                     const count = showItemCount ? `(${item.AppliedTo})` : '';
                     return (<li key={idx} className="list-unstyled">
                       <a className="text-decoration-none" href={item.UrlName}>{item.Title}</a>
                       {count}
                       {
-                           item.SubTaxa && renderSubTaxa(item.SubTaxa, showItemCount)
+                            item.SubTaxa && renderSubTaxa(item.SubTaxa, showItemCount)
                         }
                     </li>);
                 }
-            )
+                )
             }
       </ul>
     );

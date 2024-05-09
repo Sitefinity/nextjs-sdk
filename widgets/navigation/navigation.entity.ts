@@ -55,7 +55,7 @@ export class NavigationEntity {
     @DataType('viewSelector')
     @DefaultValue('Horizontal')
     @Choice([
-        { Value: 'Accordion'}, { Value: 'Horizontal'}, { Value: 'Tabs'}, { Value: 'Vertical'}, { Title: 'Vertical sitemap', Value: 'VerticalSitemap'}
+        { Value: 'Accordion'}, { Value: 'Horizontal'}, { Value: 'Tabs'}, { Value: 'Vertical'}
     ])
     SfViewName?: string;
 

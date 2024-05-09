@@ -6,7 +6,7 @@ import { widgetRegistry } from '@widgetregistry';
 import { ServiceMetadataDefinition, ServiceMetadata } from '../rest-sdk/service-metadata';
 import { SdkItem } from '../rest-sdk/dto/sdk-item';
 
-export function RenderLazyWidgetsClient({ metadata, taxonomies }: { metadata: ServiceMetadataDefinition, taxonomies: SdkItem[], url :string }) {
+export function RenderLazyWidgetsClient({ metadata, taxonomies, url }: { metadata: ServiceMetadataDefinition, taxonomies: SdkItem[], url :string }) {
     RenderWidgetService.widgetRegistry = widgetRegistry;
     ServiceMetadata.serviceMetadataCache = metadata;
     ServiceMetadata.taxonomies = taxonomies;
@@ -19,7 +19,7 @@ export function RenderLazyWidgetsClient({ metadata, taxonomies }: { metadata: Se
     (window as any)['sfCorrelationId'] = correlationId;
 
     if (typeof window !== 'undefined') {
-        const renderLazyWidgetsUrl = `/render-lazy?pageUrl=${encodeURIComponent(window.location.href)}&correlationId=${correlationId}&referer=${encodeURIComponent(document.referrer)}&`;
+        const renderLazyWidgetsUrl = `/render-lazy?pageUrl=${encodeURIComponent(url)}&correlationId=${correlationId}&referer=${encodeURIComponent(document.referrer)}&`;
 
         const sendRequest = function () {
             fetch(renderLazyWidgetsUrl).then((response) => {

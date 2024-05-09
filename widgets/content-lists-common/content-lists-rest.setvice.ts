@@ -16,6 +16,7 @@ import { ContentListEntityBase } from './content-lists-base.entity';
 import { RequestContext } from '../../editor/request-context';
 import { EMTPY_GUID } from '../../editor/utils/guid';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
+import { QueryParamNames } from '../../rest-sdk/query-params-names';
 
 export class ContentListsCommonRestService {
 
@@ -187,8 +188,12 @@ export class ContentListsCommonRestService {
             });
             const filterPromises = distinctFilters.map(({ taxaName, taxaUrl }) => {
                 return new Promise<FilterClause>(resolve => {
+                    const queryParams = RestClient.buildQueryParams({
+                        'sf_culture': requestContext.culture,
+                        '@param': `'${encodeURIComponent(taxaUrl)}'`
+                    });
                     RestClient.sendRequest<{ value: string }>({
-                        url: `${RootUrlService.getServerCmsServiceUrl()}/taxonomies/Default.GetTaxonByUrl(taxonomyName='${taxaName}',taxonUrl=@param)?@param='${encodeURIComponent(taxaUrl)}'`
+                        url: `${RootUrlService.getServerCmsServiceUrl()}/taxonomies/Default.GetTaxonByUrl(taxonomyName='${taxaName}',taxonUrl=@param)${queryParams}`
                     }).then(taxonId => {
                         const fieldName = ServiceMetadata.getTaxonomyFieldName(entity.SelectedItems?.Content[0]!.Type!, taxaName);
 

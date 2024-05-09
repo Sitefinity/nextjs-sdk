@@ -39,11 +39,12 @@ export async function ContentListDetail(props: { viewModel: ContentListViewModel
     detailViewModel = {
         Attributes: attributes,
         ViewName: model.ViewName,
-        DetailItem: dataItem
+        DetailItem: dataItem,
+        Culture: props.viewModel.requestContext.culture
     };
 
     const templates = RenderWidgetService.widgetRegistry.widgets['SitefinityContentList']?.templates;
-    
+
     if (templates && detailViewModel?.ViewName && templates[detailViewModel?.ViewName]) {
         return (
           <div {...detailViewModel?.Attributes}>

@@ -1,3 +1,4 @@
+import { formatDate } from '../../common/utils';
 import { DetailViewModel } from '../../content-lists-common/content-list-models';
 
 export function DynamicDetail(viewModel: DetailViewModel) {
@@ -8,7 +9,7 @@ export function DynamicDetail(viewModel: DetailViewModel) {
         </h3>
 
         <div>
-          { viewModel.DetailItem?.PublicationDate }
+          { formatDate(viewModel.DetailItem?.PublicationDate, viewModel.Culture) }
         </div>
       </>
     );

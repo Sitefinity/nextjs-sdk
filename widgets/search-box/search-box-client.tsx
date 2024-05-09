@@ -4,6 +4,8 @@ import React, { FocusEvent, MouseEvent } from 'react';
 import { classNames } from '../../editor/utils/classNames';
 import { getCustomAttributes } from '../../editor/widget-framework/attributes';
 import { SearchBoxViewModel } from './search-box-viewmodel';
+import { RestClient } from '../../rest-sdk/rest-client';
+import { getSearchBoxParams, getSearchUrl } from './utils';
 
 const dataSfItemAttribute = 'data-sfitem';
 const activeAttribute = 'data-sf-active';
@@ -43,7 +45,7 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
     };
 
     const getSuggestions = (input: HTMLInputElement) => {
-        let data = getSearchBoxParams();
+        let data = getSearchBoxParams(searchModel);
         let requestUrl = data.servicePath +
             '/Default.GetSuggestions()' +
             '?indexName=' + data.catalogue +
@@ -82,66 +84,8 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
             });
         }
 
-        const url = getSearchUrl(input);
+        const url = getSearchUrl(input.value.trim(), searchModel);
         (window as Window).location = url;
-    };
-
-    const getSearchUrl = (input: HTMLInputElement) => {
-        const searchParams = getSearchBoxParams();
-        let query = input.value.trim();
-        let resultsUrl = searchParams.resultsUrl || '';
-
-        const queryParams: {[key: string]: string} = {
-            indexCatalogue: searchParams.catalogue!,
-            searchQuery: encodeURIComponent(query),
-            wordsMode: 'AllWords',
-            sf_culture: searchParams.culture
-        };
-
-        let separator = resultsUrl.indexOf('?') === -1 ? '?' : '&';
-
-        let scoringSetting = searchParams.scoringSetting;
-        if (scoringSetting) {
-            queryParams['scoringInfo'] = scoringSetting;
-        }
-
-        if (searchParams.orderBy) {
-            queryParams['$orderBy'] = searchParams.orderBy;
-        }
-
-        let resultsForAllSites = searchParams.resultsForAllSites;
-        if (resultsForAllSites === 1) {
-            queryParams['resultsForAllSites'] = 'True';
-        } else if (resultsForAllSites === 2) {
-            queryParams['resultsForAllSites'] = 'False';
-        }
-
-        return `${resultsUrl}${separator}${Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`).join('&')}`;
-    };
-
-    const serializeScoringProfile = (scoringProfie: {ScoringSetting: string, ScoringParameters: string}) => {
-        let res = scoringProfie.ScoringSetting;
-
-        if (!!scoringProfie.ScoringParameters) {
-            res = `${res};${scoringProfie.ScoringParameters}`;
-        }
-
-        return btoa(res);
-    };
-
-    const getSearchBoxParams = () => {
-        return {
-            resultsUrl: searchModel.SearchResultsPageUrl,
-            catalogue: searchModel.SearchIndex,
-            scoringSetting: serializeScoringProfile(searchModel.ScoringProfile),
-            minSuggestionLength: searchModel.SuggestionsTriggerCharCount,
-            siteId: searchModel.SiteId,
-            culture: searchModel.Culture,
-            suggestionFields: searchModel.SuggestionFields,
-            servicePath: searchModel.WebServicePath,
-            orderBy: searchModel.Sort,
-            resultsForAllSites: searchModel.ShowResultsForAllIndexedSites
-        };
     };
 
     const inputKeyupHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -150,7 +94,7 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
             e.code !== 'Escape') {
 
             let searchText =  (e.target as HTMLInputElement).value.trim();
-            let config = getSearchBoxParams();
+            let config = getSearchBoxParams(searchModel);
 
             if (config.minSuggestionLength && searchText.length >= config.minSuggestionLength) {
                 getSuggestions(e.target as HTMLInputElement);

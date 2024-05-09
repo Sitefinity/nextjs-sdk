@@ -15,4 +15,5 @@ export interface DocumentListViewModel {
     pagerMode: ListDisplayMode,
     url?: string;
     queryString?: string;
+    culture?: string;
 }

@@ -14,10 +14,17 @@ import { ContentViewDisplayMode } from '../content-lists-common/content-view-dis
 import { DetailPageSelectionMode } from '../content-lists-common/detail-page-selection-mode';
 import { getPageNumber } from '../pager/pager-view-model';
 import { ContentListViewModel } from './master/content-list-model-base';
+import { ServiceMetadata } from '../../rest-sdk/service-metadata';
 
 export async function ContentList(props: WidgetContext<ContentListEntity>) {
+    const model = props.model;
+    const properties = model.Properties;
+    const type = properties?.SelectedItems?.Content[0].Type;
+    if (props.requestContext.isEdit && !model.Caption && type) {
+        model.Caption = `Content list - ${ServiceMetadata.getModuleDisplayName(type)}`;
+    }
+
     const attributes = htmlAttributes(props);
-    const properties = props.model.Properties;
     const context = props.requestContext;
     const pageNumber = getPageNumber(properties.PagerMode, props.requestContext, properties.PagerQueryTemplate, properties.PagerTemplate);
     const viewModel: ContentListViewModel = {

@@ -9,6 +9,10 @@ export function DocumentListGrid(props: { viewModel: DocumentListViewModel }) {
     const { viewModel } = props;
     const items = viewModel.listModel!.Items.Items;
 
+    if (items.length === 0) {
+      return null;
+    }
+
     return (<>
       <table className="table">
         <thead>

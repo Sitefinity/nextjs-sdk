@@ -42,8 +42,7 @@ import { GetHierarchicalWidgetModelArgs } from './args/get-hierarchical-widget-m
 import { CommonArgs } from './args/common.args';
 import { GetLazyWidgetsArgs } from './args/get-lazy-widgets.args';
 import { ErrorCodeException } from './errors/error-code.exception';
-import { notFound } from 'next/navigation';
-import { RedirectResponse } from './dto/redirect.response';
+import { SiteDto } from './dto/site-item';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
@@ -417,6 +416,17 @@ export class RestClient {
         });
     }
 
+    public static getCurrentSite(): Promise<SiteDto> {
+        const wholeUrl = `${RestClient.buildItemBaseUrl('sites')}/current`;
+
+        return RestClient.sendRequest<{ value: SiteDto }>({
+            url: wholeUrl,
+            method: 'GET'
+        }).then((x) => {
+            return x.value;
+        });
+    }
+
     public static getNavigation(args: GetNavigationArgs): Promise<NavigationItem[]> {
         let queryMap: { [key: string]: any } = {
             'selectionModeString': args.selectionMode,
@@ -505,7 +515,10 @@ export class RestClient {
 
         let requestData: RequestData = { url: RootUrlService.getServerCmsUrl() + url, headers: headers, method: 'GET' };
 
-        const requestInit: RequestInit = { headers, method: requestData.method, redirect: 'manual' };
+        let requestInit: RequestInit = { headers, method: requestData.method, redirect: 'manual' };
+        if (RestClient.additionalFetchData) {
+            requestInit = Object.assign(requestInit, RestClient.additionalFetchData);
+        }
 
         let httpLayoutResponse: Response | null = null;
         try {
@@ -824,6 +837,7 @@ export class RestSdkTypes {
     public static readonly Tags: string = 'Taxonomy_Tags';
     public static readonly GenericContent: string = 'Telerik.Sitefinity.GenericContent.Model.ContentItem';
     public static readonly Pages: string = 'Telerik.Sitefinity.Pages.Model.PageNode';
+    public static readonly PageTemplates: string = 'Telerik.Sitefinity.Pages.Model.PageTemplate';
     public static readonly Form: string = 'Telerik.Sitefinity.Forms.Model.FormDescription';
     public static readonly Site: string = 'Telerik.Sitefinity.Multisite.Model.Site';
 }

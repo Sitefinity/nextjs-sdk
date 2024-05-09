@@ -1,4 +1,5 @@
 import { SanitizerService } from '../../../services/sanitizer-service';
+import { formatDate } from '../../common/utils';
 import { DetailViewModel } from '../../content-lists-common/content-list-models';
 
 export function BlogPostDetail(viewModel: DetailViewModel) {
@@ -8,7 +9,7 @@ export function BlogPostDetail(viewModel: DetailViewModel) {
       </h3>
 
       <div>
-        { viewModel.DetailItem?.PublicationDate }
+        { formatDate(viewModel.DetailItem?.PublicationDate, viewModel.Culture) }
       </div>
 
       <div>{ viewModel.DetailItem?.Summary }</div>

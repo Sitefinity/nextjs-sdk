@@ -21,14 +21,14 @@ You can get started using it with our starter template in the follwing [NextJS s
 
 ### Main
 
-The root module contains mainly tooling and interfaces related to widget rendering, models, metadata, renderer contracts. 
+The root module contains mainly tooling and interfaces related to widget rendering, models, metadata, renderer contracts.
 
 #### Custom widgets
 
 Creating and declaring custom widgets should adhere to the following convention.
 Widgets should be registered in a __WidgetRegistry__ by __WidgetMetadata__, which consists of:
 - _componentType_ - reference to the component funciton
-- metadata, describing the properties of the widget: 
+- metadata, describing the properties of the widget:
     - _entity_? - class reference, decorated using the [_@progress/sitefinity-widget-designers-sdk_](https://www.npmjs.com/package/@progress/sitefinity-widget-designers-sdk) custom decorators
     - _designerMetadata_? - JSON format for a custom designer
 - _editorMetadata_? - implementing the interface _EditorMetadata_, providing information to the editor about widget category, name, and other visual and operational data
@@ -125,6 +125,7 @@ These modules contain the following OOB basic widgets:
     - Change password
     - Registration
     - Reset password
+- Language selector
 
 ### Styling
 ```ts

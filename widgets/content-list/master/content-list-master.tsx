@@ -68,6 +68,7 @@ export function ContentListMaster(props: { viewModel: ContentListViewModel }) {
         const viewModel = {
             Attributes: attributes,
             OpenDetails: model.OpenDetails,
+            Culture: props.viewModel.requestContext.culture,
             Items: dataItems.Items.map((x) => {
                 const itemModel = {
                     Title: {

@@ -1,3 +1,4 @@
+import { formatDate } from '../common/utils';
 import { getExtension, getFileExtensionCssClass, getFileSize } from './common/utils';
 import { DocumentListViewModel } from './interfaces/document-list-view-model';
 
@@ -19,7 +20,7 @@ export function DocumentDetailItem(props: { viewModel: DocumentListViewModel }) 
       <>
         <h1>{title} </h1>
         <div className="text-muted">
-          {sdkItem['PublicationDate'] && publicationDate.toLocaleString()}
+          {sdkItem['PublicationDate'] && formatDate(publicationDate, viewModel.culture)}
           {
             author ? author : null  // sanitize
           }

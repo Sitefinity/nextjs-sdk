@@ -67,8 +67,8 @@ export const generateAnchorAttrsFromLink = (linkModel?: LinkModel | null, classL
         return null;
     }
 
-    let href = linkModel.href;
-    if (linkModel.queryParams) {
+    let href = linkModel.href || '';
+    if (href.indexOf('?') < 0 && linkModel.queryParams) {
         const queryParamsEncoded = linkModel.queryParams
             .split('&')
             .map(x => {
@@ -84,7 +84,7 @@ export const generateAnchorAttrsFromLink = (linkModel?: LinkModel | null, classL
         href += `?${queryParamsEncoded}`;
     }
 
-    if (linkModel.anchor) {
+    if (href.indexOf('#') < 0 && linkModel.anchor) {
         href += `#${linkModel.anchor}`;
     }
 
@@ -110,7 +110,7 @@ export const generateAnchorAttrsFromLink = (linkModel?: LinkModel | null, classL
     if (linkModel.attributes) {
         attributes = {...attributes, ... linkModel.attributes};
     }
-    
+
 
     return attributes;
 };

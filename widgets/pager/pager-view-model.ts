@@ -67,7 +67,10 @@ export class PagerViewModel {
     }
 
     public getPagerUrl(pageNumber: number, context: RequestContext): string {
-        let path: string = context?.layout.Fields.ViewUrl;
+        let path: string = context?.url || context?.layout.Fields.ViewUrl;
+        if (path[0] !== '/') {
+            path = `/${path}`;
+        }
 
         // in case we are accessing it from home page
         if (path === '/' && !this.ViewUrl) {
@@ -85,7 +88,7 @@ export class PagerViewModel {
             }
 
             if (this.isSegmentMatch(path, pattern)) {
-                return path.replace(pattern, desiredPage) + queryString;
+                return path.replace(new RegExp(pattern), desiredPage) + queryString;
             }
 
             return path + desiredPage + queryString;

@@ -63,7 +63,8 @@ export * from './image/interfaces/image-click-action';
 export * from './image/interfaces/image-display-mode';
 export * from './image/interfaces/image-view-model';
 
-// export * from './language-selector/language-selector';
+export * from './language-selector/language-selector';
+export * from './language-selector/interfaces/language-selector-link-action';
 
 export * from './login-form/login-form';
 export * from './login-form/login-form.client';
@@ -78,7 +79,6 @@ export * from './navigation/horizontal';
 export * from './navigation/tabs';
 export * from './navigation/utils';
 export * from './navigation/vertical';
-export * from './navigation/vertical-sitemap';
 export * from './navigation/client/accordion-group-link';
 export * from './navigation/client/accordion-link';
 export * from './navigation/interfaces/page-sitemap-node';

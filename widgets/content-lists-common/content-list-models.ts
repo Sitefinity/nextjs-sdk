@@ -24,4 +24,5 @@ export interface DetailViewModel {
     ViewName: string;
     DetailItem: SdkItem,
     Attributes: { [key: string]: string };
+    Culture?: string;
 }

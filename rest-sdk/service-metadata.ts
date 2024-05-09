@@ -36,6 +36,16 @@ export class ServiceMetadata {
         return itemType;
     }
 
+    public static getModuleDisplayName(itemType: string): string {
+        const definition = ServiceMetadata.serviceMetadataCache.definitions[itemType];
+        if (definition) {
+            const displayName = definition['properties']['Telerik.Sitefinity.V1.DisplayName'];
+            return displayName;
+        }
+
+        return '';
+    }
+
     public static getParentType(itemType: string) {
         const definition = ServiceMetadata.serviceMetadataCache.definitions[itemType];
         if (definition != null) {

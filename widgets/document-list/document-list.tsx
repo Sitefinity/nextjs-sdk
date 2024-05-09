@@ -41,6 +41,7 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
         sizeColumnLabel: entity.SizeColumnLabel,
         titleColumnLabel: entity.TitleColumnLabel,
         typeColumnLabel: entity.TypeColumnLabel,
+        culture: context.culture,
         pagerProps: {
             context,
             currentPage: pageNumber,
@@ -92,17 +93,19 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
    const queryList = new URLSearchParams(getWhiteListSearchParams(context.searchParams || {}, whitelistedQueryParams));
    let queryString = '?' + queryList.toString();
 
-   if (entity && entity.DetailPageMode === DetailPageSelectionMode.SamePage) {
-        url = context.layout.Fields ? context.layout.Fields.ViewUrl : context.layout.MetaInfo.CanonicalUrl;
-    } else if (entity && entity.DetailPage) {
-       const page = await RestClient.getItem({
-           type: RestSdkTypes.Pages,
-           id: entity.DetailPage.ItemIdsOrdered![0],
-           provider: entity.DetailPage.Content[0].Variations![0].Source
-       });
+    if (!context.isEdit) {
+        if (entity && entity.DetailPageMode === DetailPageSelectionMode.SamePage) {
+            url = context.layout.Fields ? context.layout.Fields.ViewUrl : context.layout.MetaInfo.CanonicalUrl;
+        } else if (entity && entity.DetailPage) {
+            const page = await RestClient.getItem({
+                type: RestSdkTypes.Pages,
+                id: entity.DetailPage.ItemIdsOrdered![0],
+                provider: entity.DetailPage.Content[0].Variations![0].Source
+            });
 
-        url = page.RelativeUrlPath;
-        queryString = getPageQueryString(page as PageItem);
+            url = page.RelativeUrlPath;
+            queryString = getPageQueryString(page as PageItem);
+        }
     }
 
     viewModel.url = url;

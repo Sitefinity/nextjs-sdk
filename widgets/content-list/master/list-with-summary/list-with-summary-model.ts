@@ -3,7 +3,8 @@ import { SdkItem } from '../../../../rest-sdk/dto/sdk-item';
 import { ContentListModelbase } from '../content-list-model-base';
 
 export interface ListWithSummaryModel extends ContentListModelbase {
-    Items: Array<ListWithSummaryItemModel>
+    Items: Array<ListWithSummaryItemModel>,
+    Culture?: string;
 }
 
 export interface ListWithSummaryItemModel {

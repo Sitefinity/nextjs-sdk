@@ -33,7 +33,6 @@ import { SectionEntity } from './section/section.entity';
 import { ImageEntity } from './image/image.entity';
 import { ContentBlockEntity } from './content-block/content-block.entity';
 
-import sitefinityLanguageSelectorJson from './language-selector/designer-metadata.json';
 import { SearchFacetsEntity } from './search-facets/search-facets.entity';
 import { BreadcrumbEntity } from './breadcrumb/breadcrumb.entity';
 import { DocumentListEntity } from './document-list/document-list-entity';
@@ -70,6 +69,7 @@ import { DocumentListList } from './document-list/document-list-list';
 import { FormCSR } from './form/form.csr';
 import { DynamicListCSR } from './form-widgets/dynamic-list/dynamic-list.csr';
 import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
+import { LanguageSelectorEntity } from './language-selector/language-selector-entity';
 
 export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
     'SitefinityForm': {
@@ -532,7 +532,7 @@ export const defaultWidgetRegistry: WidgetRegistry = {
             componentType: DocumentList,
             editorMetadata: {
                 Title: 'Document list',
-                EmptyIconText: 'Select document',
+                EmptyIconText: 'Select documents',
                 EmptyIcon: 'plus-circle',
                 Section: 'Basic',
                 EmptyIconAction: 'Edit',
@@ -571,11 +571,13 @@ export const defaultWidgetRegistry: WidgetRegistry = {
             },
             ssr: true
         },
-        'LanguageSelector': {
-            designerMetadata: sitefinityLanguageSelectorJson,
+        'SitefinityLanguageSelector': {
+            entity: LanguageSelectorEntity,
             componentType: LanguageSelector,
             editorMetadata: {
-                Title: 'Language Selector'
+                Title: 'Language selector',
+                HasQuickEditOperation: true,
+                HideEmptyVisual: true
             },
             ssr: true
         },
