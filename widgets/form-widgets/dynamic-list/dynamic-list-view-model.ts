@@ -2,6 +2,7 @@ import { GetAllArgs } from '../../../rest-sdk/args/get-all.args';
 import { SdkItem } from '../../../rest-sdk/dto/sdk-item';
 import { TaxonDto } from '../../../rest-sdk/dto/taxon-dto';
 import { RestClient } from '../../../rest-sdk/rest-client';
+import { RestClientForContext } from '../../../services/rest-client-for-context';
 import { ChoiceOption } from '../common/choice-option';
 import { DynamicListEntity } from './dynamic-list.entity';
 import { SelectionMode } from './selection-modes';
@@ -31,26 +32,24 @@ export async function getChoiceItems(entity: DynamicListEntity): Promise<ChoiceO
     return transformItemsToChoices(items, defaultFieldName, entity);
 }
 
-
 async function getContent(entity: DynamicListEntity): Promise<SdkItem[]> {
-    if (entity.SelectedContent != null &&
-        entity.SelectedContent.Content != null &&
+    if (entity.SelectedContent?.Content &&
         entity.SelectedContent.Content.length > 0 &&
         entity.SelectedContent.Content[0].Type != null) {
         const itemType = entity.SelectedContent.Content[0].Type;
+
         const getAllArgs: GetAllArgs = {
             orderBy: [],
             type: itemType
         };
-
 
         const orderBy = getOrderByExpressionForContent(entity);
         if (orderBy !== null) {
             getAllArgs.orderBy!.push(orderBy);
         }
 
-        const items = await RestClient.getItems(getAllArgs);
-        return items.Items;
+        const itemsResponse = await RestClientForContext.getItems(entity.SelectedContent, getAllArgs);
+        return itemsResponse.Items;
     }
 
     return [];
@@ -72,7 +71,7 @@ function getOrderByExpressionForContent(entity: DynamicListEntity) {
         return null;
     }
 
-    const sortOrder = sortExpressionParts[1].toLowerCase() === 'ASC' ? 'asc' : 'desc';
+    const sortOrder = sortExpressionParts[1].toUpperCase() === 'ASC' ? 'asc' : 'desc';
     const orderBy = { Name: sortExpressionParts[0], Type: sortOrder };
 
     return orderBy;
@@ -81,7 +80,7 @@ function getOrderByExpressionForContent(entity: DynamicListEntity) {
 async function getClassifications(entity: DynamicListEntity): Promise<TaxonDto[]> {
     const settings = entity.ClassificationSettings;
 
-    if (settings &&  settings.selectedTaxonomyId) {
+    if (settings && settings.selectedTaxonomyId) {
         let orderBy = entity.OrderBy || 'Title ASC';
 
         if (orderBy === 'Custom') {
@@ -98,7 +97,6 @@ async function getClassifications(entity: DynamicListEntity): Promise<TaxonDto[]
             showEmpty: true,
             taxaIds: settings.selectedTaxaIds!
         });
-
     }
 
     return Promise.resolve([]);

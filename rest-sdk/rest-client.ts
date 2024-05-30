@@ -510,6 +510,10 @@ export class RestClient {
         }
 
         const queryParams = args.queryParams || {};
+        if (args.relatedFields) {
+            queryParams['$expand'] = args.relatedFields.join(',');
+        }
+
         let sysParamsQueryString = RestClient.buildQueryParams(queryParams);
         const url = `/${pagePath}${sysParamsQueryString}`;
 

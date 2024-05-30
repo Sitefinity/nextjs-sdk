@@ -18,7 +18,8 @@ export function MultipleChoice(props: WidgetContext<MultipleChoiceEntity>) {
 
     let layoutClass = '';
     let innerColumnClass = '';
-    switch (entity.ColumnsNumber) {
+    const parsed = parseInt(entity.ColumnsNumber.toString(), 10);
+    switch (parsed) {
         case 0:
             layoutClass = 'd-flex flex-wrap';
             innerColumnClass = 'me-2';

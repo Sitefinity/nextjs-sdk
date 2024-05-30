@@ -1,4 +1,5 @@
 
+import { SanitizerService } from '../../services/sanitizer-service';
 import { Dictionary } from '../../typings/dictionary';
 import { LinkModel } from './link-model';
 import { WidgetContext } from './widget-context';
@@ -14,9 +15,10 @@ export function htmlAttributes(widgetContext: WidgetContext<any>, error: string 
 
     const attributes: any = {
         'data-sfname': model.Name,
-        'data-sftitle': model.Caption || editorMetadata?.Title || model.Name,
+        'data-sftitle': SanitizerService.sanitizeHtml(model.Caption || editorMetadata?.Title || model.Name),
         'data-sfid' : model.Id,
-        'data-sfisorphaned': false
+        'data-sfisorphaned': false,
+        'data-sficonname': editorMetadata?.IconName
     };
 
     attributes['data-sfisemptyvisualhidden'] = false;
@@ -44,7 +46,7 @@ export function htmlAttributes(widgetContext: WidgetContext<any>, error: string 
             attributes['data-sfhasquickeditoperation'] = true;
         }
 
-        attributes['data-sfiscontentwidget'] = editorMetadata.Category !== 'Layout & Presets';
+        attributes['data-sfiscontentwidget'] = editorMetadata.Category !== 'Layout & Presets' && editorMetadata.Category !== 'Layout';
     }
 
     if (error) {

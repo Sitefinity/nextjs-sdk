@@ -4,8 +4,10 @@ export interface EditorMetadata {
     EmptyIconText?: string;
     EmptyIconAction?: 'Edit' | 'None';
     EmptyIcon?: string;
+    /** @deprecated Not used with the new look for widget selector introduced with Sitefinity 15.1 */
     ThumbnailUrl?: string;
-    Category?: 'Content' | 'Layout & Presets' | 'Navigation & Search' | 'Login & Users';
+    IconName?: string;
+    Category?: 'Content' | 'Layout' | 'Layout & Presets' | 'Navigation & Search' | 'Login & Users';
     Section?: string;
     Toolbox?: string;
     Warning?: string;

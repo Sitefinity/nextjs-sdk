@@ -1,5 +1,6 @@
 export * from './widgets/error/widget-execution-error-component';
 export * from './widgets/default-widget-registry';
+export * from './widgets/legacy-widget-registry';
 
 export * from './pages/render-page';
 export * from './pages/render-widget';

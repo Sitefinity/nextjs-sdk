@@ -37,25 +37,38 @@ export class RestClientForContext {
             filter: FilterConverterService.getMainFilter(firstVariation)
         };
 
-        let itemsForContext = await RestClient.getItems<T>(args);
+        if (externalArgs?.orderBy && externalArgs?.orderBy.length > 0) {
+            args.orderBy = externalArgs.orderBy;
+        }
 
-        if (contentContext.ItemIdsOrdered &&
-            contentContext.ItemIdsOrdered.length > 1 &&
-            contentContext.ItemIdsOrdered.length === itemsForContext.Items.length) {
-            const orderedCollection: T[] = [];
-            contentContext.ItemIdsOrdered.forEach((id: string)=> {
-                const orderedItem = itemsForContext.Items.find((x: any) => x.Id === id);
+        const itemsForContext = await RestClient.getItems<T>(args);
+        let items = itemsForContext.Items;
 
-                if (orderedItem) {
-                    orderedCollection.push(orderedItem);
-                }
-            });
-
-            if (orderedCollection.length === itemsForContext.Items.length){
-                itemsForContext.Items = orderedCollection;
-            }
+        if (!externalArgs?.orderBy && Array.isArray(contentContext.ItemIdsOrdered)
+            && contentContext.ItemIdsOrdered.length > 0 && contentContext.ItemIdsOrdered.length === itemsForContext.Items.length) {
+            items = RestClientForContext.orderItemsManually<T>(contentContext.ItemIdsOrdered, items);
         }
 
         return itemsForContext;
     };
+
+    private static orderItemsManually<T extends SdkItem>(orderedList: string[], items: T[]): T[] {
+        let orderedCollection: T[] = [];
+
+        orderedList.forEach((id: string)=> {
+            const orderedItem = items.find((x: any) => x.Id === id);
+
+            if (orderedItem) {
+                orderedCollection.push(orderedItem);
+            }
+        });
+
+        if (orderedCollection.length === items.length){
+            items = orderedCollection;
+        } else {
+            orderedCollection = items;
+        }
+
+        return orderedCollection;
+    }
 }

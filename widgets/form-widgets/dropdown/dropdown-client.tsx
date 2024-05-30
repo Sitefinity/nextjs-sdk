@@ -39,7 +39,7 @@ export function DropdownFieldSet(props: { viewModel: DropdownViewModel, dropdown
 
     const handleDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         handleDropdownValidation();
-        const selectedItem = viewModel.Choices.find(ch => ch.Value === event.target.value);
+        const selectedItem = viewModel.Choices.find(ch => ch.Value?.toString() === event.target.value);
 
         setSelectValue(selectedItem ? selectedItem.Value : '');
         dispatchValueChanged();

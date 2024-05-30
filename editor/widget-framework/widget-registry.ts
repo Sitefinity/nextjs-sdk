@@ -19,13 +19,25 @@ export function initRegistry(widgetRegistry: WidgetRegistry) {
 
         const metadata = EntityMetadataGenerator.extractMetadata(widgetRegistration.entity);
         if (widgetRegistration.entity) {
-            if (metadata && widgetRegistration.editorMetadata) {
-                if (widgetRegistration.editorMetadata.Name) {
-                    metadata.Name = widgetRegistration.editorMetadata.Name;
+            const editorMetadata = widgetRegistration.editorMetadata;
+            if (metadata && editorMetadata) {
+                if (editorMetadata.Name) {
+                    metadata.Name = editorMetadata.Name;
                 }
 
-                if (widgetRegistration.editorMetadata.Title) {
-                    metadata.Caption = widgetRegistration.editorMetadata.Title ?? widgetRegistration.editorMetadata.Name;
+                if (editorMetadata.Title) {
+                    metadata.Caption = editorMetadata.Title ?? editorMetadata.Name;
+                }
+
+                if (editorMetadata.Toolbox === 'Forms') {
+                    const propertyMetadataFlat = metadata.PropertyMetadataFlat;
+                    const initialProperties = widgetRegistration.editorMetadata?.InitialProperties;
+                    if (propertyMetadataFlat && initialProperties) {
+                        const labelProperty = propertyMetadataFlat.find(prop => prop.Name === 'Label' && prop.DefaultValue);
+                        if (labelProperty) {
+                            initialProperties['Label'] = labelProperty.DefaultValue;
+                        }
+                    }
                 }
             }
 

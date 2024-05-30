@@ -4,6 +4,7 @@ export interface GetPageLayoutArgs {
     pagePath: string,
     queryParams?: Dictionary;
     cookie?: string;
+    relatedFields?: string[];
     additionalHeaders?: {[key: string]: string};
     followRedirects: boolean;
 }

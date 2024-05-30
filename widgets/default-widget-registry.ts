@@ -80,6 +80,7 @@ export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
             EmptyIcon: 'plus-circle',
             EmptyIconAction: 'Edit',
             EmptyIconText: 'Select a form',
+            Category: 'Content',
             Section: 'Basic',
             HasQuickEditOperation: true
         },
@@ -91,87 +92,23 @@ export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
         editorMetadata: {
             Title: 'Section',
             Toolbox: 'Forms',
-            Category: 'Layout & Presets',
+            Category: 'Layout',
             InitialProperties: {
                 SfFieldType: 'FormSection'
             }
         },
         ssr: false
     },
-    'SitefinityCheckboxes': {
-        entity: CheckboxesEntity,
-        componentType: Checkboxes,
+    'SitefinityTextField': {
+        entity: TextFieldEntity,
+        componentType: TextField,
         editorMetadata: {
-            Title: 'Checkboxes',
+            Title: 'Textbox',
             Toolbox: 'Forms',
-            Section: 'Choices',
+            Category: 'Content',
+            Section: 'Basic',
             InitialProperties: {
-                SfFieldType: 'Checkboxes'
-            }
-        },
-        ssr: false
-    },
-    'SitefinityFormContentBlock': {
-        entity: FormContentBlockEntity,
-        componentType: FormContentBlock,
-        editorMetadata: {
-            Title: 'Content Block',
-            Toolbox: 'Forms',
-            Section: 'Other',
-            InitialProperties: {
-                SfFieldType: 'ContentBlock'
-            }
-        },
-        ssr: false
-    },
-    'SitefinityDropdown': {
-        entity: DropdownEntity,
-        componentType: Dropdown,
-        editorMetadata: {
-            Title: 'Dropdown',
-            Toolbox: 'Forms',
-            Section: 'Choices',
-            InitialProperties: {
-                SfFieldType: 'Dropdown'
-            }
-        },
-        ssr: false
-    },
-    'SitefinityDynamicList': {
-        entity: DynamicListEntity,
-        componentType: DynamicListCSR,
-        editorMetadata: {
-            Title: 'Dynamic List',
-            Toolbox: 'Forms',
-            Section: 'Choices',
-            InitialProperties: {
-                SfFieldType: 'Checkboxes'
-            }
-        },
-        ssr: false
-    },
-    'SitefinityFileField': {
-        entity: FileUploadEntity,
-        componentType: FileUpload,
-        editorMetadata: {
-            Title: 'File Upload',
-            Toolbox: 'Forms',
-            Section: 'Other',
-            InitialProperties: {
-                SfFieldType: 'File'
-            }
-        },
-        ssr: false
-    },
-    'SitefinityMultipleChoice': {
-        entity: MultipleChoiceEntity,
-        componentType: MultipleChoice,
-        editorMetadata: {
-            Title: 'Multiple Choice',
-            Toolbox: 'Forms',
-            Section: 'Choices',
-            InitialProperties: {
-                SfFieldType: 'MultipleChoice'
+                SfFieldType: 'ShortText'
             }
         },
         ssr: false
@@ -182,6 +119,7 @@ export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
         editorMetadata: {
             Title: 'Paragraph',
             Toolbox: 'Forms',
+            Category: 'Content',
             Section: 'Basic',
             InitialProperties: {
                 SfFieldType: 'Paragraph'
@@ -193,8 +131,9 @@ export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
         entity: SubmitButtonEntity,
         componentType: SubmitButton,
         editorMetadata: {
-            Title: 'Submit Button',
+            Title: 'Submit button',
             Toolbox: 'Forms',
+            Category: 'Content',
             Section: 'Basic',
             InitialProperties: {
                 SfFieldType: 'SubmitButton'
@@ -202,16 +141,88 @@ export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
         },
         ssr: false
     },
-    'SitefinityTextField': {
-        entity: TextFieldEntity,
-        componentType: TextField,
+    'SitefinityMultipleChoice': {
+        entity: MultipleChoiceEntity,
+        componentType: MultipleChoice,
         editorMetadata: {
-            Title: 'Textbox',
+            Title: 'Multiple choice',
             Toolbox: 'Forms',
-            Section: 'Basic',
+            Category: 'Content',
+            Section: 'Choices',
             InitialProperties: {
-                SfFieldType: 'ShortText'
+                SfFieldType: 'MultipleChoice'
             }
+        },
+        ssr: false
+    },
+    'SitefinityCheckboxes': {
+        entity: CheckboxesEntity,
+        componentType: Checkboxes,
+        editorMetadata: {
+            Title: 'Checkboxes',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityDropdown': {
+        entity: DropdownEntity,
+        componentType: Dropdown,
+        editorMetadata: {
+            Title: 'Dropdown',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Dropdown'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityDynamicList': {
+        entity: DynamicListEntity,
+        componentType: DynamicListCSR,
+        editorMetadata: {
+            Title: 'Dynamic list',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityFileField': {
+        entity: FileUploadEntity,
+        componentType: FileUpload,
+        editorMetadata: {
+            Title: 'File upload',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'File'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityFormContentBlock': {
+        entity: FormContentBlockEntity,
+        componentType: FormContentBlock,
+        editorMetadata: {
+            Title: 'Content block',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'ContentBlock'
+            },
+            IconName: 'content-block'
         },
         ssr: false
     }
@@ -226,8 +237,10 @@ export const SSRFormComponents: {[key: string]: WidgetMetadata} = {
             EmptyIcon: 'plus-circle',
             EmptyIconAction: 'Edit',
             EmptyIconText: 'Select a form',
+            Category: 'Content',
             Section: 'Basic',
-            HasQuickEditOperation: true
+            HasQuickEditOperation: true,
+            IconName: 'form'
         },
         ssr: true
     },
@@ -237,114 +250,11 @@ export const SSRFormComponents: {[key: string]: WidgetMetadata} = {
         editorMetadata: {
             Title: 'Section',
             Toolbox: 'Forms',
-            Category: 'Layout & Presets',
+            Category: 'Layout',
             InitialProperties: {
                 SfFieldType: 'FormSection'
-            }
-        },
-        ssr: true
-    },
-    'SitefinityCheckboxes': {
-        entity: CheckboxesEntity,
-        componentType: Checkboxes,
-        editorMetadata: {
-            Title: 'Checkboxes',
-            Toolbox: 'Forms',
-            Section: 'Choices',
-            InitialProperties: {
-                SfFieldType: 'Checkboxes'
-            }
-        },
-        ssr: true
-    },
-    'SitefinityFormContentBlock': {
-        entity: FormContentBlockEntity,
-        componentType: FormContentBlock,
-        editorMetadata: {
-            Title: 'Content Block',
-            Toolbox: 'Forms',
-            Section: 'Other',
-            InitialProperties: {
-                SfFieldType: 'ContentBlock'
-            }
-        },
-        ssr: true
-    },
-    'SitefinityDropdown': {
-        entity: DropdownEntity,
-        componentType: Dropdown,
-        editorMetadata: {
-            Title: 'Dropdown',
-            Toolbox: 'Forms',
-            Section: 'Choices',
-            InitialProperties: {
-                SfFieldType: 'Dropdown'
-            }
-        },
-        ssr: true
-    },
-    'SitefinityDynamicList': {
-        entity: DynamicListEntity,
-        componentType: DynamicList,
-        editorMetadata: {
-            Title: 'Dynamic List',
-            Toolbox: 'Forms',
-            Section: 'Choices',
-            InitialProperties: {
-                SfFieldType: 'Checkboxes'
-            }
-        },
-        ssr: true
-    },
-    'SitefinityFileField': {
-        entity: FileUploadEntity,
-        componentType: FileUpload,
-        editorMetadata: {
-            Title: 'File Upload',
-            Toolbox: 'Forms',
-            Section: 'Other',
-            InitialProperties: {
-                SfFieldType: 'File'
-            }
-        },
-        ssr: true
-    },
-    'SitefinityMultipleChoice': {
-        entity: MultipleChoiceEntity,
-        componentType: MultipleChoice,
-        editorMetadata: {
-            Title: 'Multiple Choice',
-            Toolbox: 'Forms',
-            Section: 'Choices',
-            InitialProperties: {
-                SfFieldType: 'MultipleChoice'
-            }
-        },
-        ssr: true
-    },
-    'SitefinityParagraph': {
-        entity: ParagraphEntity,
-        componentType: Paragraph,
-        editorMetadata: {
-            Title: 'Paragraph',
-            Toolbox: 'Forms',
-            Section: 'Basic',
-            InitialProperties: {
-                SfFieldType: 'Paragraph'
-            }
-        },
-        ssr: true
-    },
-    'SitefinitySubmitButton': {
-        entity: SubmitButtonEntity,
-        componentType: SubmitButton,
-        editorMetadata: {
-            Title: 'Submit Button',
-            Toolbox: 'Forms',
-            Section: 'Basic',
-            InitialProperties: {
-                SfFieldType: 'SubmitButton'
-            }
+            },
+            IconName: 'section'
         },
         ssr: true
     },
@@ -354,10 +264,131 @@ export const SSRFormComponents: {[key: string]: WidgetMetadata} = {
         editorMetadata: {
             Title: 'Textbox',
             Toolbox: 'Forms',
+            Category: 'Content',
             Section: 'Basic',
             InitialProperties: {
                 SfFieldType: 'ShortText'
-            }
+            },
+            IconName: 'textbox'
+        },
+        ssr: true
+    },
+    'SitefinityParagraph': {
+        entity: ParagraphEntity,
+        componentType: Paragraph,
+        editorMetadata: {
+            Title: 'Paragraph',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'Paragraph'
+            },
+            IconName: 'paragraph'
+        },
+        ssr: true
+    },
+    'SitefinitySubmitButton': {
+        entity: SubmitButtonEntity,
+        componentType: SubmitButton,
+        editorMetadata: {
+            Title: 'Submit button',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'SubmitButton'
+            },
+            IconName: 'button'
+        },
+        ssr: true
+    },
+    'SitefinityMultipleChoice': {
+        entity: MultipleChoiceEntity,
+        componentType: MultipleChoice,
+        editorMetadata: {
+            Title: 'Multiple choice',
+            Toolbox: 'Forms',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'MultipleChoice'
+            },
+            IconName: 'multiple-choice'
+        },
+        ssr: true
+    },
+    'SitefinityCheckboxes': {
+        entity: CheckboxesEntity,
+        componentType: Checkboxes,
+        editorMetadata: {
+            Title: 'Checkboxes',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            },
+            IconName: 'checkboxes'
+        },
+        ssr: true
+    },
+    'SitefinityDropdown': {
+        entity: DropdownEntity,
+        componentType: Dropdown,
+        editorMetadata: {
+            Title: 'Dropdown',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Dropdown'
+            },
+            IconName: 'dropdown'
+        },
+        ssr: true
+    },
+    'SitefinityDynamicList': {
+        entity: DynamicListEntity,
+        componentType: DynamicList,
+        editorMetadata: {
+            Title: 'Dynamic list',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            },
+            IconName: 'dropdown'
+        },
+        ssr: true
+    },
+    'SitefinityFileField': {
+        entity: FileUploadEntity,
+        componentType: FileUpload,
+        editorMetadata: {
+            Title: 'File upload',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'File'
+            },
+            IconName: 'file-upload'
+        },
+        ssr: true
+    },
+    'SitefinityFormContentBlock': {
+        entity: FormContentBlockEntity,
+        componentType: FormContentBlock,
+        editorMetadata: {
+            Title: 'Content block',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'ContentBlock'
+            },
+            IconName: 'content-block'
         },
         ssr: true
     }
@@ -365,26 +396,15 @@ export const SSRFormComponents: {[key: string]: WidgetMetadata} = {
 
 export const defaultWidgetRegistry: WidgetRegistry = {
     widgets: {
-        'SitefinityBreadcrumb': {
-            entity: BreadcrumbEntity,
-            componentType: Breadcrumb,
+        'SitefinityContentBlock': {
+            entity: ContentBlockEntity,
+            componentType: ContentBlock,
             editorMetadata: {
-                Title: 'Breadcrumb',
-                Category: 'Navigation & Search',
-                Section: 'Main navigation',
-                HasQuickEditOperation: true
-            },
-            ssr: true
-        },
-        'SitefinityClassification': {
-            entity: ClassificationEntity,
-            componentType: Classification,
-            editorMetadata: {
-                Title: 'Classification',
-                Category: 'Navigation & Search',
-                Section: 'Search and classification',
-                EmptyIconText: 'Select classification',
-                HasQuickEditOperation: true
+                Title: 'Content block',
+                Category: 'Content',
+                Section: 'Basic',
+                HasQuickEditOperation: true,
+                IconName: 'content-block'
             },
             ssr: true
         },
@@ -393,86 +413,13 @@ export const defaultWidgetRegistry: WidgetRegistry = {
             componentType: Image,
             editorMetadata: {
                 Title: 'Image',
+                Category: 'Content',
                 Section: 'Basic',
                 EmptyIcon: 'picture-o',
                 EmptyIconAction: 'Edit',
                 EmptyIconText: 'Select image',
-                HasQuickEditOperation: true
-            },
-            ssr: true
-        },
-        'SitefinityLoginForm': {
-            entity: LoginFormEntity,
-            componentType: LoginForm,
-            editorMetadata: {
-                Title: 'Login form',
-                Section: 'Login',
-                Category: 'Login & Users',
-                EmptyIconAction: 'Edit',
-                HasQuickEditOperation: true
-            },
-            ssr: true
-        },
-        'SitefinityChangePassword': {
-            entity: ChangePasswordEntity,
-            componentType: ChangePassword,
-            editorMetadata: {
-                Title: 'Change password',
-                Section: 'Login',
-                Category: 'Login & Users',
-                EmptyIconAction: 'Edit',
-                HasQuickEditOperation: true
-            },
-            ssr: true
-        },
-        'SitefinityResetPassword': {
-            entity: ResetPasswordEntity,
-            componentType: ResetPassword,
-            editorMetadata: {
-                Title: 'Reset password',
-                Section: 'Login',
-                Category: 'Login & Users',
-                EmptyIconAction: 'Edit',
-                HasQuickEditOperation: true
-            },
-            ssr: true
-        },
-        'SitefinityRegistration': {
-            entity: RegistrationEntity,
-            componentType: Registration,
-            editorMetadata: {
-                Title: 'Registration',
-                Section: 'Login',
-                Category: 'Login & Users',
-                EmptyIconAction: 'Edit',
-                HasQuickEditOperation: true
-            },
-            ssr: true
-        },
-        'SitefinityNavigation': {
-            entity: NavigationEntity,
-            componentType: Navigation,
-            editorMetadata: {
-                Title: 'Navigation',
-                Category: 'Navigation & Search',
-                Section: 'Main navigation',
-                EmptyIcon: 'tag',
-                EmptyIconAction: 'None',
-                EmptyIconText: 'No pages have been published',
-                HasQuickEditOperation: true
-            },
-            ssr: true
-        },
-        'SitefinitySearchBox': {
-            entity: SearchBoxEntity,
-            componentType: SearchBox,
-            editorMetadata: {
-                Title: 'SearchBox',
-                Category: 'Navigation & Search',
-                Section: 'Search and classification',
-                EmptyIcon: 'search',
-                EmptyIconText: 'Set where to search',
-                HasQuickEditOperation: true
+                HasQuickEditOperation: true,
+                IconName: 'image'
             },
             ssr: true
         },
@@ -481,28 +428,11 @@ export const defaultWidgetRegistry: WidgetRegistry = {
             componentType: CallToAction,
             editorMetadata: {
                 Title: 'Call to action',
+                Category: 'Content',
                 Section: 'Basic',
                 EmptyIconText: 'Create call to action',
-                HasQuickEditOperation: true
-            },
-            ssr: true
-        },
-        'SitefinityContentBlock': {
-            entity: ContentBlockEntity,
-            componentType: ContentBlock,
-            editorMetadata: {
-                Title: 'Content block',
-                Section: 'Basic',
-                HasQuickEditOperation: true
-            },
-            ssr: true
-        },
-        'SitefinitySection': {
-            entity: SectionEntity,
-            componentType: Section,
-            editorMetadata: {
-                Title: 'Section',
-                Category: 'Layout & Presets'
+                HasQuickEditOperation: true,
+                IconName: 'call-to-action'
             },
             ssr: true
         },
@@ -511,9 +441,11 @@ export const defaultWidgetRegistry: WidgetRegistry = {
             componentType: ContentList,
             editorMetadata: {
                 Title: 'Content list',
-                Section: 'Basic',
+                Category: 'Content',
+                Section: 'Lists',
                 EmptyIconText: 'Select content',
-                EmptyIcon: 'plus-circle'
+                EmptyIcon: 'plus-circle',
+                IconName: 'content-list'
             },
             ssr: true,
             templates: {
@@ -534,9 +466,11 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Title: 'Document list',
                 EmptyIconText: 'Select documents',
                 EmptyIcon: 'plus-circle',
-                Section: 'Basic',
+                Category: 'Content',
+                Section: 'Lists',
                 EmptyIconAction: 'Edit',
-                HasQuickEditOperation: true
+                HasQuickEditOperation: true,
+                IconName: 'document'
             },
             ssr: true,
             templates: {
@@ -545,6 +479,47 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 'Details.DocumentDetails': DocumentDetailItem
             }
         },
+        'SitefinityNavigation': {
+            entity: NavigationEntity,
+            componentType: Navigation,
+            editorMetadata: {
+                Title: 'Navigation',
+                Category: 'Content',
+                Section: 'Navigation and search',
+                EmptyIcon: 'tag',
+                EmptyIconAction: 'None',
+                EmptyIconText: 'No pages have been published',
+                HasQuickEditOperation: true,
+                IconName: 'navigation'
+            },
+            ssr: true
+        },
+        'SitefinityBreadcrumb': {
+            entity: BreadcrumbEntity,
+            componentType: Breadcrumb,
+            editorMetadata: {
+                Title: 'Breadcrumb',
+                Category: 'Content',
+                Section: 'Navigation and search',
+                HasQuickEditOperation: true,
+                IconName: 'breadcrumb'
+            },
+            ssr: true
+        },
+        'SitefinitySearchBox': {
+            entity: SearchBoxEntity,
+            componentType: SearchBox,
+            editorMetadata: {
+                Title: 'Search box',
+                Category: 'Content',
+                Section: 'Navigation and search',
+                EmptyIcon: 'search',
+                EmptyIconText: 'Set where to search',
+                HasQuickEditOperation: true,
+                IconName: 'search'
+            },
+            ssr: true
+        },
         'SitefinitySearchResults': {
             entity: SearchResultsEntity,
             componentType: SearchResults,
@@ -552,9 +527,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Title: 'Search results',
                 EmptyIconText: 'Search results',
                 EmptyIcon: 'search',
-                Category: 'Navigation & Search',
-                Section: 'Search and classification',
-                HasQuickEditOperation: true
+                Category: 'Content',
+                Section: 'Navigation and search',
+                HasQuickEditOperation: true,
+                IconName: 'search'
             },
             ssr: true
         },
@@ -565,9 +541,23 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Title: 'Search facets',
                 EmptyIconText: 'Select search facets',
                 EmptyIcon: 'search',
-                Category: 'Navigation & Search',
-                Section: 'Search and classification',
-                HasQuickEditOperation: true
+                Category: 'Content',
+                Section: 'Navigation and search',
+                HasQuickEditOperation: true,
+                IconName: 'search'
+            },
+            ssr: true
+        },
+        'SitefinityClassification': {
+            entity: ClassificationEntity,
+            componentType: Classification,
+            editorMetadata: {
+                Title: 'Classification',
+                Category: 'Content',
+                Section: 'Navigation and search',
+                EmptyIconText: 'Select classification',
+                HasQuickEditOperation: true,
+                IconName: 'classification'
             },
             ssr: true
         },
@@ -576,8 +566,74 @@ export const defaultWidgetRegistry: WidgetRegistry = {
             componentType: LanguageSelector,
             editorMetadata: {
                 Title: 'Language selector',
+                Category: 'Content',
+                Section: 'Navigation and search',
                 HasQuickEditOperation: true,
-                HideEmptyVisual: true
+                HideEmptyVisual: true,
+                IconName: 'language'
+            },
+            ssr: true
+        },
+        'SitefinityLoginForm': {
+            entity: LoginFormEntity,
+            componentType: LoginForm,
+            editorMetadata: {
+                Title: 'Login form',
+                Section: 'Login and users',
+                Category: 'Content',
+                EmptyIconAction: 'Edit',
+                HasQuickEditOperation: true,
+                IconName: 'login'
+            },
+            ssr: true
+        },
+        'SitefinityRegistration': {
+            entity: RegistrationEntity,
+            componentType: Registration,
+            editorMetadata: {
+                Title: 'Registration form',
+                Section: 'Login and users',
+                Category: 'Content',
+                EmptyIconAction: 'Edit',
+                HasQuickEditOperation: true,
+                IconName: 'registration'
+            },
+            ssr: true
+        },
+        'SitefinityResetPassword': {
+            entity: ResetPasswordEntity,
+            componentType: ResetPassword,
+            editorMetadata: {
+                Title: 'Reset password',
+                Section: 'Login and users',
+                Category: 'Content',
+                EmptyIconAction: 'Edit',
+                HasQuickEditOperation: true,
+                IconName: 'password'
+            },
+            ssr: true
+        },
+        'SitefinityChangePassword': {
+            entity: ChangePasswordEntity,
+            componentType: ChangePassword,
+            editorMetadata: {
+                Title: 'Change password',
+                Section: 'Login and users',
+                Category: 'Content',
+                EmptyIconAction: 'Edit',
+                HasQuickEditOperation: true,
+                IconName: 'password'
+            },
+            ssr: true
+        },
+        'SitefinitySection': {
+            entity: SectionEntity,
+            componentType: Section,
+            editorMetadata: {
+                Title: 'Section',
+                Category: 'Layout',
+                Section: 'Empty section',
+                IconName: 'section'
             },
             ssr: true
         },

@@ -5,4 +5,5 @@ export interface PageParams {
         slug: string[]
     },
     searchParams: Dictionary,
+    relatedFields?: string[]
 }

@@ -120,7 +120,7 @@ export class RendererContractImpl implements RendererContract {
 
         const widgetsBySection: { [key: string]: WidgetMetadata[] } = {};
         filteredWidgetsBySearch.forEach((widget) => {
-            const sectionName = widget.editorMetadata?.Section || 'Main';
+            const sectionName = widget.editorMetadata?.Section || '';
             const widgetSectionArray = widgetsBySection[sectionName] || [];
             widgetSectionArray.push(widget);
 
@@ -147,6 +147,7 @@ export class RendererContractImpl implements RendererContract {
                         name: y.editorMetadata?.Name || y.editorMetadata?.Title,
                         title: y.editorMetadata?.Title,
                         thumbnailUrl: y.editorMetadata?.ThumbnailUrl,
+                        iconName: y.editorMetadata?.IconName,
                         initialProperties: initialProperties
                     };
                 })
@@ -160,10 +161,20 @@ export class RendererContractImpl implements RendererContract {
     }
 
     getCategories(args: GetCategoriesArgs): Promise<Array<string>> {
-        if (args.toolbox === 'Forms') {
-            return Promise.resolve(['Content', 'Layout & Presets']);
+        // identify whether we are using the legacy widget registry
+        let isLegacy = false;
+        if (RenderWidgetService.widgetRegistry.widgets['SitefinitySection'].editorMetadata?.Category === 'Layout & Presets') {
+            isLegacy = true;
         }
 
-        return Promise.resolve(['Content', 'Navigation & Search', 'Login & Users', 'Layout & Presets']);
+        if (isLegacy) {
+            if (args.toolbox === 'Forms') {
+                return Promise.resolve(['Content', 'Layout & Presets']);
+            }
+
+            return Promise.resolve(['Content', 'Navigation & Search', 'Login & Users', 'Layout & Presets']);
+        } else {
+            return Promise.resolve(['Content', 'Layout']);
+        }
     }
 }

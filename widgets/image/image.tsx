@@ -154,7 +154,7 @@ function renderImageTag(imageModel: ImageViewModel, dataAttributes: Dictionary, 
         }
     }
 
-    if (imageModel.ImageSize === ImageDisplayMode.CustomSize) {
+    if (imageModel.ImageSize === ImageDisplayMode.CustomSize || imageModel.ImageSize === ImageDisplayMode.Thumbnail) {
         if (imageModel.Width) {
             imageCustomAttributes['width'] = imageModel.Width.toString();
         }

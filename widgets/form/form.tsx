@@ -34,7 +34,12 @@ export async function Form(props: WidgetContext<FormEntity>) {
             formDto = await RestClientForContext.getItem<FormDto>(entity.SelectedItems, { type: RestSdkTypes.Form });
         } catch (error) {
             const attributes = htmlAttributes(props, error as string);
-            return (<div {...attributes} />);
+            return (props.requestContext.isEdit ? <div {...attributes} /> : null);
+        }
+
+        if (!formDto) {
+            const attributes = htmlAttributes(props, `The item with key '${entity.SelectedItems.ItemIdsOrdered[0]}' was not found`);
+            return (props.requestContext.isEdit ? <div {...attributes} /> : null);
         }
 
         if (searchParams && searchParams['sf-content-action']) {

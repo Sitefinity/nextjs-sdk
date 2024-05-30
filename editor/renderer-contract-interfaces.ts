@@ -28,7 +28,9 @@ export interface WidgetItem {
     title?: string;
     addWidgetTitle?: string;
     addWidgetName?: string;
+    /** @deprecated Not used with the new look for widget selector introduced with Sitefinity 15.1 */
     thumbnailUrl?: string;
+    iconName?: string;
     initialProperties?: Array<{ name: string, value: string}>
 }
 
@@ -46,26 +48,17 @@ export interface RenderWidgetArgs {
     widgetSegmentId?: string;
 }
 export interface GetCategoriesArgs {
-    token?: Token;
     toolbox?: string;
 }
 
 export interface GetWidgetsArgs {
-    dataItem: DataItem;
-    category: string;
-    search: string;
-    skip: number;
-    take: number;
-    token?: Token;
+    category?: string;
+    search?: string;
     toolbox?: string;
 }
 
 export interface GetWidgetMetadataArgs {
-    dataItem: DataItem;
-    widgetKey: string;
     widgetName: string;
-    siteId: string;
-    token?: Token;
 }
 
 export interface ComponentMetadata {

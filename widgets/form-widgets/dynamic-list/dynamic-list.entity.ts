@@ -72,6 +72,7 @@ export class DynamicListEntity {
     @DefaultValue('Title ASC')
     @DataType(KnownFieldTypes.Choices)
     @Choice({ ServiceUrl: '{0}/Default.Sorters()?frontend=True', ServiceCallParameters: '[{ "taxaUrl" : "{0}"}]' })
+    @ConditionalVisibility('{"conditions":[{"fieldName":"ListType","operator":"Equals","value":"Classification"}]}')
     OrderBy: string | null = null;
 
     @Category('Advanced')

@@ -149,17 +149,12 @@ function populateSection(properties: SectionEntity): Promise<SectionHolder> {
     }
 
     if (properties.SectionMargin) {
-        const marginClasses = StyleGenerator.getPaddingClasses(properties.SectionMargin);
+        const marginClasses = StyleGenerator.getMarginClasses(properties.SectionMargin);
         sectionClasses.push(marginClasses);
     }
 
     if (properties.CustomCssClass && properties.CustomCssClass.hasOwnProperty(sectionKey)) {
         sectionClasses.push(properties.CustomCssClass[sectionKey].Class!);
-    }
-
-    if (!properties.SectionBackground) {
-        sectionObject.Attributes['className'] = sectionClasses.filter(x => x).join(' ');
-        return Promise.resolve(sectionObject);
     }
 
     if (!properties.SectionBackground) {

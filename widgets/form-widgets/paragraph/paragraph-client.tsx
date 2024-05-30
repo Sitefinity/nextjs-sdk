@@ -50,11 +50,10 @@ export function ParagraphClient(props: { viewModel: ParagraphViewModel, paragrap
                 isValidLength = target.value.length >= validationRestrictions.minLength;
             }
 
-            if (validationRestrictions.maxLength && validationRestrictions.maxLength > 0) {
+            if (isValidLength && validationRestrictions.maxLength && validationRestrictions.maxLength > 0) {
                 isValidLength = target.value.length <= validationRestrictions.maxLength;
             }
 
-            isValidLength = isValidLength || target.value.length === 0;
             if (!isValidLength) {
                 setErrorMessage(target, validationMessages.invalidLength);
                 return false;

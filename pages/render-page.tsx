@@ -11,10 +11,11 @@ import { RestClient } from '../rest-sdk/rest-client';
 import { headers } from 'next/headers';
 import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
-import { LayoutResponse, LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
-import { RedirectResponse } from '../rest-sdk/dto/redirect.response';
+import { LayoutResponse } from '../rest-sdk/dto/layout-service.response';
+import { PageScriptLocation } from '../rest-sdk/dto/scripts';
+import { PageFrontEndUtilLoader } from './page-frontend-util-loader';
 
-export async function RenderPage({ params, searchParams }: { params: { slug: string[] }, searchParams: Dictionary }) {
+export async function RenderPage({ params, searchParams, relatedFields }: { params: { slug: string[] }, searchParams: Dictionary, relatedFields?: string[] }) {
     const headersList = headers();
     RestClient.host = headersList.get('host');
 
@@ -27,7 +28,7 @@ export async function RenderPage({ params, searchParams }: { params: { slug: str
     }
 
     try {
-        layoutResponse = await pageLayout({ params, searchParams });
+        layoutResponse = await pageLayout({ params, searchParams, relatedFields });
     } catch (error) {
         if (error instanceof ErrorCodeException && error.code === 'NotFound') {
             notFound();
@@ -78,14 +79,18 @@ export async function RenderPage({ params, searchParams }: { params: { slug: str
     };
 
     const liveUrl = params.slug.join('/') + '?' + new URLSearchParams(searchParams).toString();
+
     return (
       <>
-        <RenderPageScripts layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} />
+        <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} />
+        <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} />
+        <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} />
         {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} />}
         {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} />}
         {appState.widgets.map((child) => {
                 return RenderWidgetService.createComponent(child, appState.requestContext);
             })}
+        <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyBottom} />
       </>
     );
 }

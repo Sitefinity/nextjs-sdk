@@ -8,7 +8,8 @@ import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { TextFieldEntity } from './text-field.entity';
 import { TextFieldViewModel } from './text-field-viewmodel';
 
-const InvalidDefaultValidationMessage = '{0} field is invalid';
+const InvalidDefaultValidationMessageWithLabel = '{0} field is invalid';
+const InvalidDefaultValidationMessage = 'Field is invalid';
 
 export function TextField(props: WidgetContext<TextFieldEntity>) {
     const entity = props.model.Properties;
@@ -27,7 +28,7 @@ export function TextField(props: WidgetContext<TextFieldEntity>) {
             minLength: entity.Range?.Min || null
         },
         ViolationRestrictionsMessages: {
-            invalid: InvalidDefaultValidationMessage.replace('{0} ', ''),
+            invalid: InvalidDefaultValidationMessage,
             invalidLength: entity.TextLengthViolationMessage,
             regularExpression: entity.RegularExpressionViolationMessage,
             required: entity.RequiredErrorMessage
@@ -46,6 +47,8 @@ export function TextField(props: WidgetContext<TextFieldEntity>) {
         if (entity.RegularExpressionViolationMessage) {
             viewModel.ViolationRestrictionsMessages.regularExpression = entity.RegularExpressionViolationMessage.replace('{0}', entity.Label);
         }
+
+        viewModel.ViolationRestrictionsMessages.invalid = InvalidDefaultValidationMessageWithLabel.replace('{0}', entity.Label);
     }
 
     const textBoxUniqueId = entity.SfFieldName;

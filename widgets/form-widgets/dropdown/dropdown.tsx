@@ -4,6 +4,7 @@ import { classNames } from '../../../editor/utils/classNames';
 import { htmlAttributes } from '../../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { DropdownEntity } from './dropdown.entity';
+import { ChoiceOption } from '../common/choice-option';
 
 export function Dropdown(props: WidgetContext<DropdownEntity>) {
     const dataAttributes = htmlAttributes(props);
@@ -25,6 +26,10 @@ export function DropdownDefaultRender(props: { entity: DropdownEntity }) {
         Required: entity.Required,
         RequiredErrorMessage: entity.RequiredErrorMessage || ''
       };
+
+    if (entity.Sorting === 'Alphabetical') {
+        viewModel.Choices = viewModel.Choices.sort((a: ChoiceOption, b: ChoiceOption) => a.Name.localeCompare(b.Name));
+    }
 
     viewModel.CssClass = classNames(entity.CssClass, (StylingConfig.FieldSizeClasses as { [key: string]: string })[('Width' + entity.FieldSize)]) || '';
 

@@ -152,6 +152,7 @@ export function CheckboxesClient(props: CheckboxesClientProps) {
           <input className="form-check-input mt-1" type="checkbox" name={checkboxUniqueId} id={otherChoiceOptionId}
             data-sf-role="checkboxes-field-input" required={viewModel.Required && !hasValueSelected}
             checked={showOtherInput}
+            value={otherInputText}
             onChange={handleOtherChange}/>
           <label className="form-check-label" htmlFor={otherChoiceOptionId}>Other</label>
           {showOtherInput && <input type="text"
