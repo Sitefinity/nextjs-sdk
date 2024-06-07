@@ -11,4 +11,5 @@ export interface SearchArgs {
     scoringInfo: string;
     resultsForAllSites: boolean | null;
     filter: string;
+    traceContext?: any;
 }

@@ -19,13 +19,15 @@ export async function ContentListDetail(props: { viewModel: ContentListViewModel
             type: model.DetailItem.ItemType,
             id: model.DetailItem.Id,
             provider: model.DetailItem.ProviderName,
-            additionalQueryParams: queryParams
+            additionalQueryParams: queryParams,
+            traceContext: props.viewModel.traceContext
         });
     } else {
         dataItem = await RestClient.getItem({
             type: model.DetailItem.ItemType,
             id: model.DetailItem.Id,
-            provider: model.DetailItem.ProviderName
+            provider: model.DetailItem.ProviderName,
+            traceContext: props.viewModel.traceContext
         });
     }
     let detailViewModel: DetailViewModel;

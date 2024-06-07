@@ -11,9 +11,10 @@ import { SearchBoxEntity } from './search-box.entity';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { SearchBoxViewModel } from './search-box-viewmodel';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
-
+    const {span, ctx} = Tracer.traceWidget(props, true);
     const entity = props.model.Properties;
     const requestContext = props.requestContext;
     const dataAttributes = htmlAttributes(props);
@@ -29,7 +30,7 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
 
     let searchResultsPageUrl: string | null = null;
     if (entity.SearchResultsPage) {
-        const searchResultsPage = await RestClientForContext.getItem<PageItem>(entity.SearchResultsPage, { type: RestSdkTypes.Pages });
+        const searchResultsPage = await RestClientForContext.getItem<PageItem>(entity.SearchResultsPage, { type: RestSdkTypes.Pages, traceContext: ctx });
         if (searchResultsPage) {
             searchResultsPageUrl = searchResultsPage['ViewUrl'];
         }
@@ -57,9 +58,12 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
     };
 
     return (
-      <div {...dataAttributes}>
-        { entity.SearchIndex && <SearchBoxClient searchModel={searchModel} />}
-      </div>
+      <>
+        <div {...dataAttributes}>
+          { entity.SearchIndex && <SearchBoxClient searchModel={searchModel} />}
+        </div>
+        {Tracer.endSpan(span)}
+      </>
     );
 }
 

@@ -6,18 +6,21 @@ import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { LazyComponent } from '../widgets/lazy/lazy-component';
 import { EntityMetadataGenerator, PropertyModel } from '@progress/sitefinity-widget-designers-sdk';
 import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export class RenderWidgetService {
     public static widgetRegistry: WidgetRegistry;
     public static errorComponentType: any;
 
-    public static createComponent(widgetModel: WidgetModel<any>, requestContext: RequestContext) {
+    public static createComponent(widgetModel: WidgetModel<any>, requestContext: RequestContext, traceContext?: any) {
+        Tracer.logEvent(`render widget start: ${widgetModel.Caption || widgetModel.Name}`);
         const registeredType = RenderWidgetService.widgetRegistry.widgets[widgetModel.Name];
 
         const propsForWidget: WidgetContext<any> = {
             metadata: registeredType,
             model: widgetModel,
-            requestContext: requestContext
+            requestContext,
+            traceContext
         };
 
         try {

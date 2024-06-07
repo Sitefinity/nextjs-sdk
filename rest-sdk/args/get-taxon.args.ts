@@ -5,4 +5,5 @@ export interface GetTaxonArgs {
     taxonomyId: string;
     selectionMode: string;
     contentType: string;
+    traceContext?: any;
 }

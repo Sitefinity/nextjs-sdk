@@ -15,8 +15,10 @@ import { FormViewModel, getFormRulesViewModel, getFormHiddenFields } from './for
 import { FormEntity } from './form.entity';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function Form(props: WidgetContext<FormEntity>) {
+    const { span, ctx } = Tracer.traceWidget(props, true);
     const entity = props.model.Properties;
     const context = props.requestContext;
     const searchParams = context.searchParams;
@@ -31,7 +33,7 @@ export async function Form(props: WidgetContext<FormEntity>) {
     if (entity.SelectedItems && entity.SelectedItems.ItemIdsOrdered && entity.SelectedItems.ItemIdsOrdered.length > 0) {
         let formDto: FormDto | null = null;
         try {
-            formDto = await RestClientForContext.getItem<FormDto>(entity.SelectedItems, { type: RestSdkTypes.Form });
+            formDto = await RestClientForContext.getItem<FormDto>(entity.SelectedItems, { type: RestSdkTypes.Form, traceContext: ctx});
         } catch (error) {
             const attributes = htmlAttributes(props, error as string);
             return (props.requestContext.isEdit ? <div {...attributes} /> : null);
@@ -53,11 +55,11 @@ export async function Form(props: WidgetContext<FormEntity>) {
 
         let formModel: LayoutServiceResponse;
         try {
-            formModel = await RestClient.getFormLayout({ id: formDto.Id, queryParams: queryParams });
+            formModel = await RestClient.getFormLayout({ id: formDto.Id, queryParams: queryParams, traceContext: ctx });
         } catch (err) {
             if (context.isEdit) {
                 queryParams[QueryParamNames.Action] = 'edit';
-                formModel = await RestClient.getFormLayout({ id: formDto.Id, queryParams: queryParams });
+                formModel = await RestClient.getFormLayout({ id: formDto.Id, queryParams: queryParams, traceContext: ctx });
                 viewModel.Warning = 'This form is a Draft and will not be displayed on the site until you publish the form.';
             } else {
                 throw err;
@@ -71,7 +73,7 @@ export async function Form(props: WidgetContext<FormEntity>) {
         viewModel.Attributes = entity.Attributes;
 
         if (entity.FormSubmitAction === FormSubmitAction.Redirect && entity.RedirectPage) {
-            const redirectPage = await RestClientForContext.getItem<PageItem>(entity.RedirectPage, { type: RestSdkTypes.Pages });
+            const redirectPage = await RestClientForContext.getItem<PageItem>(entity.RedirectPage, { type: RestSdkTypes.Pages, traceContext: ctx });
             if (redirectPage) {
                 viewModel.CustomSubmitAction = true;
                 viewModel.RedirectUrl = await redirectPage.ViewUrl;
@@ -110,7 +112,7 @@ export async function Form(props: WidgetContext<FormEntity>) {
       {viewModel.SkipDataSubmission && <span data-sf-role="skip-data-submission" />}
       <div data-sf-role="fields-container" >
         {viewModel.FormModel && viewModel.FormModel.ComponentContext.Components.map((widgetModel: WidgetModel<any>, idx: number) => {
-                return RenderWidgetService.createComponent(widgetModel, context);
+                return RenderWidgetService.createComponent(widgetModel, context, ctx);
             })
             }
       </div>
@@ -127,6 +129,7 @@ export async function Form(props: WidgetContext<FormEntity>) {
         <>
           <div {...formDataAttributes} />
         </>}
+        { Tracer.endSpan(span) }
       </>
     );
 }

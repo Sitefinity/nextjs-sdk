@@ -4,14 +4,21 @@ import { getUniqueId } from '../../../editor/utils/getUniqueId';
 import { htmlAttributes } from '../../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { CheckboxesEntity } from './checkboxes.entity';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export function Checkboxes(props: WidgetContext<CheckboxesEntity>) {
+    const { span } = Tracer.traceWidget(props, false);
     const dataAttributes = htmlAttributes(props);
 
     const defaultRendering = (<CheckboxesDefaultRender entity={props.model.Properties} />);
-    return  (props.requestContext.isEdit
-        ? <div {...dataAttributes}> {defaultRendering} </div>
-        :defaultRendering);
+    return (
+      <>
+        { props.requestContext.isEdit
+                ? <div {...dataAttributes}> {defaultRendering} </div>
+            :defaultRendering }
+        { Tracer.endSpan(span) }
+      </>
+    );
 }
 
 export function CheckboxesDefaultRender(props: { entity: CheckboxesEntity }) {

@@ -7,10 +7,12 @@ import { DropdownEntity } from '../dropdown/dropdown.entity';
 import { htmlAttributes, setWarning } from '../../../editor/widget-framework/attributes';
 import { getChoiceItems } from './dynamic-list-view-model';
 import { ChoiceEntityBase } from '../interfaces/choice-entity-base';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function DynamicList(props: WidgetContext<DynamicListEntity>) {
+    const { span, ctx } = Tracer.traceWidget(props, true);
     const entity = props.model.Properties;
-    const choices = await getChoiceItems(entity);
+    const choices = await getChoiceItems(entity, ctx);
     let defaultRender: JSX.Element;
 
     const baseEntity: ChoiceEntityBase = {
@@ -60,9 +62,12 @@ export async function DynamicList(props: WidgetContext<DynamicListEntity>) {
         }
 
         return (
-          <div {...dataAttributes}>
-            {defaultRender}
-          </div>
+          <>
+            <div {...dataAttributes}>
+              {defaultRender}
+            </div>
+            {Tracer.endSpan(span)}
+          </>
         );
     }
 

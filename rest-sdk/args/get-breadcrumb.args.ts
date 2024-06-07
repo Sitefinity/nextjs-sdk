@@ -9,4 +9,5 @@ export interface GetBreadcrumbArgs {
     startingPageId?: string;
     currentPageUrl: string;
     culture?: string;
+    traceContext?: any;
 }

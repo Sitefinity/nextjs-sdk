@@ -7,4 +7,5 @@ export interface GetPageLayoutArgs {
     relatedFields?: string[];
     additionalHeaders?: {[key: string]: string};
     followRedirects: boolean;
+    traceContext?: any;
 }

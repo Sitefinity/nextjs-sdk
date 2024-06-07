@@ -19,8 +19,10 @@ import { SanitizerService } from '../../services/sanitizer-service';
 import { ContentListSettings } from './content-list-settings';
 import { SearchParams } from './interfaces/search-params';
 import { LanguagesList } from './languages-list';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function SearchResults(props: WidgetContext<SearchResultsEntity>) {
+  const {span, ctx} = Tracer.traceWidget(props, true);
     const dataAttributes = htmlAttributes(props);
     const entity = props.model.Properties;
 
@@ -62,7 +64,7 @@ export async function SearchResults(props: WidgetContext<SearchResultsEntity>) {
     }
 
     if (searchParams.searchQuery) {
-        const response = await performSearch(entity, searchParams);
+        const response = await performSearch(entity, searchParams, ctx);
         viewModel.TotalCount = response?.totalCount || 0;
         viewModel.SearchResults = response?.searchResults || [];
 
@@ -139,7 +141,7 @@ export async function SearchResults(props: WidgetContext<SearchResultsEntity>) {
                         (item.Title)
                       }
                       </h3>
-                      <p className="mb-1" dangerouslySetInnerHTML={{ __html: SanitizerService.sanitizeHtml(item.HighLighterResult) as any }} />
+                      <p className="mb-1" dangerouslySetInnerHTML={{ __html: SanitizerService.getInstance().sanitizeHtml(item.HighLighterResult) as any }} />
                       { hasLink && <a className="text-decoration-none" href={item.Link}>{item.Link}</a> }
                     </div>
                   </div>
@@ -155,7 +157,8 @@ export async function SearchResults(props: WidgetContext<SearchResultsEntity>) {
             itemsTotalCount={viewModel.TotalCount}
             pagerMode={PagerMode.QueryParameter}
             itemsPerPage={entity.ListSettings?.ItemsPerPage}
-            context={context} />
+            context={context}
+            traceContext={ctx} />
         </div>
        }
       <div id="sf-search-results-loading-indicator" style={{display:'none'}}>
@@ -165,12 +168,13 @@ export async function SearchResults(props: WidgetContext<SearchResultsEntity>) {
           </div>
         </div>
       </div>
+      {Tracer.endSpan(span)}
     </>
     );
 }
 
 
-async function performSearch(entity: SearchResultsEntity, searchParams: SearchParams) {
+async function performSearch(entity: SearchResultsEntity, searchParams: SearchParams, traceContext?: any) {
     let orderByClause = searchParams.orderBy || entity.Sorting;
 
     if (orderByClause === SearchResultsSorting.NewestFirst) {
@@ -207,7 +211,8 @@ async function performSearch(entity: SearchResultsEntity, searchParams: SearchPa
         highlightedFields: entity.HighlightedFields as string,
         scoringInfo: searchParams.scoringInfo,
         resultsForAllSites: searchParams.resultsForAllSites === 'True',
-        filter: searchParams.filter
+        filter: searchParams.filter,
+        traceContext
       });
 
       return searchResults;

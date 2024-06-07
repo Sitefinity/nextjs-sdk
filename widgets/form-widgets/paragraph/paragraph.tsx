@@ -6,11 +6,13 @@ import { htmlAttributes } from '../../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { ParagraphEntity } from './paragraph.entity';
 import { TextFieldViewModel } from '../textfield/text-field-viewmodel';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 const InvalidDefaultValidationMessageWithLabel = '{0} field is invalid';
 const InvalidDefaultValidationMessage = 'Field is invalid';
 
 export function Paragraph(props: WidgetContext<ParagraphEntity>) {
+    const { span } = Tracer.traceWidget(props, false);
     const entity = props.model.Properties;
 
     const viewModel: TextFieldViewModel = {
@@ -69,8 +71,12 @@ export function Paragraph(props: WidgetContext<ParagraphEntity>) {
         />
       <script data-sf-role={`end_field_${paragraphUniqueId}`} />
     </>);
-    return (props.requestContext.isEdit
+    return (<>
+      { props.requestContext.isEdit
         ? <div {...dataAttributes}> {defaultRendering} </div>
-        : defaultRendering);
+        : defaultRendering }
+      { Tracer.endSpan(span) }
+    </>
+    );
 }
 

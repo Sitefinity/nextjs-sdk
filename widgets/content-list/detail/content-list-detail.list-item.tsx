@@ -8,7 +8,7 @@ export function ListItemDetail(viewModel: DetailViewModel) {
           <span>{ viewModel.DetailItem?.Title }</span>
         </h3>
 
-        <div dangerouslySetInnerHTML={{__html: SanitizerService.sanitizeHtml(viewModel.DetailItem?.Content) as any}} />
+        <div dangerouslySetInnerHTML={{__html: SanitizerService.getInstance().sanitizeHtml(viewModel.DetailItem?.Content) as any}} />
       </>
     );
 }

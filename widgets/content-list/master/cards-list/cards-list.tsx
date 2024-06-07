@@ -30,7 +30,7 @@ export function CardsList(props: { model: CardsListModel, entity?: ContentListEn
                                     (item.Title.Value)
                                 }
                       </h5>
-                      {item.Text && <div className={item.Text.Css} dangerouslySetInnerHTML={{ __html: SanitizerService.sanitizeHtml(content) as any }} />}
+                      {item.Text && <div className={item.Text.Css} dangerouslySetInnerHTML={{ __html: SanitizerService.getInstance().sanitizeHtml(content) as any }} />}
                     </div>
                   </div>
                 </div>);

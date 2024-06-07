@@ -42,7 +42,7 @@ export class StyleGenerator {
     }
 
     public static getButtonClasses(buttonType: ButtonType) {
-        const className = (StylingConfig.ButtonClasses)[buttonType]!.Value || buttonType;
+        const className = (StylingConfig.ButtonClasses)[buttonType]?.Value || buttonType;
         return className;
     }
 }

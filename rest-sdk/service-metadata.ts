@@ -1,4 +1,5 @@
 
+import { CollectionResponse } from './dto/collection-response';
 import { SdkItem } from './dto/sdk-item';
 import { RestSdkTypes, RestClient } from './rest-client';
 import { RootUrlService } from './root-url.service';
@@ -7,14 +8,15 @@ export class ServiceMetadata {
     public static serviceMetadataCache: ServiceMetadataDefinition;
     public static taxonomies: SdkItem[];
 
-    public static async fetch(): Promise<ServiceMetadataDefinition> {
+    public static async fetch(traceContext?: any): Promise<ServiceMetadataDefinition> {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const metadataUrl = `${serviceUrl}/sfmeta`;
-        const metadata = await RestClient.sendRequest<ServiceMetadataDefinition>({ url: metadataUrl });
+        const metadata = await RestClient.sendRequest<ServiceMetadataDefinition>({ url: metadataUrl, traceContext });
         ServiceMetadata.serviceMetadataCache = metadata;
 
         const taxonomies = await RestClient.getItems({
-            type: RestSdkTypes.Taxonomies
+            type: RestSdkTypes.Taxonomies,
+            traceContext
         });
 
         ServiceMetadata.taxonomies = taxonomies.Items;

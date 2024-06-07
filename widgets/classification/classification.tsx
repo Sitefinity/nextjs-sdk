@@ -4,8 +4,8 @@ import { classNames } from '../../editor/utils/classNames';
 import { htmlAttributes, getCustomAttributes, setHideEmptyVisual } from '../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { RestClient } from '../../rest-sdk/rest-client';
-import { SdkItem } from '../../rest-sdk/dto/sdk-item';
 import { TaxonDto } from '../../rest-sdk/dto/taxon-dto';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 const mapTaxonProperties = (taxon: TaxonDto, taxonomyName: string, viewUrl?: string, searchParams?: { [key: string]: string; }) => {
     const children: TaxonDto[] = [];
@@ -50,7 +50,7 @@ const getTaxaUrl = (taxonomyName: string, taxonUrl: string, viewUrl?: string, se
     return `${viewUrl}/-in-${taxonomyName},${taxonUrl.replaceAll('/', ',')}` + queryString;
 };
 
-const getTaxa = (entity: ClassificationEntity): Promise<TaxonDto[] | null> => {
+const getTaxa = (entity: ClassificationEntity, traceContext?: any): Promise<TaxonDto[] | null> => {
     const settings = entity.ClassificationSettings;
     if (settings && settings.selectedTaxonomyId) {
         let orderBy = entity.OrderBy || 'Title ASC';
@@ -67,7 +67,8 @@ const getTaxa = (entity: ClassificationEntity): Promise<TaxonDto[] | null> => {
             selectionMode: settings.selectionMode,
             showEmpty: entity.ShowEmpty,
             taxaIds: settings.selectedTaxaIds || [],
-            taxonomyId: settings.selectedTaxonomyId
+            taxonomyId: settings.selectedTaxonomyId,
+            traceContext
         });
     }
 
@@ -75,6 +76,7 @@ const getTaxa = (entity: ClassificationEntity): Promise<TaxonDto[] | null> => {
 };
 
 export async function Classification(props: WidgetContext<ClassificationEntity>) {
+    const { span, ctx } = Tracer.traceWidget(props, true);
     const model = props.model;
     const properties = model.Properties;
     if (props.requestContext.isEdit && !model.Caption && properties?.ClassificationSettings?.selectedTaxonomyId) {
@@ -83,7 +85,7 @@ export async function Classification(props: WidgetContext<ClassificationEntity>)
 
     const settings = properties.ClassificationSettings;
     const dataAttributes = htmlAttributes(props);
-    const taxa = await getTaxa(model.Properties);
+    const taxa = await getTaxa(model.Properties, ctx);
     const viewUrl = props.requestContext.layout.Fields['ViewUrl'] || '';
     const searchParams = props.requestContext.searchParams;
 
@@ -108,42 +110,42 @@ export async function Classification(props: WidgetContext<ClassificationEntity>)
     dataAttributes['data-sf-role'] = 'classification';
 
     const renderSubTaxa = (taxa: TaxonDto[], show: boolean) => {
-        return (
-            taxa && taxa.length > 0 ? <ul>
-              {
-                    taxa.map((t: TaxonDto, idx: number) => {
-                        const count = show ? `(${t.AppliedTo})` : '';
-                        return (<li key={idx} className="list-unstyled">
-                          <a className="text-decoration-none" href={t.UrlName}>{t.Title}</a>
-                          {count}
-                          {
-                                t.SubTaxa && renderSubTaxa(t.SubTaxa, show)
-                            }
-                        </li>);
-                    })
-                }
-            </ul> : null
-        );
+        return (taxa && taxa.length > 0 ? <ul>
+          {
+                taxa.map((t: TaxonDto, idx: number) => {
+                    const count = show ? `(${t.AppliedTo})` : '';
+                    return (<li key={idx} className="list-unstyled">
+                      <a className="text-decoration-none" href={t.UrlName}>{t.Title}</a>
+                      { count }
+                      { t.SubTaxa && renderSubTaxa(t.SubTaxa, show) }
+                    </li>);
+                })
+            }
+        </ul> : null
+          );
     };
 
     return (
-      <ul
-        {...dataAttributes}
-        {...classificationCustomAttributes}
+      <>
+        <ul
+          {...dataAttributes}
+          {...classificationCustomAttributes}
         >
-        {
+          {
                 updatedTokens.map((item: TaxonDto, idx: number) => {
                     const count = showItemCount ? `(${item.AppliedTo})` : '';
                     return (<li key={idx} className="list-unstyled">
                       <a className="text-decoration-none" href={item.UrlName}>{item.Title}</a>
                       {count}
                       {
-                            item.SubTaxa && renderSubTaxa(item.SubTaxa, showItemCount)
+                          item.SubTaxa && renderSubTaxa(item.SubTaxa, showItemCount)
                         }
                     </li>);
                 }
-                )
-            }
-      </ul>
+            )
+        }
+        </ul>
+        { Tracer.endSpan(span) }
+      </>
     );
 }

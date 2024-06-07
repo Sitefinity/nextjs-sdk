@@ -14,10 +14,13 @@ import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { LayoutResponse } from '../rest-sdk/dto/layout-service.response';
 import { PageScriptLocation } from '../rest-sdk/dto/scripts';
 import { PageFrontEndUtilLoader } from './page-frontend-util-loader';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function RenderPage({ params, searchParams, relatedFields }: { params: { slug: string[] }, searchParams: Dictionary, relatedFields?: string[] }) {
-    const headersList = headers();
-    RestClient.host = headersList.get('host');
+    if (!RestClient.host) {
+        const headersList = headers();
+        RestClient.host = headersList.get('host');
+    }
 
     let layoutResponse: LayoutResponse | null = null;
 
@@ -27,8 +30,9 @@ export async function RenderPage({ params, searchParams, relatedFields }: { para
         }
     }
 
+    const { span, ctx } = Tracer.startSpan(`RenderPage ${params.slug.join('/')}`, true);
     try {
-        layoutResponse = await pageLayout({ params, searchParams, relatedFields });
+        layoutResponse = await pageLayout({ params, searchParams, relatedFields, traceContext: ctx });
     } catch (error) {
         if (error instanceof ErrorCodeException && error.code === 'NotFound') {
             notFound();
@@ -88,9 +92,10 @@ export async function RenderPage({ params, searchParams, relatedFields }: { para
         {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} />}
         {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} />}
         {appState.widgets.map((child) => {
-                return RenderWidgetService.createComponent(child, appState.requestContext);
+                return RenderWidgetService.createComponent(child, appState.requestContext, ctx);
             })}
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyBottom} />
+        {Tracer.endSpan(span)}
       </>
     );
 }

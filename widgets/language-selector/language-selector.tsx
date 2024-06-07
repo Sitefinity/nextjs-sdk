@@ -8,8 +8,10 @@ import { StyleGenerator } from '../styling/style-generator.service';
 import { RenderWidgetService } from '../../services/render-widget-service';
 import { LanguageSelectorEntity } from './language-selector-entity';
 import { LanguageSelectorDefaultTemplate } from './language-selector-default-template';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function LanguageSelector(props: WidgetContext<LanguageSelectorEntity>) {
+    const {span, ctx} = Tracer.traceWidget(props, true);
     const properties = props.model.Properties;
     const dataAttributes = htmlAttributes(props);
     const defaultClass = properties.CssClass;
@@ -57,7 +59,8 @@ export async function LanguageSelector(props: WidgetContext<LanguageSelectorEnti
         const homePageId = (await RestClient.getCurrentSite()).HomePageId;
         const homePage = await RestClient.getItem<PageItem>({
             type: RestSdkTypes.Pages,
-            id: homePageId
+            id: homePageId,
+            traceContext: ctx
         });
         homePageViewUrl = homePage?.ViewUrl;
     }
@@ -66,15 +69,18 @@ export async function LanguageSelector(props: WidgetContext<LanguageSelectorEnti
     const template = (templates && templates[properties.SfViewName](props)) || LanguageSelectorDefaultTemplate;
 
     return (
-      <div {...dataAttributes} {...languageSelectorCustomAttributes}>
-        {template({
-                viewModel: {
-                    languages: languages,
-                    languageSelectorLinkAction: props.model.Properties.LanguageSelectorLinkAction,
-                    homePageViewUrl: homePageViewUrl
-                }
-            })}
-      </div>
+      <>
+        <div {...dataAttributes} {...languageSelectorCustomAttributes}>
+          {template({
+            viewModel: {
+                languages: languages,
+                languageSelectorLinkAction: props.model.Properties.LanguageSelectorLinkAction,
+                homePageViewUrl: homePageViewUrl
+            }
+        })}
+        </div>
+        {Tracer.endSpan(span)}
+      </>
     );
 }
 

@@ -4,6 +4,7 @@ import { PagerViewModel } from './pager-view-model';
 import { classNames } from '../../editor/utils/classNames';
 import { RequestContext } from '../../editor/request-context';
 import { PagerMode } from '../common/page-mode';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export interface PagerProps {
   itemsTotalCount: number;
@@ -12,10 +13,12 @@ export interface PagerProps {
   pagerQueryTemplate?: string;
   pagerTemplate?: string;
   itemsPerPage?: number;
-  pagerMode: PagerMode
+  pagerMode: PagerMode;
+  traceContext?: any;
 }
 
-export async function Pager(props: PagerProps) {
+export function Pager(props: PagerProps) {
+  const { span } = Tracer.startSpan('Pager', false, props.traceContext);
   const { itemsTotalCount, context, currentPage } = props;
   const pagerTemplate = props.pagerTemplate || PagerViewModel.PageNumberDefaultTemplate;
   const pagerQueryTemplate = props.pagerQueryTemplate || PagerViewModel.PageNumberDefaultQueryTemplate;
@@ -62,6 +65,7 @@ export async function Pager(props: PagerProps) {
           </a>
         </li>
       }
+      {Tracer.endSpan(span)}
     </ul>
   );
 }

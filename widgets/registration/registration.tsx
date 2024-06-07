@@ -16,6 +16,7 @@ import { RegistrationViewModel } from './interfaces/registration-view-model';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { VisibilityStyle } from '../styling/visibility-style';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 const EncryptedParam = 'qs';
 
@@ -29,6 +30,7 @@ const isAccountActivationRequest = (context: RequestContext) => {
 
 
 export async function Registration(props: WidgetContext<RegistrationEntity>) {
+    const {span, ctx} = Tracer.traceWidget(props, true);
     const entity: RegistrationEntity = props.model.Properties;
 
     const context = props.requestContext;
@@ -40,14 +42,14 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
     const viewModel: RegistrationViewModel = populateViewModel(entity);
 
     if (entity.ExternalProviders && entity.ExternalProviders.length){
-        const externalProviders = await RestClient.getExternalProviders();
+        const externalProviders = await RestClient.getExternalProviders(ctx);
         viewModel.ExternalProviders = externalProviders.filter((p: ExternalProvider) => entity.ExternalProviders?.indexOf(p.Name) !== -1);
     }
 
     viewModel.VisibilityClasses = StylingConfig.VisibilityClasses;
     viewModel.InvalidClass = StylingConfig.InvalidClass;
 
-    const loginPage = await RestClientForContext.getItem<PageItem>(entity.LoginPage!, { type: RestSdkTypes.Pages });
+    const loginPage = await RestClientForContext.getItem<PageItem>(entity.LoginPage!, { type: RestSdkTypes.Pages, traceContext: ctx });
     if (loginPage) {
         viewModel.LoginPageUrl = loginPage.ViewUrl;
     }
@@ -57,13 +59,13 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
         viewModel.Labels.ActivationMessage = entity.ActivationMessage;
 
         try {
-            await RestClient.activateAccount(context.searchParams[EncryptedParam]);
+            await RestClient.activateAccount(context.searchParams[EncryptedParam], ctx);
         } catch (ErrorCodeException) {
             viewModel.Labels.ActivationMessage = entity.ActivationFailMessage;
         }
     } else {
         if (entity.PostRegistrationAction === PostRegistrationAction.RedirectToPage) {
-            const postRegistrationRedirectPage = await RestClientForContext.getItem<PageItem>(entity.PostRegistrationRedirectPage!, { type: RestSdkTypes.Pages });
+            const postRegistrationRedirectPage = await RestClientForContext.getItem<PageItem>(entity.PostRegistrationRedirectPage!, { type: RestSdkTypes.Pages, traceContext: ctx });
             if (postRegistrationRedirectPage) {
                 viewModel.RedirectUrl = postRegistrationRedirectPage.ViewUrl;
             }
@@ -71,7 +73,7 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
             viewModel.PostRegistrationAction = PostRegistrationAction.RedirectToPage;
         }
 
-        const regSettings: RegistrationSettingsDto = await RestClient.getRegistrationSettings();
+        const regSettings: RegistrationSettingsDto = await RestClient.getRegistrationSettings(ctx);
         viewModel.RequiresQuestionAndAnswer = regSettings.RequiresQuestionAndAnswer;
         viewModel.ActivationMethod = regSettings.ActivationMethod;
     }
@@ -117,33 +119,36 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
     const customAttributes = getCustomAttributes(entity.Attributes, 'Registration');
 
     return (
-      <div
-        data-sf-invalid={viewModel.InvalidClass}
-        data-sf-role="sf-registration-container"
-        data-sf-visibility-hidden={viewModel.VisibilityClasses[VisibilityStyle.Hidden]}
-        {...dataAttributes}
-        {...customAttributes}
-        >
-        {viewModel.IsAccountActivationRequest && <h2 className="mb-3">
-            {labels.ActivationMessage}
-        </h2>
-        }
-        {showSuccessMessage && <h3>{labels.SuccessHeader}</h3>}
-        {showSuccessMessage && <p>{labels.SuccessLabel}</p>}
-        {
-            !showSuccessMessage &&
-            <>
+      <>
+        <div
+          data-sf-invalid={viewModel.InvalidClass}
+          data-sf-role="sf-registration-container"
+          data-sf-visibility-hidden={viewModel.VisibilityClasses[VisibilityStyle.Hidden]}
+          {...dataAttributes}
+          {...customAttributes}
+          >
+          {viewModel.IsAccountActivationRequest && <h2 className="mb-3">
+              {labels.ActivationMessage}
+          </h2>
+          }
+          {showSuccessMessage && <h3>{labels.SuccessHeader}</h3>}
+          {showSuccessMessage && <p>{labels.SuccessLabel}</p>}
+          {
+              !showSuccessMessage &&
+              <>
 
-              <RegistrationFormClient
-                action={viewModel.RegistrationHandlerPath}
-                viewModel={viewModel}
-                context={context}
-                formContainerServer={formContainerServer}
-                confirmServer={confirmServer}
-                   />
-            </>
-        }
-      </div>
+                <RegistrationFormClient
+                  action={viewModel.RegistrationHandlerPath}
+                  viewModel={viewModel}
+                  context={context}
+                  formContainerServer={formContainerServer}
+                  confirmServer={confirmServer}
+                     />
+              </>
+          }
+        </div>
+        {Tracer.endSpan(span)}
+      </>
     );
 }
 

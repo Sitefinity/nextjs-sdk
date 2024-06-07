@@ -15,8 +15,10 @@ import { DetailPageSelectionMode } from '../content-lists-common/detail-page-sel
 import { getPageNumber } from '../pager/pager-view-model';
 import { ContentListViewModel } from './master/content-list-model-base';
 import { ServiceMetadata } from '../../rest-sdk/service-metadata';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function ContentList(props: WidgetContext<ContentListEntity>) {
+    const {span, ctx} = Tracer.traceWidget(props, true);
     const model = props.model;
     const properties = model.Properties;
     const type = properties?.SelectedItems?.Content[0].Type;
@@ -38,7 +40,8 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
             itemsPerPage: properties.ListSettings?.ItemsPerPage || 20,
             pagerQueryTemplate: properties.PagerQueryTemplate,
             pagerTemplate: properties.PagerTemplate,
-            context: context
+            context: context,
+            traceContext: props.traceContext
         },
         requestContext: context
     };
@@ -50,16 +53,16 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
 
     if (properties.ContentViewDisplayMode === ContentViewDisplayMode.Automatic) {
         if (context.detailItem) {
-            viewModel.detailModel = await handleDetailView(context.detailItem, props);
+            viewModel.detailModel = handleDetailView(context.detailItem, props);
         } else {
-            viewModel.listModel = await handleListView(props, context, pageNumber);
+            viewModel.listModel = await handleListView(props, context, pageNumber, ctx);
             viewModel.pagerProps!.itemsTotalCount = viewModel.listModel.Items.TotalCount;
         }
     } else if (properties.ContentViewDisplayMode === ContentViewDisplayMode.Detail) {
         if (properties.SelectedItems && properties.SelectedItems.Content && properties.SelectedItems.Content.length > 0) {
             const selectedContent = properties.SelectedItems.Content[0];
             const itemIdsOrdered = properties.SelectedItems.ItemIdsOrdered;
-            const detailModel = await handleDetailView({
+            const detailModel = handleDetailView({
                 Id: itemIdsOrdered ? itemIdsOrdered![0]: '',
                 ItemType: selectedContent.Type,
                 ProviderName: selectedContent.Variations![0].Source
@@ -67,13 +70,13 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
             viewModel.detailModel = detailModel;
         }
     } else if (properties.ContentViewDisplayMode === ContentViewDisplayMode.Master) {
-        viewModel.listModel = await handleListView(props, context, pageNumber);
+        viewModel.listModel = await handleListView(props, context, pageNumber, ctx);
         viewModel.pagerProps!.itemsTotalCount = viewModel.listModel.Items.TotalCount;
     }
 
     return (
       <div {...attributes}>
-        { viewModel.detailModel && <ContentListDetail viewModel={viewModel} /> }
+        { viewModel.detailModel && <ContentListDetail viewModel={{...viewModel, traceContext: ctx}} /> }
         { viewModel.listModel && <ContentListMaster viewModel={viewModel} /> }
         { viewModel.listModel && properties.ListSettings?.DisplayMode === ListDisplayMode.Paging &&
         <div className="mt-2">
@@ -85,9 +88,11 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
             pagerQueryTemplate={properties.PagerQueryTemplate}
             pagerTemplate={properties.PagerTemplate}
             context={context}
+            traceContext={ctx}
             />
         </div>
         }
+        { Tracer.endSpan(span) }
       </div>
     );
 }
@@ -129,7 +134,7 @@ function handleDetailView(detailItem: DetailItem, props: WidgetContext<ContentLi
     return detailModel;
 }
 
-async function handleListView(props: WidgetContext<ContentListEntity>, requestContext: RequestContext, currentPage: number) {
+async function handleListView(props: WidgetContext<ContentListEntity>, requestContext: RequestContext, currentPage: number, ctx: any) {
     const listFieldMapping: {[key: string]: string} = {};
     props.model.Properties.ListFieldMapping?.forEach((entry) => {
         listFieldMapping[entry.FriendlyName!] = entry.Name!;
@@ -140,7 +145,7 @@ async function handleListView(props: WidgetContext<ContentListEntity>, requestCo
         fieldCssClassMap[entry.FieldName] = entry.CssClass;
     });
 
-    const items = await ContentListsCommonRestService.getItems(props.model.Properties, props.requestContext.detailItem, requestContext, currentPage);
+    const items = await ContentListsCommonRestService.getItems(props.model.Properties, props.requestContext.detailItem, requestContext, currentPage, ctx);
 
     let contentListMasterModel: ContentListModelMaster = {
         OpenDetails: !(props.model.Properties.ContentViewDisplayMode === ContentViewDisplayMode.Master && props.model.Properties.DetailPageMode === DetailPageSelectionMode.SamePage),

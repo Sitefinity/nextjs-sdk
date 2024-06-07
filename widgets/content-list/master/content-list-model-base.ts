@@ -10,6 +10,7 @@ export interface ContentListViewModel {
     entity: ContentListEntityBase;
     pagerProps?: PagerProps;
     requestContext: RequestContext;
+    traceContext?: any;
 }
 
 export interface ContentListModelbase {

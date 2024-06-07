@@ -12,10 +12,13 @@ import { StylingConfig } from '../styling/styling-config';
 import { ColumnHolder, ComponentContainer } from './column-holder';
 import { SectionHolder } from './section-holder';
 import { SectionEntity } from './section.entity';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+
 const ColumnNamePrefix = 'Column';
 const sectionKey = 'Section';
 
 export async function Section(props: WidgetContext<SectionEntity>) {
+    const {span, ctx} = Tracer.traceWidget(props, true);
     props.model.Properties.ColumnsCount = props.model.Properties.ColumnsCount || 1;
     props.model.Properties.ColumnProportionsInfo = props.model.Properties.ColumnProportionsInfo || ['12'];
     const columns = populateColumns(props);
@@ -32,24 +35,27 @@ export async function Section(props: WidgetContext<SectionEntity>) {
     const TagName = (props.model.Properties.TagName || 'section') as keyof JSX.IntrinsicElements;
 
     return (
-      <TagName {...section.Attributes} style={section.Style}>
-        {section.ShowVideo && section.VideoUrl &&
-        <div className="sc-video__wrapper">
-          <video className="sc-video__element" autoPlay={true} muted={true} loop={true}>
-            <source src={section.VideoUrl} />
-          </video>
-        </div>
+      <>
+        <TagName {...section.Attributes} style={section.Style}>
+          {section.ShowVideo && section.VideoUrl &&
+            <div className="sc-video__wrapper">
+              <video className="sc-video__element" autoPlay={true} muted={true} loop={true}>
+                <source src={section.VideoUrl} />
+              </video>
+            </div>
             }
-        {columns.map((x, i) => {
+          {columns.map((x, i) => {
                 return (
                   <div key={i} {...x.Attributes} style={x.Style}>
                     {x.Children.map(y => {
-                            return RenderWidgetService.createComponent(y.model, props.requestContext);
+                            return RenderWidgetService.createComponent(y.model, props.requestContext, ctx);
                         })}
                   </div>
                 );
             })}
-      </TagName>
+        </TagName>
+        {Tracer.endSpan(span)}
+      </>
     );
 }
 

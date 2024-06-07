@@ -16,11 +16,10 @@ import { ContentListEntityBase } from './content-lists-base.entity';
 import { RequestContext } from '../../editor/request-context';
 import { EMTPY_GUID } from '../../editor/utils/guid';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
-import { QueryParamNames } from '../../rest-sdk/query-params-names';
 
 export class ContentListsCommonRestService {
 
-    static async getItems(entity: ContentListEntityBase, detailItem: DetailItem | undefined, requestContext?: RequestContext, currentPage: number = 1): Promise<CollectionResponse<SdkItem>> {
+    static async getItems(entity: ContentListEntityBase, detailItem: DetailItem | undefined, requestContext?: RequestContext, currentPage: number = 1, traceContext?: any): Promise<CollectionResponse<SdkItem>> {
         if (entity.SelectedItems && entity.SelectedItems.Content && entity.SelectedItems.Content.length > 0
             && entity.SelectedItems.Content[0].Variations) {
             const selectedContent = entity.SelectedItems.Content[0];
@@ -31,7 +30,7 @@ export class ContentListsCommonRestService {
 
             const additionalFilter = entity.FilterExpression;
             const parentFilter = this.getParentFilterExpression(selectedContent, variation, detailItem);
-            const classification = requestContext ? await this.getClassificationFilter(entity, requestContext) : null;
+            const classification = requestContext ? await this.getClassificationFilter(entity, requestContext, traceContext) : null;
 
             const filters: Array<CombinedFilter | FilterClause | RelationFilter | null> = [mainFilter, additionalFilter, parentFilter, classification];
             let bigFilter: CombinedFilter = {
@@ -48,7 +47,8 @@ export class ContentListsCommonRestService {
                 provider: variation.Source,
                 orderBy: <OrderBy[]>[this.getOrderByExpression(entity)].filter(x => x),
                 fields: this.getSelectExpression(entity),
-                filter: bigFilter
+                filter: bigFilter,
+                traceContext
             };
 
             return RestClient.getItems(getAllArgs);
@@ -166,7 +166,7 @@ export class ContentListsCommonRestService {
         return filter;
     }
 
-    private static async getClassificationFilter(entity: ContentListEntityBase, requestContext: RequestContext) {
+    private static async getClassificationFilter(entity: ContentListEntityBase, requestContext: RequestContext, traceContext?: any) {
         const url = requestContext.url;
         const segments = url ? url.split('/') : [];
         const regex = /(^-in-((?:\w|-){1,}),(.+?);?$)+/;
@@ -193,7 +193,8 @@ export class ContentListsCommonRestService {
                         '@param': `'${encodeURIComponent(taxaUrl)}'`
                     });
                     RestClient.sendRequest<{ value: string }>({
-                        url: `${RootUrlService.getServerCmsServiceUrl()}/taxonomies/Default.GetTaxonByUrl(taxonomyName='${taxaName}',taxonUrl=@param)${queryParams}`
+                        url: `${RootUrlService.getServerCmsServiceUrl()}/taxonomies/Default.GetTaxonByUrl(taxonomyName='${taxaName}',taxonUrl=@param)${queryParams}`,
+                        traceContext
                     }).then(taxonId => {
                         const fieldName = ServiceMetadata.getTaxonomyFieldName(entity.SelectedItems?.Content[0]!.Type!, taxaName);
 

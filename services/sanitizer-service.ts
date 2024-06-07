@@ -19,7 +19,13 @@ export interface SanitizerConfig {
 }
 
 export class SanitizerService {
-    private static defaultConfig: Config = {
+    private static instance: SanitizerService;
+
+    private constructor() {
+        // force singleton
+    }
+
+    private defaultConfig: Config = {
         ADD_TAGS: ['iframe', 'sf-input'],
         ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'sfref', 'contenteditable', 'target'],
         ALLOW_ARIA_ATTR: true,
@@ -27,35 +33,50 @@ export class SanitizerService {
         ALLOW_SELF_CLOSE_IN_ATTR: true
     };
 
-    public static sanitizeHtml(input: string | Node, config: SanitizerConfig | null = null) {
+    public static getInstance(): SanitizerService {
+        if (!SanitizerService.instance) {
+            SanitizerService.instance = new SanitizerService();
+
+            DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+                if (node.nodeName.toLowerCase() === 'iframe' && !node.hasAttribute('sandbox')) {
+                    node.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-popups');
+                }
+            });
+        }
+        return SanitizerService.instance;
+    }
+
+    public sanitizeHtml(input: string | Node, config: SanitizerConfig | null = null) {
         const newConfig = config != null ? this.parseConfig(config) : {};
         const finalConfig = Object.assign({}, this.defaultConfig, newConfig);
         return DOMPurify.sanitize(input || '', finalConfig);
     }
 
-    public static configure(config: SanitizerConfig) {
+    public configure(config: SanitizerConfig) {
         this.defaultConfig = this.parseConfig(config);
     }
 
-    private static parseConfig(config: SanitizerConfig): Config {
-        return Object.fromEntries(Object.entries({
-            ADD_ATTR: config.additionalAtributes,
-            ADD_DATA_URI_TAGS: config.additionalDataUriTags,
-            ADD_TAGS: config.additionalTags,
-            ADD_URI_SAFE_ATTR: config.additionalUriSafeAttributes,
-            ALLOW_ARIA_ATTR: config.allowAriaAttributes,
-            ALLOW_DATA_ATTR: config.allowDataAttributes,
-            ALLOW_UNKNOWN_PROTOCOLS: config.allowUnknownProtocols,
-            ALLOW_SELF_CLOSE_IN_ATTR: config.allowSelfcloseInAttributes,
-            ALLOWED_ATTR: config.allowedAttributes,
-            ALLOWED_TAGS: config.allowedTags,
-            ALLOWED_NAMESPACES: config.allowedNamespaces,
-            ALLOWED_URI_REGEXP: config.allowedUriRegex,
-            FORBID_ATTR: config.forbiddenAttributes,
-            FORBID_CONTENTS: config.forbiddenContents,
-            FORBID_TAGS: config.forbiddenTags
-        }).filter(([key, value]) => {
-            return value != null;
-        }));
+    private parseConfig(config: SanitizerConfig): Config {
+        return Object.fromEntries(
+            Object.entries({
+                ADD_ATTR: config.additionalAtributes,
+                ADD_DATA_URI_TAGS: config.additionalDataUriTags,
+                ADD_TAGS: config.additionalTags,
+                ADD_URI_SAFE_ATTR: config.additionalUriSafeAttributes,
+                ALLOW_ARIA_ATTR: config.allowAriaAttributes,
+                ALLOW_DATA_ATTR: config.allowDataAttributes,
+                ALLOW_UNKNOWN_PROTOCOLS: config.allowUnknownProtocols,
+                ALLOW_SELF_CLOSE_IN_ATTR: config.allowSelfcloseInAttributes,
+                ALLOWED_ATTR: config.allowedAttributes,
+                ALLOWED_TAGS: config.allowedTags,
+                ALLOWED_NAMESPACES: config.allowedNamespaces,
+                ALLOWED_URI_REGEXP: config.allowedUriRegex,
+                FORBID_ATTR: config.forbiddenAttributes,
+                FORBID_CONTENTS: config.forbiddenContents,
+                FORBID_TAGS: config.forbiddenTags
+            }).filter(([key, value]) => {
+                return value != null;
+            })
+        );
     }
 }

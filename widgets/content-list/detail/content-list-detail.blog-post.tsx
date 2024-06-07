@@ -14,7 +14,7 @@ export function BlogPostDetail(viewModel: DetailViewModel) {
 
       <div>{ viewModel.DetailItem?.Summary }</div>
 
-      <div dangerouslySetInnerHTML={{__html: SanitizerService.sanitizeHtml(viewModel.DetailItem?.Content) as any}} />
+      <div dangerouslySetInnerHTML={{__html: SanitizerService.getInstance().sanitizeHtml(viewModel.DetailItem?.Content) as any}} />
     </>
     );
 }

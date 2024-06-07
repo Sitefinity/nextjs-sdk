@@ -3,8 +3,10 @@ import { htmlAttributes } from '../../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { MultipleChoiceClient, MultipleChoiceClientViewModel } from './multiple-choice-client';
 import { MultipleChoiceEntity } from './multiple-choice.entity';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export function MultipleChoice(props: WidgetContext<MultipleChoiceEntity>) {
+    const { span } = Tracer.traceWidget(props, false);
     const entity = props.model.Properties;
     const viewModel: MultipleChoiceClientViewModel = {
         Choices: entity.Choices || [],
@@ -52,7 +54,12 @@ export function MultipleChoice(props: WidgetContext<MultipleChoiceEntity>) {
         <script data-sf-role={`end_field_${multipleChoiceUniqueId}`} />
       </>
     );
-    return (props.requestContext.isEdit
+    return (
+      <>
+        { props.requestContext.isEdit
         ? <div {...dataAttributes}> {defaultRendering} </div>
-        :defaultRendering);
+        :defaultRendering }
+        { Tracer.endSpan(span) }
+      </>
+    );
 }

@@ -6,4 +6,5 @@ export interface GetNavigationArgs {
     levelsToInclude?: number;
     selectedPageId?: string;
     culture?: string;
+    traceContext?: any;
 }

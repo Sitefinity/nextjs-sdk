@@ -10,15 +10,22 @@ import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { ImageItem } from '../../rest-sdk/dto/image-item';
 import { ThumbnailItem } from '../../rest-sdk/dto/thumbnail-item';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 const imageWrapperClass = 'd-inline-block';
 
 export async function Image(props: WidgetContext<ImageEntity>) {
+    const { span, ctx } = Tracer.traceWidget(props, true);
     const dataAttributes = htmlAttributes(props);
 
     const entity: ImageEntity = props.model.Properties;
     if (!entity.Item) {
-        return (<div {...dataAttributes} />);
+        return (
+          <>
+            <div {...dataAttributes} />
+            { Tracer.endSpan(span) }
+          </>
+        );
     }
 
     let imageItem: ImageItem | undefined = undefined;
@@ -26,12 +33,18 @@ export async function Image(props: WidgetContext<ImageEntity>) {
         imageItem = await RestClient.getItemWithFallback<ImageItem>({
             type: RestSdkTypes.Image,
             id: entity.Item.Id.toString(),
-            provider: entity.Item.Provider
+            provider: entity.Item.Provider,
+            traceContext: ctx
         });
     }
 
     if (!imageItem) {
-        return (<div {...dataAttributes} />);
+        return (
+          <>
+            <div {...dataAttributes} />
+            { Tracer.endSpan(span) }
+          </>
+        );
     }
 
     const isSvg = imageItem.MimeType === 'image/svg+xml';
@@ -101,6 +114,7 @@ export async function Image(props: WidgetContext<ImageEntity>) {
         return (
           <a href={imageItem.Url} className={anchorClass} {...dataAttributes}>
             {renderImageTag(imageViewModel, {})}
+            {Tracer.endSpan(span)}
           </a>
         );
     } else if (entity.ClickAction === ImageClickAction.OpenLink && !!entity.ActionLink?.href) {
@@ -108,10 +122,16 @@ export async function Image(props: WidgetContext<ImageEntity>) {
         return (
           <a {...anchorAttributes} {...dataAttributes}>
             {renderImageTag(imageViewModel, {})}
+            {Tracer.endSpan(span)}
           </a>
         );
     } else {
-        return renderImageTag(imageViewModel, dataAttributes, viewModelCssClass);
+        return (
+          <>
+            {renderImageTag(imageViewModel, dataAttributes, viewModelCssClass)}
+            {Tracer.endSpan(span)}
+          </>
+        );
     }
 }
 

@@ -14,8 +14,10 @@ import { RootUrlService } from '../../rest-sdk/root-url.service';
 import { ChangePasswordEntity } from './change-password.entity';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>) {
+    const {span, ctx} = Tracer.traceWidget(props, true);
     const entity = props.model.Properties;
 
     const dataAttributes = htmlAttributes(props);
@@ -43,11 +45,11 @@ export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>)
         }
     };
 
-    const user: UserDto = await RestClient.getCurrentUser();
+    const user: UserDto = await RestClient.getCurrentUser(ctx);
     viewModel.ExternalProviderName = user?.ExternalProviderName;
 
     if (entity.PostPasswordChangeAction === PostPasswordChangeAction.RedirectToPage) {
-        const item = await RestClientForContext.getItem<PageItem>(entity.PostPasswordChangeRedirectPage!, { type: RestSdkTypes.Pages });
+        const item = await RestClientForContext.getItem<PageItem>(entity.PostPasswordChangeRedirectPage!, { type: RestSdkTypes.Pages, traceContext: ctx });
         viewModel.RedirectUrl = item.ViewUrl;
     } else {
         viewModel.PostPasswordChangeMessage = entity.PostPasswordChangeMessage;
@@ -57,26 +59,29 @@ export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>)
     const labels = viewModel.Labels;
 
     return (
-      <div
-        data-sf-role="sf-change-password-container"
-        data-sf-visibility-hidden={viewModel.VisibilityClasses[VisibilityStyle.Hidden]}
-        data-sf-invalid={viewModel.InvalidClass}
-        {...dataAttributes}
-        >
-        { !hasUser
-        ? <div className="alert alert-danger my-3">{labels.LoginFirstMessage}</div>
-        : viewModel.ExternalProviderName
-            ? <div>{`${labels.ExternalProviderMessageFormat}${viewModel.ExternalProviderName}`}</div>
-            :  <>
-              <ChangePasswordFormClient
-                viewModel={viewModel} />
-              <input type="hidden" name="redirectUrl" value={viewModel.RedirectUrl} />
-              <input type="hidden" name="postChangeMessage" value={viewModel.PostPasswordChangeMessage} />
-              <input type="hidden" name="postChangeAction" value={viewModel.PostPasswordChangeAction} />
-              <input type="hidden" name="validationRequiredMessage" value={labels.ValidationRequiredMessage} />
-              <input type="hidden" name="validationMismatchMessage" value={labels.ValidationMismatchMessage} />
-            </>
-        }
-      </div>
+      <>
+        <div
+          data-sf-role="sf-change-password-container"
+          data-sf-visibility-hidden={viewModel.VisibilityClasses[VisibilityStyle.Hidden]}
+          data-sf-invalid={viewModel.InvalidClass}
+          {...dataAttributes}
+          >
+          { !hasUser
+          ? <div className="alert alert-danger my-3">{labels.LoginFirstMessage}</div>
+          : viewModel.ExternalProviderName
+          ? <div>{`${labels.ExternalProviderMessageFormat}${viewModel.ExternalProviderName}`}</div>
+          :  <>
+            <ChangePasswordFormClient
+              viewModel={viewModel} />
+            <input type="hidden" name="redirectUrl" value={viewModel.RedirectUrl} />
+            <input type="hidden" name="postChangeMessage" value={viewModel.PostPasswordChangeMessage} />
+            <input type="hidden" name="postChangeAction" value={viewModel.PostPasswordChangeAction} />
+            <input type="hidden" name="validationRequiredMessage" value={labels.ValidationRequiredMessage} />
+            <input type="hidden" name="validationMismatchMessage" value={labels.ValidationMismatchMessage} />
+          </>
+          }
+        </div>
+        {Tracer.endSpan(span)}
+      </>
     );
 }

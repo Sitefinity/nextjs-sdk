@@ -20,19 +20,20 @@ export interface DynamicListViewModel {
     ColumnsNumber: number;
 }
 
-export async function getChoiceItems(entity: DynamicListEntity): Promise<ChoiceOption[]> {
+export async function getChoiceItems(entity: DynamicListEntity, traceContext?: any): Promise<ChoiceOption[]> {
     let items: SdkItem[] = [];
     const defaultFieldName: string = 'Title';
     if (entity.ListType === SelectionMode.Classification) {
-        items = await getClassifications(entity);
+        items = await getClassifications(entity, traceContext);
     } else if (entity.ListType === SelectionMode.Content) {
-        items = await getContent(entity);
+        items = await getContent(entity, traceContext);
     }
 
     return transformItemsToChoices(items, defaultFieldName, entity);
 }
 
-async function getContent(entity: DynamicListEntity): Promise<SdkItem[]> {
+
+async function getContent(entity: DynamicListEntity, traceContext?: any): Promise<SdkItem[]> {
     if (entity.SelectedContent?.Content &&
         entity.SelectedContent.Content.length > 0 &&
         entity.SelectedContent.Content[0].Type != null) {
@@ -40,7 +41,8 @@ async function getContent(entity: DynamicListEntity): Promise<SdkItem[]> {
 
         const getAllArgs: GetAllArgs = {
             orderBy: [],
-            type: itemType
+            type: itemType,
+            traceContext
         };
 
         const orderBy = getOrderByExpressionForContent(entity);
@@ -77,7 +79,7 @@ function getOrderByExpressionForContent(entity: DynamicListEntity) {
     return orderBy;
 }
 
-async function getClassifications(entity: DynamicListEntity): Promise<TaxonDto[]> {
+async function getClassifications(entity: DynamicListEntity, traceContext?: any): Promise<TaxonDto[]> {
     const settings = entity.ClassificationSettings;
 
     if (settings && settings.selectedTaxonomyId) {
@@ -95,7 +97,8 @@ async function getClassifications(entity: DynamicListEntity): Promise<TaxonDto[]
             selectionMode: settings.selectionMode,
             taxonomyId: settings.selectedTaxonomyId,
             showEmpty: true,
-            taxaIds: settings.selectedTaxaIds!
+            taxaIds: settings.selectedTaxaIds!,
+            traceContext
         });
     }
 

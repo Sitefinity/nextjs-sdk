@@ -7,11 +7,13 @@ import { htmlAttributes } from '../../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { TextFieldEntity } from './text-field.entity';
 import { TextFieldViewModel } from './text-field-viewmodel';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 const InvalidDefaultValidationMessageWithLabel = '{0} field is invalid';
 const InvalidDefaultValidationMessage = 'Field is invalid';
 
 export function TextField(props: WidgetContext<TextFieldEntity>) {
+    const {span} = Tracer.traceWidget(props, false);
     const entity = props.model.Properties;
     const viewModel: TextFieldViewModel = {
         CssClass: classNames(entity.CssClass, (StylingConfig.FieldSizeClasses as { [key: string]: string })[('Width' + entity.FieldSize)]) || null,
@@ -65,9 +67,14 @@ export function TextField(props: WidgetContext<TextFieldEntity>) {
         ariaDescribedByAttribute={ariaDescribedByAttribute} />
       <script data-sf-role={`end_field_${textBoxUniqueId}`} />
     </>);
-     return (props.requestContext.isEdit
-        ? <div {...dataAttributes}> {defaultRendering} </div>
-        :defaultRendering);
+     return (
+       <>
+         {props.requestContext.isEdit
+         ? <div {...dataAttributes}> {defaultRendering} </div>
+         :defaultRendering}
+         { Tracer.endSpan(span) }
+       </>
+     );
 }
 
 function buildValidationAttributes(entity: TextFieldEntity) {

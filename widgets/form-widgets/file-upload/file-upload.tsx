@@ -4,6 +4,7 @@ import { getUniqueId } from '../../../editor/utils/getUniqueId';
 import { htmlAttributes } from '../../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../../editor/widget-framework/widget-context';
 import { FileUploadEntity } from './file-upload.entity';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 const predefinedAcceptValues: {[key: string]: string[]} = {
     'Audio': [ '.mp3', '.ogg', '.wav', '.wma' ],
@@ -39,6 +40,7 @@ const getAcceptedFileTypes = (entity: FileUploadEntity): string[] | null => {
         };
 
 export function FileUpload(props: WidgetContext<FileUploadEntity>) {
+    const { span } = Tracer.traceWidget(props, false);
     const entity = props.model.Properties;
     const context = props.requestContext;
     const allowedFileTypes = getAcceptedFileTypes(entity);
@@ -78,7 +80,12 @@ export function FileUpload(props: WidgetContext<FileUploadEntity>) {
         />
       <script data-sf-role={`end_field_${fileFieldUniqueId}`} />
     </>);
-     return (props.requestContext.isEdit
+     return (
+       <>
+         { props.requestContext.isEdit
         ? <div {...dataAttributes}> {defaultRendering} </div>
-        :defaultRendering);
+        :defaultRendering }
+         { Tracer.endSpan(span) }
+       </>
+     );
 }

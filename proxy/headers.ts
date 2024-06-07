@@ -1,7 +1,7 @@
 import { RootUrlService } from '../rest-sdk/root-url.service';
 
 export function getProxyHeaders(host: string) {
-    let resolvedHost =  host;
+    let resolvedHost = process.env.SF_PROXY_ORIGINAL_HOST || host;
     if (!resolvedHost) {
         if (process.env.PORT) {
             resolvedHost = `localhost:${process.env.PORT}`;

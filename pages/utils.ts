@@ -14,8 +14,8 @@ import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 import { GetPageLayoutArgs } from '../rest-sdk/args/get-page-layout.args';
 import { RedirectResponse } from '../rest-sdk/dto/redirect.response';
 
-export async function pageLayout({ params, searchParams, relatedFields }: PageParams): Promise<LayoutResponse> {
-    await initRestSdk();
+export async function pageLayout({ params, searchParams, relatedFields, traceContext }: PageParams): Promise<LayoutResponse> {
+    await initRestSdk(traceContext);
     const pagePath = params.slug.join('/');
 
     try {
@@ -24,7 +24,8 @@ export async function pageLayout({ params, searchParams, relatedFields }: PagePa
             queryParams: searchParams,
             cookie: cookies().toString(),
             followRedirects: false,
-            relatedFields: relatedFields
+            relatedFields,
+            traceContext
         };
 
         // adding X-SF-Access-Key header so the layout service can return responce in edit

@@ -7,5 +7,6 @@ export interface GetFacetsArgs {
     filter: string,
     resultsForAllSites: string,
     searchFields: string,
-    facets: Facet[]
+    facets: Facet[],
+    traceContext?: any
 }

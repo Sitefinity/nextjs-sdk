@@ -21,8 +21,10 @@ import { PageItem } from '../../rest-sdk/dto/page-item';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { getPageNumber } from '../pager/pager-view-model';
 import { RenderWidgetService } from '../../services/render-widget-service';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
+    const {span, ctx} = Tracer.traceWidget(props, true);
     const entity = props.model.Properties;
 
     const context = props.requestContext;
@@ -49,7 +51,8 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
             itemsPerPage: entity.ListSettings?.ItemsPerPage,
             pagerMode: entity.PagerMode,
             pagerQueryTemplate: entity.PagerQueryTemplate,
-            pagerTemplate: entity.PagerTemplate
+            pagerTemplate: entity.PagerTemplate,
+            traceContext: ctx
         }
     };
 
@@ -62,12 +65,12 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
          if (context.detailItem) {
             const viewCss = entity.CssClasses?.find(x => x.FieldName === 'Details view');
             defaultClass = viewCss ? viewCss.CssClass : '';
-            viewModel.detailModel = await handleDetailView(context.detailItem, entity, context);
+            viewModel.detailModel = await handleDetailView(context.detailItem, entity, context, ctx);
          } else {
             const fieldName = isGrid ? 'Document table' : 'Document list';
             const viewCss = entity.CssClasses?.find(x => x.FieldName === fieldName);
             defaultClass = viewCss ? viewCss.CssClass : '';
-            viewModel.listModel = await handleListView(entity, context, pageNumber);
+            viewModel.listModel = await handleListView(entity, context, pageNumber, ctx);
             viewModel.pagerProps.itemsTotalCount = viewModel.listModel?.Items.TotalCount;
          }
      } else if (entity.ContentViewDisplayMode === ContentViewDisplayMode.Detail) {
@@ -78,13 +81,13 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
                 Id: itemIdsOrdered ? itemIdsOrdered![0]: '',
                 ItemType: selectedContent.Type,
                 ProviderName: selectedContent.Variations![0].Source
-            }, entity, context);
+            }, entity, context, ctx);
             viewModel.detailModel = detailModel;
             const viewCss = entity.CssClasses?.find(x => x.FieldName === 'Details view');
             defaultClass = viewCss ? viewCss.CssClass : '';
         }
     } else if (entity.ContentViewDisplayMode === ContentViewDisplayMode.Master) {
-        viewModel.listModel = await handleListView(entity, context, pageNumber);
+        viewModel.listModel = await handleListView(entity, context, pageNumber, ctx);
         viewModel.pagerProps.itemsTotalCount = viewModel.listModel?.Items.TotalCount;
     }
 
@@ -100,7 +103,8 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
             const page = await RestClient.getItem({
                 type: RestSdkTypes.Pages,
                 id: entity.DetailPage.ItemIdsOrdered![0],
-                provider: entity.DetailPage.Content[0].Variations![0].Source
+                provider: entity.DetailPage.Content[0].Variations![0].Source,
+                traceContext: ctx
             });
 
             url = page.RelativeUrlPath;
@@ -128,6 +132,7 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
       >
         { viewModel.detailModel && detailTemplate({viewModel}) }
         { viewModel.listModel && masterTemplate({viewModel}) }
+        { Tracer.endSpan(span) }
       </div>
     );
 }
@@ -135,17 +140,19 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
  const handleDetailView = async (
     detailItem: DetailItem,
     entity: DocumentListEntity,
-    context: RequestContext
+    context: RequestContext,
+    traceContext: any
  ) => {
     let item;
     if (context.detailItem) {
         item = await RestClient.getItem({
             type: detailItem.ItemType,
             id: detailItem.Id,
-            provider: detailItem.ProviderName
+            provider: detailItem.ProviderName,
+            traceContext
         });
     } else {
-        const items = await ContentListsCommonRestService.getItems(entity, detailItem);
+        const items = await ContentListsCommonRestService.getItems(entity, detailItem, undefined, undefined, traceContext);
         item = items.Items[0];
     }
 
@@ -158,8 +165,8 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
     return detailModel;
 };
 
- const handleListView = async (entity: DocumentListEntity, context: RequestContext, currentPage: number) => {
-    const items = await ContentListsCommonRestService.getItems(entity, context.detailItem, context, currentPage);
+ const handleListView = async (entity: DocumentListEntity, context: RequestContext, currentPage: number, traceContext: any) => {
+    const items = await ContentListsCommonRestService.getItems(entity, context.detailItem, context, currentPage, traceContext);
     const DocumentListMasterModel: DocumentListModelMaster = {
         OpenDetails: !(entity.ContentViewDisplayMode === ContentViewDisplayMode.Master && entity.DetailPageMode === 'SamePage'),
         Items: items

@@ -6,20 +6,21 @@ import { htmlAttributes, getCustomAttributes } from '../../editor/widget-framewo
 import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { SanitizerService } from '../../services/sanitizer-service';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function ContentBlock(props: WidgetContext<ContentBlockEntity>) {
-
+    const { span, ctx } = Tracer.traceWidget(props, true);
     let dataAttributes = htmlAttributes(props);
 
     let content = props.model.Properties.Content;
     if (props.model.Properties?.SharedContentID && props.model.Properties.SharedContentID !== '00000000-0000-0000-0000-000000000000') {
-        const contentItem = await RestClient.getSharedContent(props.model.Properties.SharedContentID, props.requestContext.culture);
+        const contentItem = await RestClient.getSharedContent(props.model.Properties.SharedContentID, props.requestContext.culture, ctx);
         content = contentItem.Content;
     }
 
     const tagName = props.model.Properties.TagName || 'div';
     dataAttributes.dangerouslySetInnerHTML = {
-        __html: SanitizerService.sanitizeHtml(content || '')
+        __html: SanitizerService.getInstance().sanitizeHtml(content || '')
     };
 
     let cssClasses = [];
@@ -42,5 +43,10 @@ export async function ContentBlock(props: WidgetContext<ContentBlockEntity>) {
     const customAttributes = getCustomAttributes(props.model.Properties.Attributes, 'ContentBlock');
     dataAttributes = Object.assign(dataAttributes, customAttributes);
 
-    return React.createElement(tagName, dataAttributes);
+    return (
+      <>
+        { React.createElement(tagName, dataAttributes) }
+        { Tracer.endSpan(span) }
+      </>
+    );
 }

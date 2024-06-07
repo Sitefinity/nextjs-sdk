@@ -74,7 +74,7 @@ export function EventDetail(viewModel: DetailViewModel) {
         { location && (<p>{ location }</p>) }
         { description && (<p>{ description }</p>) }
         { summary && (<p>{ summary }</p>) }
-        { content && (<p dangerouslySetInnerHTML={{__html: SanitizerService.sanitizeHtml(content) as any}} />) }
+        { content && (<p dangerouslySetInnerHTML={{__html: SanitizerService.getInstance().sanitizeHtml(content) as any}} />) }
       </>
     );
 }

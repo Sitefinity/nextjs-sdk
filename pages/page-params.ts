@@ -5,5 +5,6 @@ export interface PageParams {
         slug: string[]
     },
     searchParams: Dictionary,
-    relatedFields?: string[]
+    relatedFields?: string[],
+    traceContext?: any
 }

@@ -12,8 +12,10 @@ import { htmlAttributes, getCustomAttributes } from '../../editor/widget-framewo
 import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { SearchFacetsViewModel } from './search-facets-viewmodel';
+import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function SearchFacets(props: WidgetContext<SearchFacetsEntity>) {
+    const {span, ctx} = Tracer.traceWidget(props, true);
     const model = props.model;
     const dataAttributes = htmlAttributes(props);
     const entity = model.Properties;
@@ -38,7 +40,7 @@ export async function SearchFacets(props: WidgetContext<SearchFacetsEntity>) {
     const searchQuery = searchParams['searchQuery'];
 
     if (searchQuery && entity.IndexCatalogue) {
-        const facetableFieldsFromIndex: FacetsViewModelDto[] = await RestClient.getFacatebleFields(entity.IndexCatalogue);
+        const facetableFieldsFromIndex: FacetsViewModelDto[] = await RestClient.getFacatebleFields(entity.IndexCatalogue, ctx);
         const facetableFieldsKeys: string[] = facetableFieldsFromIndex.map((x: FacetsViewModelDto) => x.FacetableFieldNames.length ? x.FacetableFieldNames[0]: '' );
         const sourceGroups: {[key: string]: FacetField[] } = entity.SelectedFacets!.reduce((group: {[key: string]: FacetField [] }, contentVariation: FacetField) => {
             const { FacetableFieldNames } = contentVariation;
@@ -56,7 +58,7 @@ export async function SearchFacets(props: WidgetContext<SearchFacetsEntity>) {
         const culture = searchParams['sf_culture'];
         const resultsForAllSites = searchParams['resultsForAllSites'];
         let searchServiceFacetResponse: FacetFlatResponseDto[] = [];
-        
+
         try {
             searchServiceFacetResponse = await RestClient.getFacets({
                 searchQuery,
@@ -65,7 +67,8 @@ export async function SearchFacets(props: WidgetContext<SearchFacetsEntity>) {
                 filter,
                 resultsForAllSites,
                 searchFields: entity.SearchFields as string,
-                facets
+                facets,
+                traceContext: ctx
             });
         } catch (_) {
             // noop
@@ -98,6 +101,7 @@ export async function SearchFacets(props: WidgetContext<SearchFacetsEntity>) {
           <SearchFacetsClient viewModel={viewModel} searchParams={searchParams} />
         </div>
         <input type="hidden" id="sf-currentPageUrl" value={props.requestContext.url || ''} />
+        {Tracer.endSpan(span)}
       </>
     );
 }
