@@ -162,6 +162,8 @@ export function FormClient(props: FromContainerProps) {
 
                 const formData = new FormData(form);
                 formData.set('sf_antiforgery', headerValue || '');
+                const hiddenInputsTrueKeys = Object.entries(hiddenInputs).filter(([key, value]) => value === true).map(([key, value]) => key);
+                formData.set('sf_FormHiddenFields', hiddenInputsTrueKeys.join(',') );
 
                 fetch(viewModel.SubmitUrl!, { method: 'POST', body: formData }).then(function (formSubmitResponse) {
                     formSubmitResponse.json().then(function (jsonFormSubmitResponse) {

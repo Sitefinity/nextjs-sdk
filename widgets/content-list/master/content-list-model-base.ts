@@ -11,11 +11,13 @@ export interface ContentListViewModel {
     pagerProps?: PagerProps;
     requestContext: RequestContext;
     traceContext?: any;
+    widgetName: string;
 }
 
 export interface ContentListModelbase {
     Attributes: {[key: string]: string},
-    OpenDetails: boolean,
+    DetailPageUrl?: string,
+    RequestContext: RequestContext,
     Items: {
         Original: SdkItem,
         [key: string]: any

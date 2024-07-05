@@ -1,5 +1,11 @@
 'use client';
 
+export interface ExternalProviderData {
+    cssClass: string,
+    externalLoginPath: string,
+    label: string
+}
+
 export class ExternalLoginBase {
     public static ErrorQueryKey = 'loginerror';
     public static ShowSuccessMessageQueryKey = 'showSuccessMessage';
@@ -23,18 +29,9 @@ export class ExternalLoginBase {
 
     public static GetDefaultReturnUrl(context: any, args: {
         isError?: boolean,
-        errorRedirectUrl?: string,
         redirectUrl?: string,
         shouldEncode?: boolean
     } = { isError: false, shouldEncode: false}) {
-
-        if (args.errorRedirectUrl && args.isError) {
-            return args.errorRedirectUrl;
-        }
-
-        if (args.redirectUrl && !args.isError) {
-            return args.redirectUrl;
-        }
 
         const searchParams = {
             ...context.searchParams
@@ -50,10 +47,22 @@ export class ExternalLoginBase {
         }
 
         if (typeof window !== 'undefined') {
-            const queryString =  new URLSearchParams(searchParams);
-            const pathAndDomain = window.location.href.replace(window.location.search, '');
+            const queryString = new URLSearchParams(searchParams);
+            let result = '';
+            if (args.redirectUrl) {
+                result = args.redirectUrl;
+            } else {
+                result = window.location.href.replace(window.location.search, '');
+            }
 
-            let result = `${pathAndDomain}?${queryString}`;
+            if (queryString && Array.from(queryString).length > 0) {
+                result = `${result}?${queryString}`;
+            }
+
+            if (!ExternalLoginBase.isAbsoluteUrl(result)) {
+                result = new URL(result, window.location.origin).toString();
+            }
+
             if (args.shouldEncode) {
                 result = encodeURIComponent(result).toLowerCase();
             }
@@ -61,13 +70,17 @@ export class ExternalLoginBase {
             return result;
         }
 
+        if (args.redirectUrl) {
+            return args.redirectUrl;
+        }
+
         return '';
     }
 
     public static GetExternalLoginPath(context: any, provider: any, externalLoginHandlerPath?: string) {
         const expandPath = externalLoginHandlerPath || this.ExternalLoginHandlerPath;
-        const returnUrl = this.GetDefaultReturnUrl(context, { isError:false, shouldEncode:true });
-        const errorUrl = this.GetDefaultReturnUrl(context, { isError:true, shouldEncode:true });
+        const returnUrl = this.GetDefaultReturnUrl(context, { isError: false, shouldEncode: true });
+        const errorUrl = this.GetDefaultReturnUrl(context, { isError: true, shouldEncode: true });
 
         return `${expandPath}?provider=${provider}&returnUrl=${returnUrl}&errorUrl=${errorUrl}`;
     }
@@ -77,5 +90,14 @@ export class ExternalLoginBase {
             return '';
         }
         return '-sf-' + provider.toLowerCase() + '-button';
+    }
+
+    public static isAbsoluteUrl(url: string) {
+        try {
+            new URL(url);
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 }

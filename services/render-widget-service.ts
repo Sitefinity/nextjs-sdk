@@ -4,9 +4,10 @@ import { WidgetContext } from '../editor/widget-framework/widget-context';
 import { WidgetModel } from '../editor/widget-framework/widget-model';
 import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { LazyComponent } from '../widgets/lazy/lazy-component';
-import { EntityMetadataGenerator, PropertyModel } from '@progress/sitefinity-widget-designers-sdk';
+import { EntityMetadataGenerator } from '@progress/sitefinity-widget-designers-sdk';
 import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { ErrorBoundaryCustom } from '../pages/error-boundary';
 
 export class RenderWidgetService {
     public static widgetRegistry: WidgetRegistry;
@@ -20,7 +21,7 @@ export class RenderWidgetService {
             metadata: registeredType,
             model: widgetModel,
             requestContext,
-            traceContext
+            traceContext: registeredType?.ssr ? traceContext : null
         };
 
         try {
@@ -35,7 +36,13 @@ export class RenderWidgetService {
             }
 
             const element = React.createElement(componentType, { key: widgetModel.Id, ...propsForWidget });
-            return element;
+
+            // modify props to remove functions in otder to pass them to client component
+            const propsCopy = JSON.parse(JSON.stringify(propsForWidget));
+            propsCopy.metadata.componentType = null;
+            propsCopy.metadata.designerMetadata = null;
+            const result = React.createElement(ErrorBoundaryCustom, { key: 'err' + widgetModel.Id, children: element, context: propsCopy });
+            return result;
         } catch (err) {
             if (requestContext.isEdit) {
                 const errCast = err as Error;

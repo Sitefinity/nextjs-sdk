@@ -7,24 +7,27 @@ import { RenderLazyWidgetsClient } from './render-lazy-widgets.client';
 import { RenderPageScripts } from './render-page-scripts';
 import { Dictionary } from '../typings/dictionary';
 import { ServiceMetadata } from '../rest-sdk/service-metadata';
-import { RestClient } from '../rest-sdk/rest-client';
 import { headers } from 'next/headers';
 import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { LayoutResponse } from '../rest-sdk/dto/layout-service.response';
+import { PageItem } from '../rest-sdk/dto/page-item';
 import { PageScriptLocation } from '../rest-sdk/dto/scripts';
 import { PageFrontEndUtilLoader } from './page-frontend-util-loader';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { getPageNumber } from '../widgets/pager/pager-view-model';
+import { ContentListEntityBase } from '../widgets/content-lists-common/content-lists-base.entity';
+import { ContentListsCommonRestService } from '../widgets/content-lists-common/content-lists-rest.setvice';
+import { initServerSideRestSdk } from '../rest-sdk/init';
+import { setHostServerContext } from '../services/server-context';
 
 export async function RenderPage({ params, searchParams, relatedFields }: { params: { slug: string[] }, searchParams: Dictionary, relatedFields?: string[] }) {
-    if (!RestClient.host) {
-        const headersList = headers();
-        RestClient.host = headersList.get('host');
-    }
+    const host = headers().get('host') || '';
+    setHostServerContext(host);
 
     let layoutResponse: LayoutResponse | null = null;
 
-    if (params) {
+    if (params && params.slug && params.slug.length > 0) {
         if (params.slug.some(x => x === '_next') || params.slug[params.slug.length - 1].indexOf('.') !== -1) {
             notFound();
         }
@@ -58,10 +61,18 @@ export async function RenderPage({ params, searchParams, relatedFields }: { para
         return notFound();
     }
 
-    const layout = layoutResponse.layout;
     const isEdit = searchParams['sfaction'] === 'edit';
     const isPreview = searchParams['sfaction'] === 'preview';
     const isLive = !(isEdit || isPreview);
+
+    const layout = layoutResponse.layout;
+    await initServerSideRestSdk({
+        metadataHash: layout.MetadataHash,
+        queryParams: {
+            sf_culture: layout.Culture,
+            sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''
+        }
+    });
 
     const appState : AppState = {
         requestContext: {
@@ -72,21 +83,34 @@ export async function RenderPage({ params, searchParams, relatedFields }: { para
             isEdit,
             isPreview,
             isLive,
-            url: params.slug.join('/')
+            url: params.slug.join('/'),
+            pageNode: layout.Fields as PageItem
         },
         widgets: layout.ComponentContext.Components
     };
 
-    RestClient.contextQueryParams = {
-        sf_culture: layout.Culture,
-        sf_site: isEdit ? layout.SiteId : ''
-    };
+    // get all list widgets
+    const allWidgets = layout.ComponentContext.Components.flatMap(x => x.Children);
+    allWidgets.push(...layout.ComponentContext.Components);
+    allWidgets.filter(x => x.Name === 'SitefinityContentList' || x.Name === 'SitefinityDocumentList').forEach(x => {
+        // try to resolve pagers
+        const entity: ContentListEntityBase = x.Properties as ContentListEntityBase;
+        getPageNumber(entity.PagerMode, appState.requestContext, entity.PagerQueryTemplate, entity.PagerTemplate);
+
+        // try to resolve classifications
+        ContentListsCommonRestService.getClassificationSegment(appState.requestContext);
+    });
+
+    // if not resolved urls => 404
+    if (layout.UrlParameters && layout.UrlParameters.length > 0 && !layout.DetailItem) {
+        notFound();
+    }
 
     const liveUrl = params.slug.join('/') + '?' + new URLSearchParams(searchParams).toString();
 
     return (
       <>
-        <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} />
+        <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} additionalQueryParams={{ sf_culutre: layout.Culture, sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''}} />
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} />
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} />
         {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} />}

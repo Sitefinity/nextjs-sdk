@@ -4,13 +4,11 @@ import React from 'react';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { invalidDataAttr, invalidateElement, isValidEmail, serializeForm } from '../common/utils';
 import { classNames } from '../../editor/utils/classNames';
-import { getUniqueId } from '../../editor/utils/getUniqueId';
 import { ResetPasswordFormViewModel } from './interfaces/reset-password-form-view-model';
 import { RequestContext } from '../../editor/request-context';
 
-export function ForgottenPasswordFormClient (props: { viewModel: ResetPasswordFormViewModel, context: RequestContext}) {
-    const { viewModel } = props;
-    const emailInputId = React.useMemo(() => getUniqueId('sf-email-'), []);
+export function ForgottenPasswordFormClient (props: { viewModel: ResetPasswordFormViewModel, context: RequestContext, emailInputId: string }) {
+    const { viewModel, emailInputId } = props;
     const formRef = React.useRef<HTMLFormElement>(null);
     const emailInputRef = React.useRef<HTMLInputElement>(null);
     const labels = viewModel.Labels;
@@ -28,10 +26,9 @@ export function ForgottenPasswordFormClient (props: { viewModel: ResetPasswordFo
         }
 
         let model = { model: serializeForm(formRef.current!) };
-        model.model['ResetPasswordUrl'] = window.location.href;
         let submitUrl = (formRef.current!.attributes as any)['action'].value;
         window.fetch(submitUrl, { method: 'POST', body: JSON.stringify(model), headers: { 'Content-Type': 'application/json' } })
-            .then((response) => {
+            .then(() => {
                 setSentEmailLabelMessage(emailInputRef.current!.value);
                 setFormContainer(false);
                 setSuccessContainer(true);
@@ -94,8 +91,9 @@ export function ForgottenPasswordFormClient (props: { viewModel: ResetPasswordFo
     const successContainerStyle = {
         display: !visibilityClassHidden ? showSuccessContainer ? '' : 'none' : ''
     };
-    if (props.context.isLive) {
-        viewModel.ResetPasswordUrl = window.location.href;
+
+    if (props.context.isLive && !viewModel.ResetPasswordUrl?.toUpperCase().startsWith('HTTP')) {
+        viewModel.ResetPasswordUrl = typeof window !== 'undefined' ? window.location.protocol + '//' + viewModel.ResetPasswordUrl : '';
     }
 
     return (<>

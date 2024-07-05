@@ -8,7 +8,7 @@ import { ContentVariation } from '../../editor/widget-framework/mixed-content-co
 export class FilterConverterService {
     public static getMainFilter(variation: ContentVariation): CombinedFilter | FilterClause | RelationFilter | null {
         let filter: CombinedFilter | FilterClause | RelationFilter | null = null;
-        if (variation.Filter && variation.Filter.Value) {
+        if (variation?.Filter?.Value) {
             switch (variation.Filter.Key) {
                 case FilterTypes.Complex:
                     filter = this.parseComplexFilter(JSON.parse(variation.Filter.Value));

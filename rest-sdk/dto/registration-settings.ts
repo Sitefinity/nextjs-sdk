@@ -5,4 +5,9 @@ export interface RegistrationSettingsDto {
     Answer: string;
     SecurityQuestion: string;
     SecurityToken: string;
+    SmtpConfigured: boolean;
+}
+
+export enum ActivationMethod {
+    AfterConfirmation = 'AfterConfirmation'
 }

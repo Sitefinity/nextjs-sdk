@@ -2,16 +2,16 @@
 import { RenderWidgetService } from '../services/render-widget-service';
 import { RequestContext } from '../editor/request-context';
 import { RestClient } from '../rest-sdk/rest-client';
-import { initRestSdk } from '../rest-sdk/init';
+import { initServerSideRestSdk } from '../rest-sdk/init';
 import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
-import { LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
+import { PageItem } from '../rest-sdk/dto/page-item';
+import { setHostServerContext } from '../services/server-context';
 
 export async function RenderWidget({ searchParams }: { searchParams: { [key: string]: string } }) {
-    const headersList = headers();
-    RestClient.host = headersList.get('host');
+    const host = headers().get('host') || '';
+    setHostServerContext(host);
 
-    await initRestSdk();
     const widgetId = searchParams['widgetId'];
     const itemId = searchParams['itemId'];
     const itemType = searchParams['itemType'];
@@ -43,11 +43,13 @@ export async function RenderWidget({ searchParams }: { searchParams: { [key: str
     });
 
     const layout = layoutResponse.layout!;
-
-    RestClient.contextQueryParams = {
-        sf_culture: layout.Culture,
-        sf_site: isEdit ? layout.SiteId : ''
-    };
+    await initServerSideRestSdk({
+        metadataHash: layout.MetadataHash,
+        queryParams: {
+            sf_culture: layout.Culture,
+            sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''
+        }
+    });
 
     const widgetModel = await RestClient.getWidgetModel({
         id: itemId,
@@ -68,7 +70,8 @@ export async function RenderWidget({ searchParams }: { searchParams: { [key: str
         isPreview,
         isLive,
         culture: layout.Culture,
-        url: path
+        url: path,
+        pageNode: layout.Fields as PageItem
     };
 
     return (

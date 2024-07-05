@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { invalidDataAttr, isValidEmail, serializeForm } from '../common/utils';
 import { classNames } from '../../editor/utils/classNames';
-import { getUniqueId } from '../../editor/utils/getUniqueId';
 import { RequestContext } from '../../editor/request-context';
 import { RegistrationViewModel } from './interfaces/registration-view-model';
+import { SecurityService } from '../../services/security-service';
+import { ExternalLoginBase, ExternalProviderData } from '../external-login-base';
 
 export interface RegistrationFormProps {
     action: string;
@@ -14,10 +15,19 @@ export interface RegistrationFormProps {
     context: RequestContext;
     formContainerServer: JSX.Element;
     confirmServer: JSX.Element;
+    firstNameInputId: string,
+    lastNameInputId: string,
+    emailInputId: string,
+    passwordInputId: string,
+    repeatPasswordInputId: string,
+    questionInputId: string,
+    answerInputId: string
 }
 
 export function RegistrationFormClient(props: RegistrationFormProps) {
-    const { viewModel, context, formContainerServer, confirmServer } = props;
+    const { viewModel, context, formContainerServer, confirmServer,
+        firstNameInputId, lastNameInputId, emailInputId, passwordInputId,
+        repeatPasswordInputId, questionInputId, answerInputId } = props;
     const labels = viewModel.Labels;
     const visibilityClassHidden = viewModel.VisibilityClasses![VisibilityStyle.Hidden];
     const formRef = React.useRef<HTMLFormElement>(null);
@@ -27,16 +37,25 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
     const [invalidInputs, setInvalidInputs] = React.useState<{[key: string]: boolean | undefined;}>({});
     const [errorMessage, setErrorMessage] = React.useState<string>('');
     const [showFormContainer, setShowFormContainer] = React.useState<boolean>(true);
+    const [showSuccessRegistrationContainer, setSuccessRegistrationContainer] = React.useState<boolean>(false);
     const [showSuccessContainer, setSuccessContainer] = React.useState<boolean>(false);
     const [activationLinkMessage, setActivationLinkMessage] = React.useState<string>('');
+    const [externalProvidersData, setExternalProvidersData] = React.useState<ExternalProviderData[]>([]);
 
-    const firstNameInputId = React.useMemo(() => getUniqueId('sf-first-name-'), []);
-    const lastNameInputId = React.useMemo(() => getUniqueId('sf-last-name-'), []);
-    const emailInputId = React.useMemo(() => getUniqueId('sf-email-'), []);
-    const passwordInputId = React.useMemo(() => getUniqueId('sf-new-password-'), []);
-    const repeatPasswordInputId = React.useMemo(() => getUniqueId('sf-repeat-password-'), []);
-    const questionInputId = React.useMemo(() => getUniqueId('sf-secret-question-'), []);
-    const answerInputId = React.useMemo(() => getUniqueId('sf-secret-answer-'), []);
+    useEffect(() => {
+        const externalProviderData: ExternalProviderData[] = viewModel.ExternalProviders?.map(provider => {
+          const providerClass = ExternalLoginBase.GetExternalLoginButtonCssClass(provider.Name);
+          const externalLoginPath = ExternalLoginBase.GetExternalLoginPath(context, provider.Name);
+
+          return {
+            cssClass: providerClass,
+            externalLoginPath: externalLoginPath,
+            label: provider.Value
+          };
+        }) ?? [];
+
+        setExternalProvidersData(externalProviderData);
+      },[context, viewModel.ExternalProviders]);
 
     const postRegistrationAction = () => {
         let action = viewModel.PostRegistrationAction;
@@ -66,20 +85,22 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
             return;
         }
 
-        submitFormHandler(formRef.current!, '', postRegistrationAction, onRegistrationError);
+        SecurityService.setAntiForgeryTokens().then(() => {
+            submitFormHandler(formRef.current!, '', postRegistrationAction, onRegistrationError);
+        }, () => {
+            setErrorMessage('AntiForgery token retrieval failed');
+        });
     };
 
     const submitFormHandler = (
         form: HTMLFormElement,
         url: RequestInfo | URL,
-        onSuccess: ()=>void,
-        onError?: (err: string)=>void
+        onSuccess: ()=> void,
+        onError?: (err: string)=> void
     ) => {
-
         url = url || (form.attributes as any)['action'].value;
 
         let model = { model: serializeForm(form) };
-        model.model['ActivationPageUrl'] = window.location.href;
 
         window.fetch(url, {
             method: 'POST',
@@ -158,7 +179,7 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
     const showSuccessMessage = () => {
         setErrorMessage('');
         setShowFormContainer(false);
-        setSuccessContainer(true);
+        setSuccessRegistrationContainer(true);
     };
 
     const showSuccessAndConfirmationSentMessage = () => {
@@ -199,6 +220,13 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
         display: !visibilityClassHidden ? showSuccessContainer ? '' : 'none' : ''
     };
 
+    const successRegistrationContainerClass = classNames({
+        [visibilityClassHidden]: !showSuccessRegistrationContainer
+    });
+    const successRegistrationContainerStyle = {
+        display: !visibilityClassHidden ? showSuccessRegistrationContainer ? '' : 'none' : ''
+    };
+
     const inputValidationAttrs = (name: string) => {
         return {
             className: classNames('form-control',{
@@ -210,8 +238,8 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
         };
     };
 
-    if (context.isLive) {
-        viewModel.ActivationPageUrl = window.location.href;
+    if (context.isLive && !viewModel.ActivationPageUrl?.toUpperCase().startsWith('HTTP')) {
+        viewModel.ActivationPageUrl = typeof window !== 'undefined' ? window.location.protocol + '//' + viewModel.ActivationPageUrl : '';
     }
 
     return (<>
@@ -268,22 +296,42 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
           <div className="mb-3">
             <label htmlFor={questionInputId} className="form-label">{labels.SecretQuestionLabel}</label>
             <input id={questionInputId} type="text"
-              name="Question" data-sf-role="required"/>
+              data-sf-role="required"
+              {...inputValidationAttrs('Question')} />
           </div>
-              }
+          }
           {viewModel.RequiresQuestionAndAnswer &&
           <div className="mb-3">
             <label htmlFor={answerInputId} className="form-label">{labels.SecretAnswerLabel}</label>
             <input id={answerInputId} type="text"
-              name="Answer" data-sf-role="required"/>
+              data-sf-role="required"
+              {...inputValidationAttrs('Answer')} />
           </div>
-      }
-          <button className="btn btn-primary w-100" type="submit">{labels.RegisterButtonLabel}</button>
+          }
+          <input className="btn btn-primary w-100" type="submit" value={labels.RegisterButtonLabel} />
           <input type="hidden" name="ActivationPageUrl" defaultValue={viewModel.ActivationPageUrl} />
+          <input type="hidden" value="" name="sf_antiforgery" />
         </form>
+        {viewModel.LoginPageUrl && <div className="mt-3">{labels.LoginLabel}</div>}
+        {viewModel.LoginPageUrl && <a href={viewModel.LoginPageUrl} className="text-decoration-none">{labels.LoginLink}</a>}
+        {externalProvidersData.length > 0 &&
+        (<>
+          <h3 className="mt-3">{labels.ExternalProvidersHeader}</h3>
+            { externalProvidersData.map((providerData: ExternalProviderData, idx: number) => {
+                return (
+                  <a key={idx} className={classNames('btn border fs-5 w-100 mt-2', providerData.cssClass)} href={providerData.externalLoginPath} data-sf-test="extPrv">
+                    {providerData.label}
+                  </a>
+                );
+            })
+            }
+        </>)
+        }
         {formContainerServer}
       </div>
-      <div data-sf-role="success-registration-message-container" className="d-none">
+      <div data-sf-role="success-registration-message-container"
+        className={successRegistrationContainerClass}
+        style={successRegistrationContainerStyle}>
         <h3>{labels.SuccessHeader}</h3>
         <p>{labels.SuccessLabel}</p>
       </div>

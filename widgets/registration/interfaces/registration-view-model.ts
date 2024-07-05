@@ -41,4 +41,5 @@ export interface RegistrationViewModel {
     RequiresQuestionAndAnswer?: boolean;
     VisibilityClasses?: {[key: string]: string};
     InvalidClass?: string;
+    Warning?: string;
 }

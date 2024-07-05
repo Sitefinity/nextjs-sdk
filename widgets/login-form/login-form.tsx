@@ -15,6 +15,7 @@ import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { getUniqueId } from '../../editor/utils/getUniqueId';
 
 export async function LoginForm(props: WidgetContext<LoginFormEntity>) {
     const {span, ctx} = Tracer.traceWidget(props, true);
@@ -23,6 +24,9 @@ export async function LoginForm(props: WidgetContext<LoginFormEntity>) {
     const dataAttributes = htmlAttributes(props);
     const defaultClass =  entity.CssClass;
     const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
+    const usernameInputId = getUniqueId('sf-username-');
+    const passwordInputId = getUniqueId('sf-password-');
+    const rememberInputId = getUniqueId('sf-remember-');
 
     dataAttributes['className'] = classNames(defaultClass, marginClass);
 
@@ -50,7 +54,6 @@ export async function LoginForm(props: WidgetContext<LoginFormEntity>) {
         viewModel.ForgottenPasswordLink = resetPasswordPage.ViewUrl;
     }
 
-    const labels = viewModel.Labels;
     const customAttributes = getCustomAttributes(entity.Attributes, 'LoginForm');
 
     return (
@@ -61,30 +64,7 @@ export async function LoginForm(props: WidgetContext<LoginFormEntity>) {
           data-sf-visibility-hidden={viewModel.VisibilityClasses[VisibilityStyle.Hidden]}
           {...dataAttributes}
           {...customAttributes}>
-          <LoginFormClient viewModel={viewModel} context={context} />
-          {viewModel.RegistrationLink &&
-            <div className="row mt-3">
-              <div className="col-md-6">{labels.NotRegisteredLabel}</div>
-              <div className="col-md-6 text-end"><a href={viewModel.RegistrationLink}
-                className="text-decoration-none">{labels.RegisterLinkText}</a></div>
-            </div>
-    }
-
-          {viewModel.ExternalProviders && viewModel.ExternalProviders.length &&
-
-        [<h3 key={100} className="mt-3">{labels.ExternalProvidersHeader}</h3>,
-            viewModel.ExternalProviders.map((provider: ExternalProvider, idx: number) => {
-                const providerClass = ExternalLoginBase.GetExternalLoginButtonCssClass(provider.Name);
-                const providerHref = ExternalLoginBase.GetExternalLoginPath(context, provider.Name);
-
-                return (
-                  <a key={idx}
-                    className={classNames('btn border fs-5 w-100 mt-2',providerClass)}
-                    href={providerHref}>{provider.Value}</a>
-                );
-            })
-        ]
-    }
+          <LoginFormClient viewModel={viewModel} context={context} usernameInputId={usernameInputId} passwordInputId={passwordInputId} rememberInputId={rememberInputId} />
         </div>
         {Tracer.endSpan(span)}
       </>

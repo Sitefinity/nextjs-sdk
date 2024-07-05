@@ -1,4 +1,5 @@
 import { LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
+import { PageItem } from '../rest-sdk/dto/page-item';
 import { DetailItem } from './detail-item';
 
 export interface RequestContext {
@@ -10,4 +11,5 @@ export interface RequestContext {
     isPreview: boolean;
     isLive: boolean;
     url: string;
+    pageNode: PageItem;
 }

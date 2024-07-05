@@ -1,5 +1,5 @@
-import { CommonArgs } from './common.args';
+import { GetCommonArgs } from './get-common.args';
 
-export interface ItemArgs extends CommonArgs {
+export interface ItemArgs extends GetCommonArgs {
     id: string;
 }

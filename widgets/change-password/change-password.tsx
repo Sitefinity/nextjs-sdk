@@ -1,11 +1,9 @@
-import React from 'react';
 import { StyleGenerator } from '../styling/style-generator.service';
 import { PostPasswordChangeAction } from './interfaces/post-password-change-action';
 import { StylingConfig } from '../styling/styling-config';
 import { ChangePasswordFormClient } from './change-password-form.client';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { ChangePasswordViewModel } from './interfaces/change-password-view-model';
-import { UserDto } from '../../rest-sdk/dto/user-item';
 import { classNames } from '../../editor/utils/classNames';
 import { htmlAttributes } from '../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../editor/widget-framework/widget-context';
@@ -14,6 +12,7 @@ import { RootUrlService } from '../../rest-sdk/root-url.service';
 import { ChangePasswordEntity } from './change-password.entity';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
+import { getUniqueId } from '../../editor/utils/getUniqueId';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>) {
@@ -24,10 +23,14 @@ export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>)
     const defaultClass =  entity.CssClass;
     const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
 
+    const oldPasswordInputId = getUniqueId('sf-old-password-');
+    const newPasswordInputId = getUniqueId('sf-new-password-');
+    const repeatPasswordInputId = getUniqueId('sf-repeat-password-');
+
     dataAttributes['className'] = classNames(defaultClass, marginClass);
 
     const viewModel: ChangePasswordViewModel = {
-        ChangePasswordHandlerPath: `${RootUrlService.getClientServiceUrl()}/ChangePassword`,
+        ChangePasswordHandlerPath: `/${RootUrlService.getWebServicePath()}/ChangePassword`,
         Attributes: entity.Attributes,
         VisibilityClasses: StylingConfig.VisibilityClasses,
         InvalidClass: StylingConfig.InvalidClass,
@@ -42,11 +45,9 @@ export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>)
           ValidationRequiredMessage: entity.ValidationRequiredMessage,
           ValidationMismatchMessage: entity.ValidationMismatchMessage,
           ExternalProviderMessageFormat: entity.ExternalProviderMessageFormat
-        }
+        },
+        IsLive: props.requestContext.isLive
     };
-
-    const user: UserDto = await RestClient.getCurrentUser(ctx);
-    viewModel.ExternalProviderName = user?.ExternalProviderName;
 
     if (entity.PostPasswordChangeAction === PostPasswordChangeAction.RedirectToPage) {
         const item = await RestClientForContext.getItem<PageItem>(entity.PostPasswordChangeRedirectPage!, { type: RestSdkTypes.Pages, traceContext: ctx });
@@ -54,9 +55,6 @@ export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>)
     } else {
         viewModel.PostPasswordChangeMessage = entity.PostPasswordChangeMessage;
     }
-
-    const hasUser = (user && user.IsAuthenticated);
-    const labels = viewModel.Labels;
 
     return (
       <>
@@ -66,19 +64,10 @@ export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>)
           data-sf-invalid={viewModel.InvalidClass}
           {...dataAttributes}
           >
-          { !hasUser
-          ? <div className="alert alert-danger my-3">{labels.LoginFirstMessage}</div>
-          : viewModel.ExternalProviderName
-          ? <div>{`${labels.ExternalProviderMessageFormat}${viewModel.ExternalProviderName}`}</div>
-          :  <>
-            <ChangePasswordFormClient
-              viewModel={viewModel} />
-            <input type="hidden" name="redirectUrl" value={viewModel.RedirectUrl} />
-            <input type="hidden" name="postChangeMessage" value={viewModel.PostPasswordChangeMessage} />
-            <input type="hidden" name="postChangeAction" value={viewModel.PostPasswordChangeAction} />
-            <input type="hidden" name="validationRequiredMessage" value={labels.ValidationRequiredMessage} />
-            <input type="hidden" name="validationMismatchMessage" value={labels.ValidationMismatchMessage} />
-          </>
+          {
+            <>
+              <ChangePasswordFormClient viewModel={viewModel} oldPasswordInputId={oldPasswordInputId} newPasswordInputId={newPasswordInputId} repeatPasswordInputId={repeatPasswordInputId} />
+            </>
           }
         </div>
         {Tracer.endSpan(span)}

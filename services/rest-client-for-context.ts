@@ -8,7 +8,11 @@ import { RestClient } from '../rest-sdk/rest-client';
 
 export class RestClientForContext {
     public static async getItem<T extends SdkItem>(contentContext: MixedContentContext, externalArgs?: CommonArgs): Promise<T> {
-        return this.getItems<T>(contentContext, { type: externalArgs?.type as string, traceContext: externalArgs?.traceContext }).then(x => x.Items[0]);
+        return this.getItems<T>(contentContext, {
+            ...externalArgs,
+            type: externalArgs?.type as string,
+            traceContext: externalArgs?.traceContext
+         }).then(x => x.Items[0]);
     }
 
     public static async getItems<T extends SdkItem>(contentContext: MixedContentContext, externalArgs?: GetAllArgs): Promise<CollectionResponse<T>> {
@@ -32,6 +36,7 @@ export class RestClientForContext {
         const firstVariation = firstContent.Variations[0];
 
         let args: GetAllArgs = {
+            ...externalArgs,
             type: firstContent.Type || externalArgs?.type as string,
             provider: firstVariation.Source,
             filter: FilterConverterService.getMainFilter(firstVariation),

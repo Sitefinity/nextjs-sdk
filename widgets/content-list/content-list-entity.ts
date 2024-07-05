@@ -6,6 +6,7 @@ import { PagerMode } from '../common/page-mode';
 import { ContentViewDisplayMode } from '../content-lists-common/content-view-display-mode';
 import { DetailPageSelectionMode } from '../content-lists-common/detail-page-selection-mode';
 import { PageTitleMode } from '../content-lists-common/page-title-mode';
+import { PagerViewModel } from '../pager/pager-view-model';
 
 @Model()
 export class ListFieldMapping {
@@ -49,7 +50,6 @@ export class ContentListEntity implements ContentListEntityBase {
     @ContentSection('Select content to display', 1)
     @Choice([
             { Title: 'Cards list', Value: 'CardsList'},
-            { Title: 'External list', Value: 'ExternalList'},
             { Title: 'List with image', Value: 'ListWithImage'},
             { Title: 'List with summary', Value: 'ListWithSummary'}
         ])
@@ -180,7 +180,7 @@ export class ContentListEntity implements ContentListEntityBase {
     @Description('Template for the URL segments the widget\u0027s paging will work with. Use {{pageNumber}} for the current page number.')
     @FallbackToDefaultValueWhenEmpty()
     @ConditionalVisibility('{\u0022conditions\u0022:[{\u0022fieldName\u0022:\u0022PagerMode\u0022,\u0022operator\u0022:\u0022Equals\u0022,\u0022value\u0022:\u0022URLSegments\u0022}]}')
-    PagerTemplate: string = '-page-{{pageNumber}}-';
+    PagerTemplate: string = PagerViewModel.PageNumberDefaultTemplate;
 
     @Category('Advanced')
     @ContentSection('', 9)

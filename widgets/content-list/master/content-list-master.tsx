@@ -1,18 +1,17 @@
 import { Fragment } from 'react';
-import { ContentListModelMaster } from '../../content-lists-common/content-list-models';
 import { ContentListModelbase, ContentListViewModel } from './content-list-model-base';
 import { ListWithSummaryItemModel, ListWithSummaryModel } from './list-with-summary/list-with-summary-model';
 import { ListWithImage } from './list-with-image/list-with-image';
 import { ListWithImageModel } from './list-with-image/list-with-image-model';
 import { ListWithSummary } from './list-with-summary/list-with-summary';
-import { ContentListEntity } from '../content-list-entity';
 import { CardsList } from './cards-list/cards-list';
 import { CardsListModel } from './cards-list/cards-list-model';
 import { ImageItem } from '../../../rest-sdk/dto/image-item';
 import { RenderWidgetService } from '../../../services/render-widget-service';
 import { SdkItem } from '../../../rest-sdk/dto/sdk-item';
+import { RequestContext } from '../../../editor/request-context';
 
-export function ContentListMaster(props: { viewModel: ContentListViewModel }) {
+export function ContentListMaster(props: { viewModel: ContentListViewModel, requestContext: RequestContext }) {
     let data: { viewName?: string, model?: ContentListModelbase} = {};
     const entity = props.viewModel.entity;
     const model = props.viewModel.listModel!;
@@ -28,7 +27,8 @@ export function ContentListMaster(props: { viewModel: ContentListViewModel }) {
     if (model.ViewName === 'CardsList' || model.ViewName === 'ListWithImage') {
         const viewModel = {
             Attributes: attributes,
-            OpenDetails: model.OpenDetails,
+            DetailPageUrl: model.DetailPageUrl,
+            RequestContext: props.requestContext,
             Items: dataItems.Items.map((x) => {
                 let url!: string;
                 const imageProp: ImageItem[] = x[model.FieldMap['Image']];
@@ -45,18 +45,18 @@ export function ContentListMaster(props: { viewModel: ContentListViewModel }) {
                 return {
                     Title: {
                         Value: x[model.FieldMap['Title']],
-                        Css: 'card-title' + (x[model.FieldCssClassMap['Title']] || ''),
+                        Css: (model.FieldCssClassMap['Title'] || ''),
                         Link: ''
                     },
                     Image: {
                         Title: image?.Title,
                         Url: url,
                         AlternativeText: image?.AlternativeText,
-                        Css: x[model.FieldCssClassMap['Image']]
+                        Css: model.FieldCssClassMap['Image']
                     },
                     Text: {
                         Value: x[model.FieldMap['Text']],
-                        Css: 'card-text ' + `${x[model.FieldCssClassMap['Text']] || ''}`
+                        Css: `${model.FieldCssClassMap['Text'] || ''}`
                     },
                     Original: x
                 };
@@ -67,22 +67,23 @@ export function ContentListMaster(props: { viewModel: ContentListViewModel }) {
     } else if (model.ViewName === 'ListWithSummary') {
         const viewModel = {
             Attributes: attributes,
-            OpenDetails: model.OpenDetails,
+            DetailPageUrl: model.DetailPageUrl,
+            RequestContext: props.requestContext,
             Culture: props.viewModel.requestContext.culture,
             Items: dataItems.Items.map((x) => {
                 const itemModel = {
                     Title: {
                         Value: x[model.FieldMap['Title']],
-                        Css: 'card-title' + (x[model.FieldCssClassMap['Title']] || ''),
+                        Css: (model.FieldCssClassMap['Title'] || ''),
                         Link: ''
                     },
                     PublicationDate: {
                         Value: x[model.FieldMap['Publication date']],
-                        Css: x[model.FieldCssClassMap['Publication date']]
+                        Css: model.FieldCssClassMap['Publication date']
                     },
                     Text: {
                         Value: x[model.FieldMap['Text']],
-                        Css: 'card-text ' + `${x[model.FieldCssClassMap['Text']] || ''}`
+                        Css: `${model.FieldCssClassMap['Text'] || ''}`
                     },
                     Original: x
                 } as ListWithSummaryItemModel;
@@ -90,7 +91,7 @@ export function ContentListMaster(props: { viewModel: ContentListViewModel }) {
                 if (!itemModel.PublicationDate.Css) {
                     itemModel.PublicationDate.Css = '';
                 }
-                itemModel.PublicationDate.Css += ' text-muted';
+
                 return itemModel;
             })
         };
@@ -103,7 +104,8 @@ export function ContentListMaster(props: { viewModel: ContentListViewModel }) {
             viewName: model.ViewName,
             model: {
                 Attributes: attributes,
-                OpenDetails: model.OpenDetails,
+                DetailPageUrl: model.DetailPageUrl,
+                RequestContext: props.requestContext,
                 Items: dataItems.Items.map(dataItem => {
                     const item: {Original: SdkItem, [key: string]: any} = { Original: dataItem };
                     Object.keys(fieldMap).forEach(field => {
@@ -119,7 +121,7 @@ export function ContentListMaster(props: { viewModel: ContentListViewModel }) {
         };
     }
 
-    const templates = RenderWidgetService.widgetRegistry.widgets['SitefinityContentList']?.templates;
+    const templates = RenderWidgetService.widgetRegistry.widgets[props.viewModel.widgetName]?.templates;
 
     if (templates && data?.model && data?.viewName && templates[data?.viewName]) {
         return (

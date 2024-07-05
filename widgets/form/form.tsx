@@ -99,7 +99,6 @@ export async function Form(props: WidgetContext<FormEntity>) {
       {(viewModel.Rules) &&
         <>
           <input type="hidden" data-sf-role="form-rules" value={viewModel.Rules} />
-          <input type="hidden" data-sf-role="form-rules-hidden-fields" name="sf_FormHiddenFields" value={viewModel.HiddenFields} autoComplete="off" />
           <input type="hidden" data-sf-role="form-rules-skip-fields" name="sf_FormSkipFields" autoComplete="off" />
           <input type="hidden" data-sf-role="form-rules-notification-emails" name="sf_FormNotificationEmails" autoComplete="off" />
           <input type="hidden" data-sf-role="form-rules-message" name="sf_FormMessage" autoComplete="off" />
@@ -107,6 +106,7 @@ export async function Form(props: WidgetContext<FormEntity>) {
         </>
         }
 
+      <input type="hidden" data-sf-role="form-rules-hidden-fields" name="sf_FormHiddenFields" value={viewModel.HiddenFields} autoComplete="off" />
       <input type="hidden" data-sf-role="redirect-url" value={viewModel.RedirectUrl} />
       <input type="hidden" data-sf-role="custom-submit-action" value={viewModel.CustomSubmitAction!.toString()} />
       {viewModel.SkipDataSubmission && <span data-sf-role="skip-data-submission" />}

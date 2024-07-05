@@ -1,4 +1,3 @@
-import React from 'react';
 import { CardsListModel } from './cards-list-model';
 import { OpenDetailsAnchor } from '../open-details-anchor';
 import { SanitizerService } from '../../../../services/sanitizer-service';
@@ -7,6 +6,12 @@ import { ContentListEntityBase } from '../../../content-lists-common/content-lis
 export function CardsList(props: { model: CardsListModel, entity?: ContentListEntityBase }) {
     const model = props.model;
     const items = model.Items;
+
+    const contentListAttributes = props.model.Attributes;
+    const classAttributeName = contentListAttributes['class'] ? 'class' : 'className';
+    contentListAttributes[classAttributeName] += ' row row-cols-1 row-cols-md-3';
+    contentListAttributes[classAttributeName] = contentListAttributes[classAttributeName].trim();
+
     return (
       <div {...model.Attributes}>
         {items.map(item => {
@@ -18,19 +23,17 @@ export function CardsList(props: { model: CardsListModel, entity?: ContentListEn
                          */}
                     {
                             /* eslint-disable-next-line @next/next/no-img-element */
-                      <img className={item.Image.Css} src={item.Image.Url} alt={item.Image.AlternativeText} title={item.Image.Title} />
+                      item.Image.Url && <img className={'card-img-top ' + item.Image.Css} src={item.Image.Url} alt={item.Image.AlternativeText} title={item.Image.Title} />
                         }
                     <div className="card-body">
-                      <h5 className={item.Title.Css}>
-                        {model.OpenDetails ?
-                          <OpenDetailsAnchor
-                            detailPageMode={props.entity?.DetailPageMode!}
-                            detailPage={props.entity?.DetailPage!}
-                            item={item} /> :
-                                    (item.Title.Value)
-                                }
+                      <h5 className={'card-title ' + item.Title.Css}>
+                        <OpenDetailsAnchor
+                          detailPageMode={props.entity?.DetailPageMode!}
+                          detailPageUrl={props.model.DetailPageUrl}
+                          requestContext={model.RequestContext}
+                          item={item} />
                       </h5>
-                      {item.Text && <div className={item.Text.Css} dangerouslySetInnerHTML={{ __html: SanitizerService.getInstance().sanitizeHtml(content) as any }} />}
+                      {item.Text && <p className={'card-text ' + item.Text.Css} dangerouslySetInnerHTML={{ __html: SanitizerService.getInstance().sanitizeHtml(content) as any }} />}
                     </div>
                   </div>
                 </div>);

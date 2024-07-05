@@ -6,6 +6,8 @@ import { RequestContext } from '../editor/request-context';
 import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
 import { createRoot } from 'react-dom/client';
 import { MetadataModel } from '@progress/sitefinity-widget-designers-sdk';
+import { RestClient } from '../rest-sdk/rest-client';
+import { LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
 
 export class RendererContractImpl implements RendererContract {
 
@@ -45,12 +47,21 @@ export class RendererContractImpl implements RendererContract {
             const tempElement = document.createElement('div');
             const context: RequestContext = {
                 isEdit: true,
-                layout: <any>undefined,// TODO
+                layout: <LayoutServiceResponse> {
+                    SiteId: args.siteId,
+                    Culture: args.dataItem.culture
+                },// TODO
                 isPreview: false,
                 isLive: false,
                 culture: args.dataItem.culture,
                 searchParams: {},
-                url: ''
+                url: '',
+                pageNode: <any>undefined
+            };
+
+            RestClient.contextQueryParams = {
+                sf_culture: args.dataItem.culture,
+                sf_site: args.siteId
             };
 
             const component = RenderWidgetService.createComponent(args.model, context);

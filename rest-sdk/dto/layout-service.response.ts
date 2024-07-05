@@ -25,7 +25,8 @@ export interface LayoutServiceResponse {
     UrlParameters: string[],
     Scripts: PageScript[],
     Fields: { [key: string]: any },
-    Site: any
+    Site: any,
+    MetadataHash: string
 }
 
 export interface LayoutResponse {
@@ -35,6 +36,6 @@ export interface LayoutResponse {
 }
 
 export interface ComponentContext {
-    Components: WidgetModel<any>[];
+    Components: WidgetModel[];
     HasLazyComponents: boolean;
 }

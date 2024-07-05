@@ -6,20 +6,24 @@ import { RootUrlService } from './root-url.service';
 
 export class ServiceMetadata {
     public static serviceMetadataCache: ServiceMetadataDefinition;
+    public static serviceMetadataHash: string;
     public static taxonomies: SdkItem[];
 
-    public static async fetch(traceContext?: any): Promise<ServiceMetadataDefinition> {
-        const serviceUrl = RootUrlService.getServerCmsServiceUrl();
-        const metadataUrl = `${serviceUrl}/sfmeta`;
-        const metadata = await RestClient.sendRequest<ServiceMetadataDefinition>({ url: metadataUrl, traceContext });
-        ServiceMetadata.serviceMetadataCache = metadata;
+    public static async fetch(metadataHash: string, traceContext?: any): Promise<ServiceMetadataDefinition> {
+        if (!ServiceMetadata.serviceMetadataCache || metadataHash !== ServiceMetadata.serviceMetadataHash) {
+            const serviceUrl = RootUrlService.getServerCmsServiceUrl();
+            const metadataUrl = `${serviceUrl}/sfmeta`;
+            const metadata = await RestClient.sendRequest<ServiceMetadataDefinition>({ url: metadataUrl, traceContext });
+            ServiceMetadata.serviceMetadataCache = metadata;
 
-        const taxonomies = await RestClient.getItems({
-            type: RestSdkTypes.Taxonomies,
-            traceContext
-        });
+            const taxonomies = await RestClient.getItems({
+                type: RestSdkTypes.Taxonomies,
+                traceContext
+            });
 
-        ServiceMetadata.taxonomies = taxonomies.Items;
+            ServiceMetadata.taxonomies = taxonomies.Items;
+            ServiceMetadata.serviceMetadataHash = metadataHash;
+        }
 
         return ServiceMetadata.serviceMetadataCache;
     }
@@ -64,6 +68,31 @@ export class ServiceMetadata {
         }
 
         return null;
+    }
+
+    public static getChildTypes(itemType: string): Array<Array<string>> {
+        const result: Array<Array<string>> = [];
+        const definition = ServiceMetadata.serviceMetadataCache.definitions[itemType];
+        if (definition != null) {
+            const childTypes: Array<string> = definition['properties']['Telerik.Sitefinity.V1.ChildTypes'];
+            if (childTypes != null) {
+                result.push(childTypes);
+                childTypes.forEach(childType => {
+                    let grandChildTypes = this.getChildTypes(childType);
+                    for (let i = 0; i < grandChildTypes.length; i++) {
+                        let currentInheritanceLevel = result.at(i + 1);
+                        if (currentInheritanceLevel != null) {
+                            currentInheritanceLevel.push(...grandChildTypes[i]);
+                        } else {
+                            result.push(grandChildTypes[i]);
+                        }
+
+                    }
+                });
+            }
+        }
+
+        return result;
     }
 
     public static isPropertyACollection(type: string, propName: string) {

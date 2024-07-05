@@ -8,6 +8,7 @@ import { PagerMode } from '../common/page-mode';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { ContentListSettings } from '../../editor/widget-framework/content-list-settings';
 import { DetailPageSelectionMode } from '../content-lists-common/detail-page-selection-mode';
+import { PagerViewModel } from '../pager/pager-view-model';
 
 const viewMeta = {
     'DocumentList': [
@@ -159,7 +160,7 @@ export class DocumentListEntity implements ContentListEntityBase {
     @Description('Template for the URL segments the widget\u0027s paging will work with. Use {{pageNumber}} for the current page number.')
     @FallbackToDefaultValueWhenEmpty()
     @ConditionalVisibility('{\u0022conditions\u0022:[{\u0022fieldName\u0022:\u0022PagerMode\u0022,\u0022operator\u0022:\u0022Equals\u0022,\u0022value\u0022:\u0022URLSegments\u0022}]}')
-    PagerTemplate: string = '-page-{{pageNumber}}-';
+    PagerTemplate: string = PagerViewModel.PageNumberDefaultTemplate;
 
     @Category('Advanced')
     @ContentSection('', 9)

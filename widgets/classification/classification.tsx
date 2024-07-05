@@ -11,7 +11,7 @@ const mapTaxonProperties = (taxon: TaxonDto, taxonomyName: string, viewUrl?: str
     const children: TaxonDto[] = [];
 
     taxon.SubTaxa.forEach((child: TaxonDto) => {
-        child.SubTaxa = mapTaxonProperties(child, taxonomyName);
+        child.SubTaxa = mapTaxonProperties(child, taxonomyName, viewUrl, searchParams);
         child.UrlName = getTaxaUrl(taxonomyName, child.UrlName, viewUrl, searchParams);
         children.push(child);
     });
@@ -86,7 +86,7 @@ export async function Classification(props: WidgetContext<ClassificationEntity>)
     const settings = properties.ClassificationSettings;
     const dataAttributes = htmlAttributes(props);
     const taxa = await getTaxa(model.Properties, ctx);
-    const viewUrl = props.requestContext.layout.Fields['ViewUrl'] || '';
+    const viewUrl = props.requestContext.layout.Fields ? props.requestContext.layout.Fields['ViewUrl'] : '';
     const searchParams = props.requestContext.searchParams;
 
     const updatedTokens = taxa ? taxa.map(taxon => {
@@ -97,7 +97,7 @@ export async function Classification(props: WidgetContext<ClassificationEntity>)
         };
     }) : [];
 
-    if (taxa) {
+    if (props.requestContext.isEdit && taxa) {
         setHideEmptyVisual(dataAttributes, true);
     }
 

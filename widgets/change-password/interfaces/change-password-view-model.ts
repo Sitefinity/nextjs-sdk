@@ -20,4 +20,5 @@ export interface ChangePasswordViewModel {
     ExternalProviderName?: string;
     RedirectUrl?: string;
     PostPasswordChangeMessage?: string;
+    IsLive: boolean;
 }

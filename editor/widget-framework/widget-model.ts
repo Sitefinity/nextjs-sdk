@@ -1,4 +1,4 @@
-export interface WidgetModel<T> {
+export interface WidgetModel<T extends {[key: string]: any} = {[key: string]: any}> {
     Id: string;
     Name: string;
     Caption: string;
@@ -7,7 +7,7 @@ export interface WidgetModel<T> {
     ViewName: string;
     PlaceHolder: string;
     Properties: T;
-    Children: WidgetModel<any>[];
+    Children: WidgetModel[];
 
     IsPersonalized: boolean;
     WidgetSegmentId: string;

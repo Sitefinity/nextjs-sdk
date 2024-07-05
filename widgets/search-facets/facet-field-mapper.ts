@@ -12,7 +12,7 @@ export class WidgetSettingsFacetFieldMapper {
 
     static getIntervalDateTime(dateStep: string) {
         if (dateStep) {
-            switch (dateStep) {
+            switch (dateStep.toString()) {
                 case '0':
                     return 'day';
                 case '1':
@@ -32,7 +32,7 @@ export class WidgetSettingsFacetFieldMapper {
         return 'day';
     }
 
-    static mapWidgetSettingsToFieldsModel(selectedFacetsToBeUsed: FacetField[]) {
+    static mapWidgetSettingsToFieldsModel(selectedFacetsToBeUsed: FacetField[], culture: string) {
         const facetFields: Facet[] = [];
         selectedFacetsToBeUsed.forEach((facet: FacetField)=> {
             let facetFieldName = facet.FacetableFieldNames.length ? facet.FacetableFieldNames[0] : '';
@@ -50,7 +50,7 @@ export class WidgetSettingsFacetFieldMapper {
                 }
             } else {
                 if (settings.FacetType === SearchIndexAdditionalFieldType.NumberWhole || settings.FacetType === SearchIndexAdditionalFieldType.NumberDecimal) {
-                    facetFields.push(this.createNumberRangeFacetFieldModel(facetFieldName, settings));
+                    facetFields.push(this.createNumberRangeFacetFieldModel(facetFieldName, settings, culture));
                 } else if (settings.FacetType === SearchIndexAdditionalFieldType.DateAndTime) {
                     facetFields.push(this.createDateRangeFacetFieldModel(facetFieldName || '', settings));
                 }
@@ -87,7 +87,7 @@ export class WidgetSettingsFacetFieldMapper {
         };
     }
 
-    static createNumberRangeFacetFieldModel(facetFieldName: string, settings: FacetSettings): Facet {
+    static createNumberRangeFacetFieldModel(facetFieldName: string, settings: FacetSettings, culture: string): Facet {
         const rangeList: CustomFacetRange[] =[];
         if (settings.NumberRanges != null) {
             rangeList.push(...settings
@@ -105,8 +105,8 @@ export class WidgetSettingsFacetFieldMapper {
                 .NumberRangesDecimal
                 .map((range: NumberRange) => {
                     return {
-                        From: range.From != null ? range.From.toString() : null,
-                        To: range.To != null ? range.To.toString() : null
+                        From: range.From != null ? new Intl.NumberFormat(culture).format(range.From).toString() : null,
+                        To: range.To != null ? new Intl.NumberFormat(culture).format(range.To).toString() : null
                     } as CustomFacetRange;
                 }));
         }

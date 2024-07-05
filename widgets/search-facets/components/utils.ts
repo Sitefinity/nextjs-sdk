@@ -25,7 +25,7 @@ export const computeFacetRangeValueForType = (fieldType: string, fromValue: stri
 export const computeFacetRangeLabelForType = (fieldType: string, fromValue: string, toValue: string) => {
     if (fieldType === DATE_AND_TIME) {
         let fromDateTime = new Date(fromValue);
-        let dateOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+        let dateOptions: Intl.DateTimeFormatOptions = { month: 'short', day: '2-digit' };
         let fromString = fromDateTime.toLocaleString(undefined, dateOptions) + ' ' + fromDateTime.getFullYear();
 
         let toDateTime = new Date(toValue);
@@ -35,4 +35,30 @@ export const computeFacetRangeLabelForType = (fieldType: string, fromValue: stri
     }
 
     return fromValue + ' - ' + toValue;
+};
+
+export const formatDateValue = (date: string) => {
+    if (date !== '') {
+        let d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2) {
+        month = '0' + month;
+    }
+
+    if (day.length < 2) {
+        day = '0' + day;
+    }
+
+    return [year, month, day].join('-');
+    }
+
+    return date;
+};
+
+export const isEventCodeAllowed = (code: string) => {
+    const conditions = ['Digit', 'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Numpad0','Numpad1','Numpad2','Numpad3','Numpad4','Numpad5','Numpad6','Numpad7','Numpad8','Numpad9'];
+    return conditions.some(element => code.includes(element) || code === element);
 };

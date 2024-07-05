@@ -3,11 +3,14 @@ import { RenderWidgetService } from '../services/render-widget-service';
 import { RequestContext } from '../editor/request-context';
 import { RestClient } from '../rest-sdk/rest-client';
 import { cookies, headers } from 'next/headers';
-import { LayoutResponse, LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
+import { LayoutResponse } from '../rest-sdk/dto/layout-service.response';
+import { PageItem } from '../rest-sdk/dto/page-item';
+import { setHostServerContext } from '../services/server-context';
+import { initServerSideRestSdk } from '../rest-sdk/init';
 
 export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key: string]: string } }) {
-    const headersList = headers();
-    RestClient.host = headersList.get('host');
+    const hostHeader = headers().get('host') || '';
+    setHostServerContext(hostHeader);
 
     const pageUrl = searchParams['pageUrl'];
     let cookie = cookies().toString();
@@ -39,11 +42,7 @@ export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key
     }) as LayoutResponse;
 
     const layout = layoutResponse.layout!;
-
-    RestClient.contextQueryParams = {
-        sf_culture: layout.Culture,
-        sf_site: ''
-    };
+    await initServerSideRestSdk({ metadataHash: layout.MetadataHash });
 
     const requestContext: RequestContext = {
         layout: layout,
@@ -52,7 +51,8 @@ export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key
         isPreview: false,
         isLive: true,
         culture: layout.Culture,
-        url: path
+        url: path,
+        pageNode: layout.Fields as PageItem
     };
 
     return (

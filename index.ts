@@ -5,9 +5,13 @@ export * from './widgets/legacy-widget-registry';
 export * from './pages/render-page';
 export * from './pages/render-widget';
 export * from './pages/render-lazy-widgets';
+export * from './pages/useSfEvents';
 export { initRendering, pageMetadata, pageLayout } from './pages/utils';
 
 export * from './editor/utils/classNames';
+export * from './editor/utils/getUniqueId';
+export * from './editor/utils/guid';
+export * from './editor/utils/object-utils';
 
 export * from './editor/widget-framework/attributes';
 export * from './editor/widget-framework/content-list-settings';

@@ -22,6 +22,10 @@ export const isValidEmail = function (email: string) {
 };
 
 export const formatDate = function (date: Date | string, culture?: string) {
+    if (!date) {
+        return '';
+    }
+
     if (typeof(date) === 'string') {
         date = new Date(date);
     }

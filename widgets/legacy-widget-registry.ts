@@ -33,7 +33,6 @@ import { SectionEntity } from './section/section.entity';
 import { ImageEntity } from './image/image.entity';
 import { ContentBlockEntity } from './content-block/content-block.entity';
 
-import sitefinityLanguageSelectorJson from './language-selector/designer-metadata.json';
 import { SearchFacetsEntity } from './search-facets/search-facets.entity';
 import { BreadcrumbEntity } from './breadcrumb/breadcrumb.entity';
 import { DocumentListEntity } from './document-list/document-list-entity';

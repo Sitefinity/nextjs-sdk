@@ -1,18 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { VisibilityStyle } from '../styling/visibility-style';
-import { ExternalLoginBase } from '../external-login-base';
+import { ExternalLoginBase, ExternalProviderData } from '../external-login-base';
 import { classNames } from '../../editor/utils/classNames';
 import { RequestContext } from '../../editor/request-context';
 import { LoginFormViewModel } from './interfaces/login-form-view-model';
-import { getUniqueId } from '../../editor/utils/getUniqueId';
+import { SecurityService } from '../../services/security-service';
 
 export interface LoginFormContainerProps {
     viewModel: LoginFormViewModel,
-    context: RequestContext
+    context: RequestContext,
+    usernameInputId: string,
+    passwordInputId: string,
+    rememberInputId: string
 }
-
 
 const invalidDataAttr = 'data-sf-invalid';
 const isValidEmail = function (email: string) {
@@ -20,32 +22,48 @@ const isValidEmail = function (email: string) {
 };
 
 export function LoginFormClient(props: LoginFormContainerProps) {
-    const { viewModel, context } = props;
+    const { viewModel, context, usernameInputId, passwordInputId, rememberInputId } = props;
     const labels = viewModel.Labels;
     const visibilityClassHidden = viewModel.VisibilityClasses[VisibilityStyle.Hidden];
-    const returnUrl = viewModel.RedirectUrl ?? ExternalLoginBase.GetDefaultReturnUrl(context);
-    const returnErrorUrl = ExternalLoginBase.GetDefaultReturnUrl(context, {isError:true, shouldEncode:false});
+    const returnUrl = ExternalLoginBase.GetDefaultReturnUrl(context, { redirectUrl: viewModel.RedirectUrl });
+    const returnErrorUrl = ExternalLoginBase.GetDefaultReturnUrl(context, { redirectUrl: viewModel.RedirectUrl, isError: true, shouldEncode: false });
     const passResetColumnSize = viewModel.RememberMe ? 'col-md-6 text-end' : 'col-12';
 
-    const usernameInputId = React.useMemo(() => getUniqueId('sf-username-'), []);
-    const passwordInputId = React.useMemo(() => getUniqueId('sf-password-'), []);
-    const rememberInputId = React.useMemo(() => getUniqueId('sf-rememeber-'), []);
     const formRef = React.useRef<HTMLFormElement>(null);
     const emailInputRef = React.useRef<HTMLInputElement>(null);
     const [invalidInputs, setInvalidInputs] = React.useState<{[key: string]: boolean | undefined;}>({});
     const [showErrorMessage, setShowErrorMessage] = React.useState<boolean>(false);
     const [errorMessage, setErrorMessage] = React.useState<string>(labels.ErrorMessage);
+    const [externalProvidersData, setExternalProvidersData] = React.useState<ExternalProviderData[]>([]);
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setAntiforgeryTokens().then(res => {
-            if (validateForm(formRef.current!)) {
-                (event.target as HTMLFormElement).submit();
-            }
-        }, err => {
-            showError('Antiforgery token retrieval failed');
+
+        if (!validateForm(formRef.current!)) {
+          return;
+        }
+
+        SecurityService.setAntiForgeryTokens().then(() => {
+          (event.target as HTMLFormElement).submit();
+        }, () => {
+            showError('AntiForgery token retrieval failed');
         });
     };
+
+    useEffect(() => {
+      const externalProviderData: ExternalProviderData[] = viewModel.ExternalProviders?.map(provider => {
+        const providerClass = ExternalLoginBase.GetExternalLoginButtonCssClass(provider.Name);
+        const externalLoginPath = ExternalLoginBase.GetExternalLoginPath(context, provider.Name);
+
+        return {
+          cssClass: providerClass,
+          externalLoginPath: externalLoginPath,
+          label: provider.Value
+        };
+      }) ?? [];
+
+      setExternalProvidersData(externalProviderData);
+    },[context, viewModel.ExternalProviders]);
 
     const validateForm = (form: HTMLFormElement) => {
         let isValid = true;
@@ -83,33 +101,9 @@ export function LoginFormClient(props: LoginFormContainerProps) {
     };
 
     const invalidateElement = (emptyInputs: any, element: HTMLInputElement) => {
-
         if (element) {
             emptyInputs[element.name] = true;
         }
-    };
-
-    const setAntiforgeryTokens = () => {
-        return new Promise((resolve, reject) => {
-            let xhr = new XMLHttpRequest();
-            xhr.open('GET', '/sitefinity/anticsrf');
-            xhr.setRequestHeader('X-SF-ANTIFORGERY-REQUEST', 'true');
-            xhr.responseType = 'json';
-            xhr.onload = function () {
-                const response = xhr.response;
-                if (response != null) {
-                    const token = response.Value;
-                    document.querySelectorAll('input[name = \'sf_antiforgery\']').forEach((i: any) => i.value = token);
-                    resolve('');
-                } else {
-                    resolve('');
-                }
-            };
-            xhr.onerror = function () {
-                reject();
-            };
-            xhr.send();
-        });
     };
 
     const showError = (err: string) => {
@@ -127,7 +121,7 @@ export function LoginFormClient(props: LoginFormContainerProps) {
         };
     };
 
-    return (
+    return (<>
       <div data-sf-role="form-container">
         <h2 className="mb-3">{labels.Header}</h2>
         <div id="errorContainer"
@@ -180,9 +174,30 @@ export function LoginFormClient(props: LoginFormContainerProps) {
           <input type="hidden" name="MembershipProviderName" value={viewModel.MembershipProviderName || ''} />
           <input type="hidden" value="" name="sf_antiforgery" />
           <input className="btn btn-primary w-100" type="submit" value={labels.SubmitButtonLabel || ''} />
+          { viewModel.RememberMe && <input name="RememberMe" type="hidden" value="false" /> }
         </form>
         <input type="hidden" name="ValidationInvalidEmailMessage" value={labels.ValidationInvalidEmailMessage || ''} />
         <input type="hidden" name="ValidationRequiredMessage" value={labels.ValidationRequiredMessage || ''} />
       </div>
-    );
+      {viewModel.RegistrationLink &&
+      <div className="row mt-3">
+        <div className="col-md-6">{labels.NotRegisteredLabel}</div>
+        <div className="col-md-6 text-end"><a href={viewModel.RegistrationLink}
+          className="text-decoration-none">{labels.RegisterLinkText}</a></div>
+      </div>
+      }
+      {externalProvidersData.length > 0 &&
+      (<>
+        <h3 className="mt-3">{labels.ExternalProvidersHeader}</h3>
+        { externalProvidersData.map((providerData: ExternalProviderData, idx: number) => {
+            return (
+              <a key={idx} className={classNames('btn border fs-5 w-100 mt-2', providerData.cssClass)} href={providerData.externalLoginPath}>
+                {providerData.label}
+              </a>
+            );
+          })
+        }
+        </>)
+      }
+    </>);
 };

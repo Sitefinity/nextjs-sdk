@@ -3,7 +3,6 @@ import { FacetField } from './interfaces/facet-field';
 import { FacetsViewModelDto } from '../../rest-sdk/dto/facets/facets-viewmodel-dto';
 import { Facet } from '../../rest-sdk/dto/facets/facet';
 import { WidgetSettingsFacetFieldMapper } from './facet-field-mapper';
-import { FacetFlatResponseDto } from '../../rest-sdk/dto/facets/facet-flat-dto';
 import { SearchFacetsModelBuilder } from './search-facets-model-builder';
 import { SearchFacetsClient } from './search-facets-client';
 import { SearchFacetsEntity } from './search-facets.entity';
@@ -13,6 +12,8 @@ import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { SearchFacetsViewModel } from './search-facets-viewmodel';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { getSearchFacets } from './search-facets-common';
+
 
 export async function SearchFacets(props: WidgetContext<SearchFacetsEntity>) {
     const {span, ctx} = Tracer.traceWidget(props, true);
@@ -53,30 +54,12 @@ export async function SearchFacets(props: WidgetContext<SearchFacetsEntity>) {
             .map((e) => e[e.length - 1])
             .filter((x: FacetField) => facetableFieldsKeys.includes(x.FacetableFieldNames[0]));
 
-        const facets: Facet[] = WidgetSettingsFacetFieldMapper.mapWidgetSettingsToFieldsModel(selectedFacetsToBeUsed);
+        const facets: Facet[] = WidgetSettingsFacetFieldMapper.mapWidgetSettingsToFieldsModel(selectedFacetsToBeUsed, searchParams['sf_culture']);
         const filter = searchParams['filter'];
         const culture = searchParams['sf_culture'];
         const resultsForAllSites = searchParams['resultsForAllSites'];
-        let searchServiceFacetResponse: FacetFlatResponseDto[] = [];
 
-        try {
-            searchServiceFacetResponse = await RestClient.getFacets({
-                searchQuery,
-                culture,
-                indexCatalogue: entity.IndexCatalogue,
-                filter,
-                resultsForAllSites,
-                searchFields: entity.SearchFields as string,
-                facets,
-                traceContext: ctx
-            });
-        } catch (_) {
-            // noop
-        }
-
-        const facetsDict = Object.fromEntries(
-            searchServiceFacetResponse.map((p: FacetFlatResponseDto) => [p.FacetKey, p.FacetResponses])
-        );
+        let facetsDict = await getSearchFacets(searchQuery, culture, entity.IndexCatalogue, filter, resultsForAllSites, entity.SearchFields as string, facets, ctx);
 
         viewModel.SearchFacets = SearchFacetsModelBuilder.buildFacetsViewModel(entity.SelectedFacets!, facetsDict, facetableFieldsKeys, entity.SortType || '');
     }
@@ -98,10 +81,11 @@ export async function SearchFacets(props: WidgetContext<SearchFacetsEntity>) {
           {...dataAttributes}
           {...searchFacetsCustomAttributes}
         >
-          <SearchFacetsClient viewModel={viewModel} searchParams={searchParams} />
+          <SearchFacetsClient viewModel={viewModel} searchParams={searchParams} ctx={ctx}/>
         </div>
         <input type="hidden" id="sf-currentPageUrl" value={props.requestContext.url || ''} />
         {Tracer.endSpan(span)}
       </>
     );
 }
+

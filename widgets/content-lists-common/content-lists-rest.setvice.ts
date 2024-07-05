@@ -1,6 +1,6 @@
 
 import { DetailItem } from '../../editor/detail-item';
-import { ContentContext, ContentVariation } from '../../editor/widget-framework/mixed-content-context';
+import { ContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { CollectionResponse } from '../../rest-sdk/dto/collection-response';
 import { SdkItem } from '../../rest-sdk/dto/sdk-item';
 import { CombinedFilter } from '../../rest-sdk/filters/combined-filter';
@@ -16,22 +16,37 @@ import { ContentListEntityBase } from './content-lists-base.entity';
 import { RequestContext } from '../../editor/request-context';
 import { EMTPY_GUID } from '../../editor/utils/guid';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
+import { ContentListEntity } from '../content-list/content-list-entity';
 
 export class ContentListsCommonRestService {
+    private static ClassificationSegmentRegex = /(^-in-((?:\w|-){1,}),(.+?);?$)+/;
 
-    static async getItems(entity: ContentListEntityBase, detailItem: DetailItem | undefined, requestContext?: RequestContext, currentPage: number = 1, traceContext?: any): Promise<CollectionResponse<SdkItem>> {
+    static async getItems(entity: ContentListEntityBase, detailItem: DetailItem | undefined, requestContext?: RequestContext, currentPage: number = 1, traceContext?: any, showListViewOnChildDetailsView = true): Promise<CollectionResponse<SdkItem>> {
         if (entity.SelectedItems && entity.SelectedItems.Content && entity.SelectedItems.Content.length > 0
             && entity.SelectedItems.Content[0].Variations) {
             const selectedContent = entity.SelectedItems.Content[0];
             const variation = selectedContent.Variations![0];
 
+            if (!showListViewOnChildDetailsView && detailItem) {
+                const childTypes = ServiceMetadata.getChildTypes(selectedContent.Type).flatMap(x => x);
+                if (childTypes.find(x => x === detailItem.ItemType)) {
+                    return Promise.resolve(({ Items: [], TotalCount: 0 }));
+                }
+            }
+
+            let parentFilter = null;
+            if (variation?.DynamicFilterByParent) {
+                parentFilter = this.getParentFilterExpression(selectedContent, detailItem);
+                if (!parentFilter && !(entity as ContentListEntity).ShowListViewOnEmptyParentFilter) {
+                    return Promise.resolve(({ Items: [], TotalCount: 0 }));
+                }
+            }
+
+            // handle filtering
             let mainFilter = FilterConverterService.getMainFilter(variation);
             mainFilter = ContentListsCommonRestService.modifyFilterOperatorForMainFilter(entity, mainFilter);
-
-            const additionalFilter = entity.FilterExpression;
-            const parentFilter = this.getParentFilterExpression(selectedContent, variation, detailItem);
             const classification = requestContext ? await this.getClassificationFilter(entity, requestContext, traceContext) : null;
-
+            const additionalFilter = entity.FilterExpression;
             const filters: Array<CombinedFilter | FilterClause | RelationFilter | null> = [mainFilter, additionalFilter, parentFilter, classification];
             let bigFilter: CombinedFilter = {
                 Operator: entity.SelectionGroupLogicalOperator,
@@ -44,32 +59,45 @@ export class ContentListsCommonRestService {
                 take: skipAndTakeParams.Take,
                 count: skipAndTakeParams.Count,
                 type: selectedContent.Type,
-                provider: variation.Source,
+                provider: variation?.Source,
+                culture: requestContext?.culture,
                 orderBy: <OrderBy[]>[this.getOrderByExpression(entity)].filter(x => x),
                 fields: this.getSelectExpression(entity),
                 filter: bigFilter,
                 traceContext
             };
 
-            return RestClient.getItems(getAllArgs);
+            const result = await RestClient.getItems(getAllArgs);
+            if (entity.SelectedItems?.ItemIdsOrdered && entity.SelectedItems?.ItemIdsOrdered.length > 1) {
+                const orderedCollection: SdkItem[] = [];
+                entity.SelectedItems.ItemIdsOrdered.forEach(id => {
+                    const orderedItem = result.Items.find(x => x.Id === id);
+
+                    if (orderedItem) {
+                        orderedCollection.push(orderedItem);
+                    }
+                });
+
+                return Promise.resolve({ Items: orderedCollection, TotalCount: result.TotalCount });
+            }
+
+            return Promise.resolve(result);
         };
 
         return Promise.resolve(({ Items: [], TotalCount: 0 }));
     }
 
 
-    private static getParentFilterExpression(selectedContent: ContentContext, variation: ContentVariation, detailItem: DetailItem | undefined): FilterClause | null {
+    private static getParentFilterExpression(selectedContent: ContentContext, detailItem: DetailItem | undefined): FilterClause | null {
         let filterByParentExpressionSerialized = null;
-        if (variation.DynamicFilterByParent) {
-            let parentType = ServiceMetadata.getParentType(selectedContent.Type);
+        let parentType = ServiceMetadata.getParentType(selectedContent.Type);
 
-            if (parentType != null && detailItem && detailItem.ItemType === parentType) {
-                return <FilterClause>{
-                    FieldName: 'ParentId',
-                    FieldValue: detailItem.Id,
-                    Operator: FilterOperators.Equal
-                };
-            }
+        if (parentType != null && detailItem && detailItem.ItemType === parentType) {
+            return <FilterClause>{
+                FieldName: 'ParentId',
+                FieldValue: detailItem.Id,
+                Operator: FilterOperators.Equal
+            };
         }
 
         return filterByParentExpressionSerialized;
@@ -166,21 +194,29 @@ export class ContentListsCommonRestService {
         return filter;
     }
 
-    private static async getClassificationFilter(entity: ContentListEntityBase, requestContext: RequestContext, traceContext?: any) {
+    public static getClassificationSegment(requestContext: RequestContext) {
         const url = requestContext.url;
         const segments = url ? url.split('/') : [];
-        const regex = /(^-in-((?:\w|-){1,}),(.+?);?$)+/;
-        const matchedSegments = segments.map(x => decodeURIComponent(x)).map(x => x.match(regex)).filter(x => !!x);
+        const matchedSegments = segments.map(x => decodeURIComponent(x)).map(x => x.match(ContentListsCommonRestService.ClassificationSegmentRegex)).filter(x => !!x);
         if (matchedSegments.length === 1) {
-            const emptyClause = { FieldValue: EMTPY_GUID, FieldName: 'Id', Operator: FilterOperators.Equal };
-            const filter: CombinedFilter = {
-                ChildFilters: [],
-                Operator: 'AND'
-            };
+            const segment = matchedSegments[0]![0];
+            const segmentIndex = requestContext.layout.UrlParameters?.findIndex(x => x === segment);
+            if (segmentIndex > -1) {
+                requestContext.layout.UrlParameters?.splice(segmentIndex, 1);
+            }
 
-            const classificationSegment = matchedSegments[0]![0];
+            return segment;
+        }
+
+        return null;
+    }
+
+    private static async getClassificationFilter(entity: ContentListEntityBase, requestContext: RequestContext, traceContext?: any) {
+        const classificationSegment = this.getClassificationSegment(requestContext);
+        if (classificationSegment) {
+            const emptyClause = { FieldValue: EMTPY_GUID, FieldName: 'Id', Operator: FilterOperators.Equal };
             const distinctFilters = classificationSegment.split(';').map(x => {
-                const match = x.match(regex);
+                const match = x.match(ContentListsCommonRestService.ClassificationSegmentRegex);
                 return {
                     taxaName: match![2],
                     taxaUrl: match![3]
@@ -212,6 +248,11 @@ export class ContentListsCommonRestService {
             });
 
             return Promise.all(filterPromises).then(x => {
+                const filter: CombinedFilter = {
+                    ChildFilters: [],
+                    Operator: 'AND'
+                };
+
                 if (x.includes(emptyClause)) {
                     filter.ChildFilters = [emptyClause];
                 } else {

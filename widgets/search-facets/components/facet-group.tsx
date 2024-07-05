@@ -1,45 +1,90 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { SearchFacetModel, SearchFacetModelExtensions } from '../search-facets-class';
 import { FacetElement } from '../interfaces/facet-element';
 import { SearchFacetsViewModel } from '../search-facets-viewmodel';
-import { FacetsContext, FacetsContextModel } from '../facets-context';
-import { FacetCustomRange } from './facet-custom-number-range';
-import { RANGE_SEPARATOR, getCheckboxId } from './utils';
+import { SelectedFacetsState } from '../interfaces/selected-facet-state';
+import { FacetCustomRange } from './facet-custom-range';
+import { RANGE_SEPARATOR, getCheckboxId, formatDateValue, DATE_AND_TIME } from './utils';
 
-export function FacetGroup(props: { facet: SearchFacetModel, viewModel: SearchFacetsViewModel }) {
-    const { facet, viewModel } = {...props};
-    const context: FacetsContextModel = React.useContext(FacetsContext);
+export function FacetGroup(props: { facet: SearchFacetModel, viewModel: SearchFacetsViewModel , facetValueChanged: any, deselectFacetGroup: any, selectedFacets: SelectedFacetsState }) {
+    const { facet, viewModel, facetValueChanged, deselectFacetGroup, selectedFacets } = {...props};
     const defaultFacetsCollapseCount = 10;
     let value = 0;
 
-    const [moreLessLabel, setMoreLessLabel] = React.useState(viewModel.ShowMoreLabel);
-    const selectedFacets = context.selectedFacets;
-    
+    const [moreLessLabel, setMoreLessLabel] = React.useState({ 'labelToDisplay': viewModel.ShowMoreLabel, isShowMoreSelected: true });
+
     const showMoreLessClick = () => {
-        const newMoreLessLabel = moreLessLabel === viewModel.ShowMoreLabel
-            ? viewModel.ShowLessLabel
-            : viewModel.ShowMoreLabel;
+        const newMoreLessLabel = moreLessLabel.isShowMoreSelected
+            ? { 'labelToDisplay': viewModel.ShowLessLabel, isShowMoreSelected: false }
+            : { 'labelToDisplay': viewModel.ShowMoreLabel, isShowMoreSelected: true };
         setMoreLessLabel(newMoreLessLabel);
     };
 
     const facetCheckboxChanged = (e: React.ChangeEvent<HTMLInputElement>, facetName: string, facetValue: string, facetLabel: string) => {
         const checked = e.target.checked;
-        context.facetValueChanged(facetName, facetValue, facetValue, facetLabel, !checked, false);
+        facetValueChanged(facetName, facetValue, facetValue, facetLabel, !checked, false, null);
     };
 
     const customRangeApplied = (facetFieldName: string, facetChipValue: string, facetInitialValue: string, facetChipLabel: string, checkboxId: string) => {
         let isCustomRange = true;
 
-        if (selectedFacets[checkboxId]) {
+        if (!facetChipValue?.includes(RANGE_SEPARATOR) || facetChipValue === facetInitialValue) {
             isCustomRange = false;
         }
 
-        // uncheckCheckboxesFromGroup
-        context.deselectFacetGroup(facetFieldName);
+        if (isCustomRange && facetInitialValue !== facetChipValue) {
+            facetInitialValue = facetChipValue;
+        }
 
-        context.facetValueChanged(facetFieldName, facetChipValue, facetInitialValue, facetChipLabel, false, isCustomRange);
+        // uncheckCheckboxesFromGroup
+        let newSelectedFacets: SelectedFacetsState = deselectFacetGroup(facetFieldName);
+
+        facetValueChanged(facetFieldName, facetChipValue, facetInitialValue, facetChipLabel, false, isCustomRange, newSelectedFacets);
+    };
+
+    const checkboxChecked = (selectedFacet: any) => {
+        return !!selectedFacet && selectedFacet.facetDefaultValue === selectedFacet.facetValue;
+    };
+
+    const getFormattedDate = (selectedFacet: any, elementNumber: number) => {
+        let date = selectedFacet ? selectedFacet.facetValue.split(RANGE_SEPARATOR)[elementNumber] : '';
+        return formatDateValue(date);
+    };
+
+    const getSelectedFacet = useCallback((rangeFacet: any) => {
+        let selectedFacet;
+        if (!rangeFacet){
+            Object.keys(selectedFacets).forEach(key => {
+                const value = selectedFacets[key];
+                if (value && facet.FacetFieldName === value.facetName) {
+                    selectedFacet = value;
+                }
+            });
+        } else {
+            const checkboxId = getCheckboxId(facet.FacetFieldName, rangeFacet?.FacetValue!);
+            selectedFacet = selectedFacets[checkboxId];
+            if (selectedFacet && selectedFacet.facetDefaultValue === selectedFacet.facetValue) {
+                selectedFacet = null;
+            }
+        }
+
+        return selectedFacet;
+    }, [selectedFacets]); // eslint-disable-line
+
+    const getFormattedValuesToDisplay = (facet: any, selectedFacet: { facetName: string; facetValue: string; facetDefaultValue: string; facetLabel: string; isCustom: boolean; } | null | undefined): [any, any] => {
+        let fromV: string;
+        let toV: string;
+        if (facet.FacetFieldType === DATE_AND_TIME) {
+            fromV = getFormattedDate(selectedFacet, 0);
+            toV = getFormattedDate(selectedFacet, 1);
+        } else {
+            fromV = selectedFacet ? selectedFacet.facetValue.split(RANGE_SEPARATOR)[0] : '';
+            toV = selectedFacet ? selectedFacet.facetValue.split(RANGE_SEPARATOR)[1] : '';
+        }
+
+        return [fromV, toV];
     };
 
     return (<React.Fragment>
@@ -53,7 +98,7 @@ export function FacetGroup(props: { facet: SearchFacetModel, viewModel: SearchFa
                     value++;
                     const hideElement: boolean = (value > defaultFacetsCollapseCount)
                         && viewModel.IsShowMoreLessButtonActive
-                        && moreLessLabel === viewModel.ShowMoreLabel;
+                        && moreLessLabel['isShowMoreSelected'] === true;
                     const encodedName = facet.FacetFieldName || '';
                     const encodedValue = facetElement.FacetValue || '';
                     const checkboxId = getCheckboxId(encodedName, encodedValue);
@@ -68,7 +113,7 @@ export function FacetGroup(props: { facet: SearchFacetModel, viewModel: SearchFa
                         id={checkboxId}
                         data-facet-key={encodedName}
                         data-facet-value={encodedValue}
-                        checked={!!selectedFacet} />
+                        checked={checkboxChecked(selectedFacet)} />
                       <label htmlFor={checkboxId}
                         id={`facet-${encodedName}-${encodedValue}`}>
                         {facetElement.FacetLabel}
@@ -85,24 +130,25 @@ export function FacetGroup(props: { facet: SearchFacetModel, viewModel: SearchFa
             (facet.FacetElements.length > defaultFacetsCollapseCount && viewModel.IsShowMoreLessButtonActive) &&
             <button onClick={showMoreLessClick} type="button" className="btn btn-link p-0 text-decoration-none"
               data-facet-type={facet.FacetFieldName} id={`show-more-less-${facet.FacetFieldName}`}>
-                {moreLessLabel}
+                {moreLessLabel['labelToDisplay']}
             </button>
         }
-      {(SearchFacetModelExtensions.ShowNumberCustomRange(facet) || SearchFacetModelExtensions.ShowDateCustomRanges(facet)) && 
+      {(SearchFacetModelExtensions.ShowNumberCustomRange(facet) || SearchFacetModelExtensions.ShowDateCustomRanges(facet)) &&
             (() => {
                 const rangeFacet = facet.FacetElements.find(x => x.FacetValue?.includes(RANGE_SEPARATOR));
-                const checkboxId = getCheckboxId(facet.FacetFieldName, rangeFacet?.FacetValue!);
-                const selectedFacet = selectedFacets[checkboxId];
+                const selectedFacet = getSelectedFacet(rangeFacet);
+                const [fromV, toV] = getFormattedValuesToDisplay(facet, selectedFacet);
+
                 return (
                   <FacetCustomRange
                     facet={facet}
-                    facetElement={rangeFacet!}
-                    fromValue={selectedFacet ? selectedFacet.facetValue.split(RANGE_SEPARATOR)[0] : ''}
-                    toValue={selectedFacet ? selectedFacet.facetValue.split(RANGE_SEPARATOR)[1] : ''}
+                    facetElement={rangeFacet || {}}
+                    fromValue={fromV}
+                    toValue={toV}
+                    selectedFacets={selectedFacets}
                     customRangeApplied={customRangeApplied} />
                 );
             })()
-                
         }
     </React.Fragment>);
 }

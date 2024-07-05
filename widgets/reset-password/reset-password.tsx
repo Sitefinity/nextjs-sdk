@@ -1,7 +1,7 @@
 import { StyleGenerator } from '../styling/style-generator.service';
 import { StylingConfig } from '../styling/styling-config';
 import { ForgottenPasswordFormClient } from './forgotten-password-form.client';
-import { ResetPasswardFormClient } from './reset-password-form.client';
+import { ResetPasswordFormClient } from './reset-password-form.client';
 import { classNames } from '../../editor/utils/classNames';
 import { htmlAttributes } from '../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../editor/widget-framework/widget-context';
@@ -13,6 +13,8 @@ import { RequestContext } from '../../editor/request-context';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { getUniqueId } from '../../editor/utils/getUniqueId';
+import { getHostServerContext } from '../../services/server-context';
 
 const PasswordRecoveryQueryStringKey = 'vk';
 
@@ -33,6 +35,11 @@ export async function ResetPassword(props: WidgetContext<ResetPasswordEntity>) {
   const dataAttributes = htmlAttributes(props);
   const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
 
+    const securityQuestionInputId = getUniqueId('sf-security-question-');
+    const newPasswordInputId = getUniqueId('sf-new-password-');
+    const repeatPasswordInputId = getUniqueId('sf-repeat-password-');
+    const emailInputId = getUniqueId('sf-email-');
+
   dataAttributes['className'] = classNames(entity.CssClass, marginClass);
 
   const viewModel: ResetPasswordFormViewModel = populateViewModel(entity);
@@ -42,8 +49,14 @@ export async function ResetPassword(props: WidgetContext<ResetPasswordEntity>) {
       viewModel.LoginPageUrl = loginPage.ViewUrl;
   }
 
+  if (context.isLive) {
+      const host = getHostServerContext() || RootUrlService.getServerCmsUrl();
+      viewModel.ResetPasswordUrl = host + '/' + context.url;
+  }
+
   const queryList = new URLSearchParams(context.searchParams);
   const queryString = '?' + queryList.toString();
+  viewModel.SecurityToken = queryString;
 
   if (isResetPasswordRequest(context)) {
       viewModel.IsResetPasswordRequest = true;
@@ -70,12 +83,12 @@ export async function ResetPassword(props: WidgetContext<ResetPasswordEntity>) {
                 <div data-sf-role="error-message-container" className="alert alert-danger" role="alert" aria-live="assertive">{labels.ErrorMessage}</div>
               </>
               :
-              <ResetPasswardFormClient viewModel={viewModel} context={context} />
+              <ResetPasswordFormClient viewModel={viewModel} context={context} securityQuestionInputId={securityQuestionInputId} newPasswordInputId={newPasswordInputId} repeatPasswordInputId={repeatPasswordInputId}/>
             }
           </div>
       : <div data-sf-role="sf-forgotten-password-container">
         <h2 className="mb-3">{labels.ForgottenPasswordHeader}</h2>
-        <ForgottenPasswordFormClient viewModel={viewModel} context={context} />
+        <ForgottenPasswordFormClient viewModel={viewModel} context={context} emailInputId={emailInputId} />
         {viewModel.LoginPageUrl &&
           <a href={viewModel.LoginPageUrl} className="text-decoration-none">{labels.BackLinkLabel}</a>
         }
@@ -90,8 +103,8 @@ export async function ResetPassword(props: WidgetContext<ResetPasswordEntity>) {
 function populateViewModel(entity: ResetPasswordEntity): ResetPasswordFormViewModel {
     return {
         Attributes: entity.Attributes,
-        ResetUserPasswordHandlerPath: `${RootUrlService.getClientServiceUrl()}}/ResetUserPassword`,
-        SendResetPasswordEmailHandlerPath: `${RootUrlService.getClientServiceUrl()}/SendResetPasswordEmail`,
+        ResetUserPasswordHandlerPath: `/${RootUrlService.getWebServicePath()}/ResetUserPassword`,
+        SendResetPasswordEmailHandlerPath: `/${RootUrlService.getWebServicePath()}/SendResetPasswordEmail`,
         VisibilityClasses: StylingConfig.VisibilityClasses,
         InvalidClass: StylingConfig.InvalidClass,
         Labels: {

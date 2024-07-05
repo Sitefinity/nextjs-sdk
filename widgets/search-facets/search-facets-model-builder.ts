@@ -167,11 +167,16 @@ export class SearchFacetsModelBuilder {
 
     static formatDateInterval(dateStep: string, intervalValue: Date): string | null {
         const month = intervalValue.toLocaleString('default', { month: 'short' });
+        let day = intervalValue.getDate().toString();
+        if (day.length < 2) {
+            day = '0' + day;
+        }
+
         switch (dateStep) {
             case 'day':
             case 'week':
             case 'quarter':
-                return `${month} ${intervalValue.getDate()} ${intervalValue.getFullYear()}`;
+                return `${month} ${day} ${intervalValue.getFullYear()}`;
             case 'month':
                 return `${month} ${intervalValue.getFullYear()}`;
             case 'year':
@@ -214,8 +219,11 @@ export class SearchFacetsModelBuilder {
     }
 
     static parseRangeValue(val: string): number {
-        const parsedValue: number = parseInt(val, 10);
-        return parsedValue;
+        if (Number.isInteger(val)) {
+            return parseInt(val, 10);
+        } else {
+            return parseFloat(val);
+        }
     }
 
     static computeFacetValue(f: FacetResponseDto): string {

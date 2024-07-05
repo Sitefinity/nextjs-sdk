@@ -8,28 +8,31 @@ import { SdkItem } from '../../../rest-sdk/dto/sdk-item';
 import { RestClient } from '../../../rest-sdk/rest-client';
 import { RenderWidgetService } from '../../../services/render-widget-service';
 import { ContentListViewModel } from '../master/content-list-model-base';
+import { ItemArgs } from '../../../rest-sdk/args/item.args';
 
 export async function ContentListDetail(props: { viewModel: ContentListViewModel }) {
     const model = props.viewModel.detailModel!;
-
     const queryParams: { [key: string]: string } = props.viewModel.requestContext.searchParams || {};
+    const itemArgs: ItemArgs = {
+        type: model.DetailItem.ItemType,
+        id: model.DetailItem.Id,
+        provider: model.DetailItem.ProviderName,
+        traceContext: props.viewModel.traceContext,
+        culture: props.viewModel.requestContext.culture
+    };
     let dataItem: SdkItem;
+
     if (queryParams.hasOwnProperty('sf-content-action')) {
-        dataItem = await RestClient.getItemWithStatus({
-            type: model.DetailItem.ItemType,
-            id: model.DetailItem.Id,
-            provider: model.DetailItem.ProviderName,
-            additionalQueryParams: queryParams,
-            traceContext: props.viewModel.traceContext
-        });
+        if (queryParams['sf-auth']) {
+          queryParams['sf-auth'] = encodeURIComponent(queryParams['sf-auth']);
+        }
+
+        itemArgs.additionalQueryParams = queryParams;
+        dataItem = await RestClient.getItemWithStatus(itemArgs);
     } else {
-        dataItem = await RestClient.getItem({
-            type: model.DetailItem.ItemType,
-            id: model.DetailItem.Id,
-            provider: model.DetailItem.ProviderName,
-            traceContext: props.viewModel.traceContext
-        });
+        dataItem = await RestClient.getItem(itemArgs);
     }
+
     let detailViewModel: DetailViewModel;
     const attributes: { [key: string]: string } = {};
     if (model.Attributes) {
@@ -45,7 +48,7 @@ export async function ContentListDetail(props: { viewModel: ContentListViewModel
         Culture: props.viewModel.requestContext.culture
     };
 
-    const templates = RenderWidgetService.widgetRegistry.widgets['SitefinityContentList']?.templates;
+    const templates = RenderWidgetService.widgetRegistry.widgets[props.viewModel.widgetName]?.templates;
 
     if (templates && detailViewModel?.ViewName && templates[detailViewModel?.ViewName]) {
         return (

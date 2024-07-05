@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { PagerViewModel } from './pager-view-model';
 import { classNames } from '../../editor/utils/classNames';
 import { RequestContext } from '../../editor/request-context';
@@ -18,7 +16,6 @@ export interface PagerProps {
 }
 
 export function Pager(props: PagerProps) {
-  const { span } = Tracer.startSpan('Pager', false, props.traceContext);
   const { itemsTotalCount, context, currentPage } = props;
   const pagerTemplate = props.pagerTemplate || PagerViewModel.PageNumberDefaultTemplate;
   const pagerQueryTemplate = props.pagerQueryTemplate || PagerViewModel.PageNumberDefaultQueryTemplate;
@@ -34,38 +31,39 @@ export function Pager(props: PagerProps) {
   pagerModel.ViewUrl = context.layout.Fields.ViewUrl;
 
   return (pagerModel.EndPageIndex > 1 &&
-    <ul className="pagination">
-      {pagerModel.IsPreviousButtonVisible &&
-        <li className="page-item">
-          <a className="page-link"
-            href={pagerModel.getPagerUrl(pagerModel.PreviousPageIndex, context)}
-            aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-        </li>
-      }
-      {
-        Array.from(
-          { length: pagerModel.EndPageIndex - pagerModel.StartPageIndex + 1 },
-          (v, k) => k + pagerModel.StartPageIndex).map((pageNumber: number, idx: number) => {
-            return (<li key={idx} className={classNames('page-item', {
-              'active': pagerModel.CurrentPage === pageNumber
-            })}>
-              <a className="page-link" href={pagerModel.getPagerUrl(pageNumber, context)}>
-                {pageNumber}
-              </a>
-            </li>);
-          })
-      }
-      {pagerModel.IsNextButtonVisible &&
-        <li className="page-item">
-          <a className="page-link" href={pagerModel.getPagerUrl(pagerModel.NextPageIndex, context)}
-            aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>
-      }
-      {Tracer.endSpan(span)}
-    </ul>
+    <div className="mt-2">
+      <ul className="pagination">
+        {pagerModel.IsPreviousButtonVisible &&
+          <li className="page-item">
+            <a className="page-link"
+              href={pagerModel.getPagerUrl(pagerModel.PreviousPageIndex, context)}
+              aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+        }
+        {
+          Array.from(
+            { length: pagerModel.EndPageIndex - pagerModel.StartPageIndex + 1 },
+            (v, k) => k + pagerModel.StartPageIndex).map((pageNumber: number, idx: number) => {
+              return (<li key={idx} className={classNames('page-item', {
+                'active': pagerModel.CurrentPage === pageNumber
+              })}>
+                <a className="page-link" href={pagerModel.getPagerUrl(pageNumber, context)}>
+                  {pageNumber}
+                </a>
+              </li>);
+            })
+        }
+        {pagerModel.IsNextButtonVisible &&
+          <li className="page-item">
+            <a className="page-link" href={pagerModel.getPagerUrl(pagerModel.NextPageIndex, context)}
+              aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
   );
 }

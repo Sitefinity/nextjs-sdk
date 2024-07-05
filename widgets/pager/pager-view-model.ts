@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { RequestContext } from '../../editor/request-context';
 import { PagerMode } from '../common/page-mode';
 
@@ -46,6 +47,10 @@ export class PagerViewModel {
 
         this.EndPageIndex = Math.min(this.TotalPagesCount, (this.StartPageIndex + this.DisplayPagesCount) - 1);
 
+        if (!this.isPageValid(this.CurrentPage)) {
+            notFound();
+        }
+
         // previous button
         this.IsPreviousButtonVisible = this.StartPageIndex > this.DisplayPagesCount ? true : false;
         this.PreviousPageIndex = this.StartPageIndex - 1;
@@ -62,7 +67,7 @@ export class PagerViewModel {
         }
     }
 
-    public  isPageValid(pageNumber: number): boolean {
+    public isPageValid(pageNumber: number): boolean {
         return pageNumber >= 1 && pageNumber <= this.EndPageIndex;
     }
 
@@ -121,7 +126,7 @@ export class PagerViewModel {
 
 export function getPageNumber(pagerMode: PagerMode, requestContext: RequestContext, pagerQueryTemplate: string = PagerViewModel.PageNumberDefaultQueryTemplate, pagerTemplate: string = PagerViewModel.PageNumberDefaultTemplate) {
     if (pagerMode === PagerMode.QueryParameter) {
-        const template = pagerQueryTemplate;
+        const template = pagerQueryTemplate !== '' ? pagerQueryTemplate : PagerViewModel.PageNumberDefaultQueryTemplate;
         const queryParams = requestContext.searchParams;
 
         const pagerQueryParam = parseInt(queryParams[template], 10);
@@ -130,7 +135,7 @@ export function getPageNumber(pagerMode: PagerMode, requestContext: RequestConte
     } else {
         const url = requestContext.url;
         const segments = url.split('/');
-        const template = pagerTemplate;
+        const template = pagerTemplate !== '' ? pagerTemplate : PagerViewModel.PageNumberDefaultTemplate;
         const extractorRegex = template.match(/(.*?)\{\{[A-z]+\}\}(.*)/);
         if (extractorRegex) {
             const firstPart = extractorRegex[1];
@@ -146,6 +151,15 @@ export function getPageNumber(pagerMode: PagerMode, requestContext: RequestConte
                 }
 
                 const pageNumber = parseInt(pagerSegment.substring(firstPartIndex, lastPartIndex), 10);
+
+                if (!isNaN(pageNumber)) {
+                    const segmentIndex = requestContext.layout.UrlParameters?.findIndex(x => x === pagerSegment);
+
+                    if (segmentIndex > -1) {
+                        requestContext.layout.UrlParameters?.splice(segmentIndex, 1);
+                    }
+                }
+
                 return !isNaN(pageNumber) ? pageNumber : 1;
             }
         }

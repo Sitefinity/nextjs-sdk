@@ -1,5 +1,4 @@
 import { StyleGenerator } from '../styling/style-generator.service';
-import { ExternalLoginBase } from '../external-login-base';
 import { StylingConfig } from '../styling/styling-config';
 import { PostRegistrationAction } from './interfaces/post-registration-action';
 import { RegistrationFormClient } from './registration-form.client';
@@ -8,7 +7,7 @@ import { classNames } from '../../editor/utils/classNames';
 import { getCustomAttributes, htmlAttributes } from '../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { ExternalProvider } from '../../rest-sdk/dto/external-provider';
-import { RegistrationSettingsDto } from '../../rest-sdk/dto/registration-settings';
+import { RegistrationSettingsDto, ActivationMethod } from '../../rest-sdk/dto/registration-settings';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
 import { RegistrationEntity } from './registration.entity';
@@ -17,6 +16,8 @@ import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { getUniqueId } from '../../editor/utils/getUniqueId';
+import { getHostServerContext } from '../../services/server-context';
 
 const EncryptedParam = 'qs';
 
@@ -36,6 +37,13 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
     const context = props.requestContext;
     const dataAttributes = htmlAttributes(props);
     const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
+    const firstNameInputId = getUniqueId('sf-first-name-');
+    const lastNameInputId = getUniqueId('sf-last-name-');
+    const emailInputId = getUniqueId('sf-email-');
+    const passwordInputId = getUniqueId('sf-new-password-');
+    const repeatPasswordInputId = getUniqueId('sf-repeat-password-');
+    const questionInputId = getUniqueId('sf-secret-question-');
+    const answerInputId = getUniqueId('sf-secret-answer-');
 
     dataAttributes['className'] = classNames(entity.CssClass, marginClass);
 
@@ -74,33 +82,22 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
         }
 
         const regSettings: RegistrationSettingsDto = await RestClient.getRegistrationSettings(ctx);
+        if (regSettings.ActivationMethod === ActivationMethod.AfterConfirmation && !regSettings.SmtpConfigured) {
+            viewModel.Warning = 'Confirmation email cannot be sent because the system has not been configured to send emails. Configure SMTP settings or contact your administrator for assistance.';
+        }
         viewModel.RequiresQuestionAndAnswer = regSettings.RequiresQuestionAndAnswer;
         viewModel.ActivationMethod = regSettings.ActivationMethod;
+    }
+
+    if (context.isLive) {
+      const host = getHostServerContext() || RootUrlService.getServerCmsUrl();
+      viewModel.ActivationPageUrl = host + '/' + context.url;
     }
 
     const labels = viewModel.Labels;
     const showSuccessMessage = context?.searchParams?.showSuccessMessage?.toLowerCase() === 'true';
 
     const formContainerServer = (<>
-      {viewModel.LoginPageUrl && <div className="mt-3">{labels.LoginLabel}</div>}
-      {viewModel.LoginPageUrl && <a href={viewModel.LoginPageUrl} className="text-decoration-none">{labels.LoginLink}</a>}
-
-      {viewModel.ExternalProviders && viewModel.ExternalProviders.length &&
-
-                    [<h3 key={100} className="mt-3">{labels.ExternalProvidersHeader}</h3>,
-                        viewModel.ExternalProviders.map((provider: ExternalProvider, idx: number) => {
-                            const providerClass = ExternalLoginBase.GetExternalLoginButtonCssClass(provider.Name);
-                            const providerHref = ExternalLoginBase.GetExternalLoginPath(context, provider.Name);
-
-                            return (
-                              <a key={idx}
-                                className={classNames('btn border fs-5 w-100 mt-2',providerClass)}
-                                href={providerHref}>{provider.Value}</a>
-                            );
-                        })
-                    ]
-                }
-
       <input type="hidden" name="RedirectUrl" defaultValue={viewModel.RedirectUrl} />
       <input type="hidden" name="PostRegistrationAction" defaultValue={viewModel.PostRegistrationAction} />
       <input type="hidden" name="ActivationMethod" defaultValue={viewModel.ActivationMethod} />
@@ -131,9 +128,10 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
               {labels.ActivationMessage}
           </h2>
           }
-          {showSuccessMessage && <h3>{labels.SuccessHeader}</h3>}
-          {showSuccessMessage && <p>{labels.SuccessLabel}</p>}
-          {
+          {!viewModel.IsAccountActivationRequest && (<>
+            {showSuccessMessage && <h3>{labels.SuccessHeader}</h3>}
+            {showSuccessMessage && <p>{labels.SuccessLabel}</p>}
+            {
               !showSuccessMessage &&
               <>
 
@@ -143,8 +141,17 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
                   context={context}
                   formContainerServer={formContainerServer}
                   confirmServer={confirmServer}
-                     />
+                  firstNameInputId={firstNameInputId}
+                  lastNameInputId={lastNameInputId}
+                  emailInputId={emailInputId}
+                  passwordInputId={passwordInputId}
+                  repeatPasswordInputId={repeatPasswordInputId}
+                  questionInputId={questionInputId}
+                  answerInputId={answerInputId}
+                   />
               </>
+            }
+            </>)
           }
         </div>
         {Tracer.endSpan(span)}
@@ -154,8 +161,8 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
 
 function populateViewModel(entity: RegistrationEntity): RegistrationViewModel {
     return {
-        RegistrationHandlerPath: `${RootUrlService.getClientServiceUrl()}/Registration`,
-        ResendConfirmationEmailHandlerPath: `${RootUrlService.getClientServiceUrl()}/ResendConfirmationEmail`,
+        RegistrationHandlerPath: `/${RootUrlService.getWebServicePath()}/Registration`,
+        ResendConfirmationEmailHandlerPath: `/${RootUrlService.getWebServicePath()}/ResendConfirmationEmail`,
         ExternalLoginHandlerPath: '/sitefinity/external-login-handler',
         Attributes: entity.Attributes!,
         PostRegistrationAction: entity.PostRegistrationAction,

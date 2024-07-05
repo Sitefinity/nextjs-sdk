@@ -56,7 +56,7 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
         }
     };
 
-    if (entity.SelectedItems?.Content?.length && entity.SelectedItems?.Content[0].Variations) {
+    if (props.requestContext.isEdit && entity.SelectedItems?.Content?.length && entity.SelectedItems?.Content[0].Variations) {
         setHideEmptyVisual(dataAttributes, true);
     }
 

@@ -5,20 +5,19 @@ import { VisibilityStyle } from '../styling/visibility-style';
 import { invalidDataAttr, invalidateElement, serializeForm } from '../common/utils';
 import { classNames } from '../../editor/utils/classNames';
 import { RequestContext } from '../../editor/request-context';
-import { getUniqueId } from '../../editor/utils/getUniqueId';
 import { ResetPasswordFormViewModel } from './interfaces/reset-password-form-view-model';
 
-export interface ResertPasswordFormContainerProps {
+export interface ResetPasswordFormContainerProps {
     viewModel: ResetPasswordFormViewModel;
     context: RequestContext;
+    securityQuestionInputId: string,
+    newPasswordInputId: string,
+    repeatPasswordInputId: string
 }
 
-export function ResetPasswardFormClient (props: ResertPasswordFormContainerProps) {
-    const { viewModel, context } = props;
+export function ResetPasswordFormClient (props: ResetPasswordFormContainerProps) {
+    const { viewModel, context, securityQuestionInputId, newPasswordInputId, repeatPasswordInputId } = props;
 
-    const securityQuestionInputId = React.useMemo(() => getUniqueId('sf-security-question-'), []);
-    const newPasswordInputId = React.useMemo(() => getUniqueId('sf-new-password-'), []);
-    const repeatPasswordInputId = React.useMemo(() => getUniqueId('sf-repeat-password-'), []);
     const formRef = React.useRef<HTMLFormElement>(null);
     const newPasswordInputRef = React.useRef<HTMLInputElement>(null);
     const repeatPasswordInputRef = React.useRef<HTMLInputElement>(null);
@@ -28,7 +27,7 @@ export function ResetPasswardFormClient (props: ResertPasswordFormContainerProps
     const [invalidInputs, setInvalidInputs] = React.useState<{[key: string]: boolean | undefined;}>({});
     const [showFormContainer, setShowFormContainer] = React.useState<boolean>(true);
     const [showSuccessContainer, setShowSuccessContainer] = React.useState<boolean>(false);
-    const [errorMessage, setErrorMessage] = React.useState<string>(labels.ErrorMessage);
+    const [errorMessage, setErrorMessage] = React.useState<string>('');
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -148,7 +147,7 @@ export function ResetPasswardFormClient (props: ResertPasswordFormContainerProps
         {<div data-sf-role="error-message-container"
           className={errorMessageClass}
           style={errorMessageStyles}
-          role="alert" aria-live="assertive"  >
+          role="alert" aria-live="assertive">
           {errorMessage}
         </div>
         }
@@ -176,7 +175,7 @@ export function ResetPasswardFormClient (props: ResertPasswordFormContainerProps
               {...inputValidationAttrs('NewPassword')}/>
           </div>
 
-          <input type="hidden" name="SecurityToken" value={window.location.search} />
+          <input type="hidden" name="SecurityToken" value={viewModel.SecurityToken} />
           <input className="btn btn-primary w-100" type="submit" value={labels.SaveButtonLabel} />
         </form>
         <input type="hidden" name="ErrorMessage" value={labels.ErrorMessage} />

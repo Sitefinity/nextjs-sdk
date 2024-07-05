@@ -70,16 +70,18 @@ export class FormRulesExecutor {
     }
 
     private _init(target: HTMLElement) {
-        let separator = target.closest(this.separatorSelector);
-        this.fieldsContainer = separator || this.formContainer;
-        this.pages = Array.from(this.formContainer!.querySelectorAll(this.separatorSelector));
+        if (this.formContainer) {
+            let separator = target.closest(this.separatorSelector);
+            this.fieldsContainer = separator || this.formContainer;
+            this.pages = Array.from(this.formContainer.querySelectorAll(this.separatorSelector));
 
-        this._initializeFormRules();
+            this._initializeFormRules();
 
-        let that = this;
-        this.formContainer!.addEventListener('form-page-changed', function (e: any, nextIndex: number, previousIndex: number) {
-            that._updateSkipPages(previousIndex, nextIndex);
-        } as any);
+            let that = this;
+            this.formContainer.addEventListener('form-page-changed', function (e: any, nextIndex: number, previousIndex: number) {
+                that._updateSkipPages(previousIndex, nextIndex);
+            } as any);
+        }
     }
 
 

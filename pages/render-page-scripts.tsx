@@ -3,13 +3,14 @@ import { LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
 import { PageScript, PageScriptLocation } from '../rest-sdk/dto/scripts';
 import Script from 'next/script';
 
-const TrackinConsentDialogDivId = 'tracking-consent-dialog';
+const TrackingConsentDialogScriptAttributeName = 'data-sf-tracking-consent-dialog-script';
+const TrackingConsentScriptAttributeName = 'data-sf-tracking-consent-script';
 const InsightClientScriptUrl = 'cdn.insight.sitefinity.com/sdk/sitefinity-insight-client';
 
 export function RenderPageScripts({ layout, scriptLocation }: { layout: LayoutServiceResponse, scriptLocation: PageScriptLocation }) {
     return (<>
       {
-            layout.Scripts.filter(x => x.Location === scriptLocation).map((script) => {
+            layout.Scripts.filter(x => x.Location === scriptLocation).map((script, i) => {
                 if (script.Source) {
                     if (script.Source[0] === '/') {
                         script.Source = RootUrlService.getClientCmsUrl() + script.Source;
@@ -18,36 +19,36 @@ export function RenderPageScripts({ layout, scriptLocation }: { layout: LayoutSe
 
                 const scriptAttributes = Object.fromEntries(script.Attributes.map(x => [x.Key.toLocaleLowerCase(), x.Value]));
                 if (isScirptForHeadTag(script)) {
-                    return RenderPageHeadScript(script, scriptAttributes);
+                    return RenderPageHeadScript(script, scriptAttributes, i);
                 }
 
-                return RenderPageBodyScript(script, scriptAttributes);
+                return RenderPageBodyScript(script, scriptAttributes, i);
             })
         }
     </>);
 }
 
-function RenderPageHeadScript(script: PageScript, scriptAttributes: { [key: string]: string }) {
+function RenderPageHeadScript(script: PageScript, scriptAttributes: { [key: string]: string }, index: number) {
     if (script.IsNoScript) {
-        return <noscript {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value || '' }} />;
+        return <noscript key={index} {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value || '' }} />;
     } else {
         if (script.Source) {
-            return <Script {...scriptAttributes} src={script.Source} strategy="beforeInteractive" />;
+            return <Script key={index} {...scriptAttributes} src={script.Source} strategy="beforeInteractive" />;
         }
 
-        return <Script {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value }} strategy="beforeInteractive" />;
+        return <Script key={index} {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value }} strategy="beforeInteractive" />;
     }
 }
 
-function RenderPageBodyScript(script: PageScript, scriptAttributes: { [key: string]: string }) {
+function RenderPageBodyScript(script: PageScript, scriptAttributes: { [key: string]: string }, index: number) {
     if (script.IsNoScript) {
-        return <noscript {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value || '' }} />;
+        return <noscript key={index} {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value || '' }} />;
     } else {
         if (script.Source) {
-            return <script {...scriptAttributes} src={script.Source} defer={true}/>;
+            return <script key={index} {...scriptAttributes} src={script.Source} defer={true}/>;
         }
 
-        return <script {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value }} defer={true}/>;
+        return <script key={index} {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value }} defer={true}/>;
     }
 }
 
@@ -62,7 +63,7 @@ function isScirptForHeadTag(script: PageScript): boolean {
     }
 
     // HACK: The Tracking Consent Scripts should be loaded in the <body> instead of the <head> tag because they do not work properly otherwise
-    const isTrackingConsentScript = script.Source && script.Source.includes('WebResource.axd') || script.Value && script.Value.includes(TrackinConsentDialogDivId);
+    const isTrackingConsentScript = script.Attributes.find(attr => attr.Key === TrackingConsentDialogScriptAttributeName || attr.Key === TrackingConsentScriptAttributeName);
     if (isTrackingConsentScript) {
         return false;
     }

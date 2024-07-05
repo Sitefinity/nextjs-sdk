@@ -22,7 +22,7 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
     const entity = props.model.Properties;
     const context = props.requestContext;
     const searchParams = context.searchParams;
-    
+
     const [viewModel, setViewModel] = useState<FormViewModel>({
         CustomSubmitAction: false,
         VisibilityClasses: StylingConfig.VisibilityClasses,
@@ -31,11 +31,11 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
         Attributes: entity.Attributes
     });
     const [error, setError] = useState<string>('');
-    
+
     const queryParams = { ...searchParams };
 
     const getFormModel = (formDto: FormDto) => {
-        const currentQueryParams = {...queryParams};
+        const currentQueryParams: {[key: string]: string} = {...queryParams};
         if (searchParams && searchParams['sf-content-action']) {
             currentQueryParams['sf-content-action'] = encodeURIComponent(searchParams['sf-content-action']);
         }
@@ -60,7 +60,7 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
                     setViewModel(Object.assign({}, viewModel, {
                         FormModel: formModel,
                         Rules: getFormRulesViewModel(formDto),
-                        SubmitUrl: `/forms/submit/${formDto.Name}/${context.culture}?${QueryParamNames.Site}=${context.layout.SiteId}&${QueryParamNames.SiteTempFlag}=true`,
+                        SubmitUrl: `/forms/submit/${formDto.Name}/${context.culture}?${QueryParamNames.Site}=${context.layout?.SiteId}&${QueryParamNames.SiteTempFlag}=true`,
                         HiddenFields: getFormHiddenFields(formModel).join(',')
                     }));
                 });

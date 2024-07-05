@@ -1,23 +1,15 @@
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 
-import { RedirectType, notFound, permanentRedirect, redirect } from 'next/navigation';
 import { PageParams } from './page-params';
-import { ServiceMetadata } from '../rest-sdk/service-metadata';
 import { RenderWidgetService } from '../services/render-widget-service';
 import { RestClient } from '../rest-sdk/rest-client';
 import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
-import { GetAllArgs } from '../rest-sdk/args/get-all.args';
-import { LayoutResponse, LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
-import { initRestSdk } from '../rest-sdk/init';
+import { LayoutResponse } from '../rest-sdk/dto/layout-service.response';
 import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 import { GetPageLayoutArgs } from '../rest-sdk/args/get-page-layout.args';
-import { RedirectResponse } from '../rest-sdk/dto/redirect.response';
 
 export async function pageLayout({ params, searchParams, relatedFields, traceContext }: PageParams): Promise<LayoutResponse> {
-    await initRestSdk(traceContext);
-    const pagePath = params.slug.join('/');
-
     try {
         const args: GetPageLayoutArgs = {
             pagePath: params.slug.join('/'),
@@ -44,12 +36,11 @@ export async function pageLayout({ params, searchParams, relatedFields, traceCon
             throw error;
         }
 
-        throw `Could not fetch layout for url -> ${pagePath}`;
+        throw `Could not fetch layout for url -> ${params.slug.join('/')}`;
     }
 }
 
 export async function pageMetadata({ params, searchParams }: PageParams): Promise<Metadata> {
-
     let layoutResponse: LayoutResponse | null = null;
 
     try {
@@ -67,52 +58,31 @@ export async function pageMetadata({ params, searchParams }: PageParams): Promis
         return {
             title: layout.MetaInfo.Title,
             description: layout.MetaInfo.Description,
-
+            openGraph: {
+                title: layout.MetaInfo.OpenGraphTitle,
+                description: layout.MetaInfo.OpenGraphDescription,
+                images: [
+                    {
+                        url: layout.MetaInfo.OpenGraphImage
+                    }
+                ],
+                videos: [
+                    {
+                        url: layout.MetaInfo.OpenGraphVideo
+                    }
+                ],
+                siteName: layout.MetaInfo.OpenGraphSite
+            },
             other: {
-                'og-title': layout.MetaInfo.OpenGraphTitle,
-                'og-image': layout.MetaInfo.OpenGraphImage,
-                'og-video': layout.MetaInfo.OpenGraphVideo,
-                'og-type': layout.MetaInfo.OpenGraphType,
-                'og-site': layout.MetaInfo.OpenGraphSite
+                'og:type': layout.MetaInfo.OpenGraphType
+            },
+            alternates: {
+                canonical: layout.MetaInfo.CanonicalUrl
             }
         };
     }
 
     return {};
-}
-
-export async function pageStaticParams() {
-    const getAllArgs: GetAllArgs = {
-        skip: 0,
-        take: 50,
-        count: true,
-        fields: ['ViewUrl', 'Renderer'],
-        type: 'Telerik.Sitefinity.Pages.Model.PageNode'
-    };
-
-    await ServiceMetadata.fetch();
-
-    const filteredItems = [];
-    while (true) {
-        let items = await RestClient.getItems(getAllArgs);
-        let response = items.Items;
-        if (response.length === 0) {
-            break;
-        }
-
-        let filtered = response.filter(x => x['Renderer'] === 'React').map(x => x['ViewUrl']);
-        if (filtered.length > 0) {
-            filteredItems.push(...filtered);
-        }
-
-        getAllArgs.skip = (getAllArgs.skip as number) + (getAllArgs.take as number);
-    }
-
-    return filteredItems.map((relativeUrl) => {
-        return {
-            slug: relativeUrl.split('/').splice(1)
-        };
-    });
 }
 
 export function initRendering(widgetRegistry: WidgetRegistry, errorComponentType: any) {

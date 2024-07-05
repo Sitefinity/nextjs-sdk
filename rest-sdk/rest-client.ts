@@ -44,11 +44,11 @@ import { GetLazyWidgetsArgs } from './args/get-lazy-widgets.args';
 import { ErrorCodeException } from './errors/error-code.exception';
 import { SiteDto } from './dto/site-item';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { QueryParamNames } from './query-params-names';
+import { getAdditionalFetchDataServerContext, getHostServerContext, getQueryParamsServerContext } from '../services/server-context';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
-    public static host: string | null;
-    public static additionalFetchData: any;
 
     public static getItemWithFallback<T extends SdkItem>(args: ItemArgs): Promise<T> {
         let queryParams: Dictionary = {
@@ -85,16 +85,20 @@ export class RestClient {
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.GetItemWithStatus()${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
 
-        return this.sendRequest<T>({ url: wholeUrl });
+        return this.sendRequest<T>({ url: wholeUrl, traceContext: args.traceContext });
     }
 
     public static getItem<T extends SdkItem>(args: ItemArgs): Promise<T> {
+        const filteredSimpleFields = this.getSimpleFields(args.type, args.fields || ['*']);
+        const filteredRelatedFields = this.getRelatedFields(args.type, args.fields || []);
+
         let queryParams = {
-            $select: '*'
+            '$select': filteredSimpleFields.join(','),
+            '$expand': filteredRelatedFields.join(',')
         };
 
         const wholeUrl = `${this.buildItemBaseUrl(args.type)}(${args.id})${this.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
-        return this.sendRequest<T>({ url: wholeUrl });
+        return this.sendRequest<T>({ url: wholeUrl, traceContext: args.traceContext });
     }
 
     public static getSharedContent(id: string, cultureName: string, traceContext?: any): Promise<GenericContentItem> {
@@ -117,7 +121,7 @@ export class RestClient {
 
         let queryParams: { [key: string]: any } = {
             '$count': args.count,
-            '$orderby': args.orderBy ? args.orderBy.map(x => `${x.Name} ${x.Type}`) : null,
+            '$orderby': args.orderBy && args.orderBy.length > 0 ? args.orderBy.map(x => `${x.Name} ${x.Type}`) : null,
             '$select': filteredSimpleFields.join(','),
             '$expand': filteredRelatedFields.join(','),
             '$skip': args.skip,
@@ -125,7 +129,7 @@ export class RestClient {
             '$filter': args.filter ? new ODataFilterSerializer().serialize({ Type: args.type, Filter: args.filter }) : null
         };
 
-        const wholeUrl = `${this.buildItemBaseUrl(args.type)}${this.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
+        const wholeUrl = `${this.buildItemBaseUrl(args.type)}${this.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
         return this.sendRequest<{ value: T[], '@odata.count'?: number }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then((x) => {
             return <CollectionResponse<T>>{ Items: x.value, TotalCount: x['@odata.count'] };
         });
@@ -463,6 +467,18 @@ export class RestClient {
         });
     }
 
+    public static setHomePage(args: ItemArgs): Promise<void> {
+        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Pages)}/Default.SetHomePage()${RestClient.buildQueryParams(RestClient.getQueryParams(args, undefined))}`;
+        return this.sendRequest({
+            url: wholeUrl,
+            data: {
+                pageId: args.id
+            },
+            method: 'POST',
+            headers: args.additionalHeaders
+        });
+    }
+
     public static async getFormLayout(args: GetFormLayoutArgs): Promise<LayoutServiceResponse> {
         const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Form)}(${args.id})/Default.Model()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
         return RestClient.sendRequest({ url: wholeUrl, headers: args.additionalHeaders, traceContext: args.traceContext });
@@ -505,8 +521,9 @@ export class RestClient {
             headers['Cookie'] = args.cookie;
         }
 
-        if (typeof window === 'undefined') {
-            const proxyHeaders = getProxyHeaders(RestClient.host!);
+        if (typeof window === 'undefined' || process.env.NODE_ENV === 'test') {
+            const host = getHostServerContext();
+            const proxyHeaders = getProxyHeaders(host!);
             Object.keys(proxyHeaders).forEach((header) => {
                 headers[header] = proxyHeaders[header];
             });
@@ -526,8 +543,9 @@ export class RestClient {
         let requestData: RequestData = { url: url, headers: headers, method: 'GET' };
 
         let requestInit: RequestInit = { headers, method: requestData.method, redirect: 'manual' };
-        if (RestClient.additionalFetchData) {
-            requestInit = Object.assign(requestInit, RestClient.additionalFetchData);
+        const additionalFetchData = getAdditionalFetchDataServerContext();
+        if (additionalFetchData) {
+            requestInit = Object.assign(requestInit, additionalFetchData);
         }
 
         let httpLayoutResponse: Response | null = null;
@@ -706,7 +724,12 @@ export class RestClient {
             queryParams = {};
         }
 
-        queryParams = Object.assign({}, RestClient.contextQueryParams || {}, queryParams);
+        if (typeof window === 'undefined') {
+            const queryParamsFromServerContext = getQueryParamsServerContext();
+            queryParams = Object.assign({}, queryParamsFromServerContext || {}, queryParams);
+        } else {
+            queryParams = Object.assign({}, RestClient.contextQueryParams || {}, queryParams);
+        }
 
         let result = '';
         Object.keys(queryParams).forEach((key) => {
@@ -737,9 +760,15 @@ export class RestClient {
 
         if (args) {
             queryParamsFromArgs = {
-                'sf_provider': args.provider,
-                'sf_culture': args.culture
+                [QueryParamNames.Provider]: args.provider,
+                [QueryParamNames.Culture]: args.culture
             };
+        }
+
+        if (typeof window === 'undefined') {
+            const queryParamsFromServerContext = getQueryParamsServerContext();
+            queryParams = Object.assign({}, queryParamsFromServerContext || {}, queryParams);
+            return Object.assign({}, queryParamsFromServerContext || {}, queryParamsFromArgs, args?.additionalQueryParams || {}, queryParams || {});
         }
 
         return Object.assign({}, RestClient.contextQueryParams || {}, queryParamsFromArgs, args?.additionalQueryParams || {}, queryParams || {});
@@ -753,7 +782,8 @@ export class RestClient {
         }
 
         if (typeof window === 'undefined') {
-            const proxyHeaders = getProxyHeaders(RestClient.host!);
+            const host = getHostServerContext();
+            const proxyHeaders = getProxyHeaders(host!);
             Object.keys(proxyHeaders).forEach((headerKey) => {
                 headers[headerKey] = proxyHeaders[headerKey];
             });
@@ -783,8 +813,9 @@ export class RestClient {
             args.body = request.data;
         }
 
-        if (RestClient.additionalFetchData) {
-            args = Object.assign(args, RestClient.additionalFetchData);
+        const additionalFetchData = getAdditionalFetchDataServerContext();
+        if (additionalFetchData) {
+            args = Object.assign(args, additionalFetchData);
         }
 
         if (request.additionalFetchData) {
@@ -821,7 +852,20 @@ export class RestClient {
                             throw new ErrorCodeException(y.error.code, y.error.message);
                         }
 
-                        const message = `${request.method} ${request.url} failed. Response -> ${y.error.code}: ${y.error.message}`;
+                        let responseMessage = '';
+                        if (y.error) {
+                            if (y.error.code && y.error.message) {
+                                responseMessage = `${y.error.code}: ${y.error.message}`;
+                            } else if (y.error.message) {
+                                responseMessage = y.error.message;
+                            }
+                        } else if (y.Message) {
+                             responseMessage = y.Message;
+                        } else {
+                            responseMessage = JSON.stringify(y);
+                        }
+
+                        const message = `${request.method} ${request.url} failed. Response -> ${responseMessage}`;
                         throw message;
                     });
                 }
@@ -844,14 +888,18 @@ export class RestClient {
 export class RestSdkTypes {
     public static readonly Video: string = 'Telerik.Sitefinity.Libraries.Model.Video';
     public static readonly Image: string = 'Telerik.Sitefinity.Libraries.Model.Image';
+    public static readonly Document: string = 'Telerik.Sitefinity.Libraries.Model.Document';
+    public static readonly DocumentLibrary: string = 'Telerik.Sitefinity.Libraries.Model.DocumentLibrary';
     public static readonly News: string = 'Telerik.Sitefinity.News.Model.NewsItem';
     public static readonly Taxonomies: string = 'Telerik.Sitefinity.Taxonomies.Model.Taxonomy';
     public static readonly Tags: string = 'Taxonomy_Tags';
+    public static readonly Categories: string = 'Taxonomy_Categories';
     public static readonly GenericContent: string = 'Telerik.Sitefinity.GenericContent.Model.ContentItem';
     public static readonly Pages: string = 'Telerik.Sitefinity.Pages.Model.PageNode';
     public static readonly PageTemplates: string = 'Telerik.Sitefinity.Pages.Model.PageTemplate';
     public static readonly Form: string = 'Telerik.Sitefinity.Forms.Model.FormDescription';
     public static readonly Site: string = 'Telerik.Sitefinity.Multisite.Model.Site';
+    public static readonly Blog: string = 'Telerik.Sitefinity.Blogs.Model.Blog';
 }
 
 interface RequestData {

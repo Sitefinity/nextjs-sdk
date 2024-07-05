@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import { Fragment } from 'react';
 import { ListWithSummaryModel } from './list-with-summary-model';
 import { OpenDetailsAnchor } from '../open-details-anchor';
 import { ContentListEntityBase } from '../../../content-lists-common/content-lists-base.entity';
@@ -7,7 +7,7 @@ import { formatDate } from '../../../common/utils';
 export function ListWithSummary(props: { model: ListWithSummaryModel, entity?: ContentListEntityBase }) {
     const model = props.model;
     return (
-      <Fragment>
+      <div {...model.Attributes}>
         {model.Items.map((item, index: number) => {
                 return (
                   <Fragment key={item.Original.Id}>
@@ -15,16 +15,14 @@ export function ListWithSummary(props: { model: ListWithSummaryModel, entity?: C
                     <div>
                       {item.Title &&
                         <h5 className={item.Title.Css}>
-                          {model.OpenDetails ?
-                            <OpenDetailsAnchor
-                              detailPageMode={props.entity?.DetailPageMode!}
-                              detailPage={props.entity?.DetailPage!}
-                              item={item} /> :
-                                        (item.Title.Value)
-                                    }
+                          <OpenDetailsAnchor
+                            detailPageMode={props.entity?.DetailPageMode!}
+                            detailPageUrl={props.model.DetailPageUrl}
+                            requestContext={props.model.RequestContext}
+                            item={item} />
                         </h5>}
                       {item.PublicationDate &&
-                        <p className={item.PublicationDate.Css}>
+                        <p className={'text-muted ' + item.PublicationDate.Css}>
                           <small>{formatDate(item.PublicationDate.Value, model.Culture)}</small>
                         </p>
                             }
@@ -33,7 +31,7 @@ export function ListWithSummary(props: { model: ListWithSummaryModel, entity?: C
                   </Fragment>
                 );
             })}
-      </Fragment>
+      </div>
     );
 }
 

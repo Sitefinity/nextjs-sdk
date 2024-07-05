@@ -4,6 +4,9 @@ import { WidgetContext } from '../../editor/widget-framework/widget-context';
 
 export class Tracer extends InternalTracer {
     public static startTrace<F>(key: string, fn:(span: Span) => F): F {
+        if (typeof(window) !== 'undefined') {
+            return fn(<any>null);
+        }
         const tracer = trace.getTracer('next-app');
 
         return tracer.startActiveSpan(key, (span: Span) => {
@@ -12,10 +15,14 @@ export class Tracer extends InternalTracer {
     }
 
     public static startSpan(key: string, createContext = false, currentContext?: Context): { span: Span, ctx?: Context } {
+        if (typeof(window) !== 'undefined') {
+            return {span: <any>null};
+        }
+
         const tracer = trace.getTracer('next-app');
 
         let ctx;
-        const span = tracer.startSpan(`SF ${key}`, undefined, currentContext);
+        const span = tracer.startSpan(`SF ${key}`, undefined, currentContext || context.active());
         if (createContext) {
             ctx = trace.setSpan(context.active(), span);
         } else {
@@ -35,6 +42,10 @@ export class Tracer extends InternalTracer {
     }
 
     public static withContext<T>(fn: () => T, ctx?: Context) {
+        if (typeof(window) !== 'undefined') {
+            return fn();
+        }
+
         if (ctx) {
             return context.with(ctx, fn);
         }
@@ -43,6 +54,9 @@ export class Tracer extends InternalTracer {
     }
 
     public static logEvent(name: string, attributes?: Attributes, span?: Span) {
+        if (typeof(window) !== 'undefined') {
+            return;
+        }
         const activeSpan = span || trace.getActiveSpan();
         activeSpan?.addEvent(name, attributes);
     }

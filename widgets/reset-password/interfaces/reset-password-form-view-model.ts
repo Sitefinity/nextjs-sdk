@@ -7,12 +7,12 @@ export interface ResetPasswordFormViewModel {
     InvalidClass: string;
     VisibilityClasses: { [key: string]: string };
     Attributes?: Attributes;
-
     IsResetPasswordRequest?: boolean;
     Error?: true;
     SecurityQuestion?: string;
     RequiresQuestionAndAnswer?: boolean;
     ResetPasswordUrl?: string;
+    SecurityToken?: string;
 
     Labels: {
         ResetPasswordHeader: string;
