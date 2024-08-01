@@ -1,6 +1,6 @@
 # Sitefinity Next.js SDK
 
-Provides OOB widgets for Sitefinity, written in the Next.js framework; abstraction for communicating with Sitefinity; additional API, typings, and tooling.
+Provides OOB widgets developed using the Next.js framework, which includes an abstraction layer for Sitefinity communication. Additionally, it offers an expanded API, typings, and tools for further development and integration.
 
 ## Getting started
 
@@ -38,7 +38,8 @@ For more information and samples visit our [NextJS samples repo](https://github.
 
 #### Required html attributes
 
-In order for the WYSIWYG page and form editor to work properly, several custom html attributes need to be provided while viewing the markup in edit mode. The __htmlAttributes__ handles the general case for this need. For aggregating custom CSS classes we provide the helper __classNames__.
+To ensure the WYSIWYG page and form editor functions correctly, it is necessary to include certain custom HTML attributes when viewing the markup in edit mode. The __htmlAttributes__ is designed to address this requirement comprehensively. Additionally, the __classNames__ helper is provided to facilitate the accumulation of custom CSS classes.
+
 ```tsx
 import { htmlAttributes, classNames } from '@progress/sitefinity-nextjs-sdk';
 
