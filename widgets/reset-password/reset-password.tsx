@@ -1,20 +1,19 @@
-import { StyleGenerator } from '../styling/style-generator.service';
 import { StylingConfig } from '../styling/styling-config';
-import { ForgottenPasswordFormClient } from './forgotten-password-form.client';
-import { ResetPasswordFormClient } from './reset-password-form.client';
-import { classNames } from '../../editor/utils/classNames';
-import { htmlAttributes } from '../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../editor/widget-framework/widget-context';
+import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
 import { RestSdkTypes, RestClient } from '../../rest-sdk/rest-client';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
 import { ResetPasswordEntity } from './reset-password.entity';
-import { ResetPasswordFormViewModel } from './interfaces/reset-password-form-view-model';
+import { ResetPasswordViewProps } from './interfaces/reset-password.view-props';
 import { RequestContext } from '../../editor/request-context';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
-import { getUniqueId } from '../../editor/utils/getUniqueId';
 import { getHostServerContext } from '../../services/server-context';
+import { RenderView } from '../common/render-view';
+import { ResetPasswordDefaultTemplate } from './reset-password.view';
+import { getCustomAttributes, htmlAttributes } from '../../editor/widget-framework/attributes';
+import { StyleGenerator } from '../styling/style-generator.service';
+import { classNames } from '../../editor/utils/classNames';
 
 const PasswordRecoveryQueryStringKey = 'vk';
 
@@ -32,100 +31,82 @@ export async function ResetPassword(props: WidgetContext<ResetPasswordEntity>) {
   const {span, ctx} = Tracer.traceWidget(props, true);
   const entity = props.model.Properties;
   const context = props.requestContext;
-  const dataAttributes = htmlAttributes(props);
-  const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
 
-    const securityQuestionInputId = getUniqueId('sf-security-question-');
-    const newPasswordInputId = getUniqueId('sf-new-password-');
-    const repeatPasswordInputId = getUniqueId('sf-repeat-password-');
-    const emailInputId = getUniqueId('sf-email-');
+  const viewProps: ResetPasswordViewProps<ResetPasswordEntity> = populateViewProps(entity, props);
 
-  dataAttributes['className'] = classNames(entity.CssClass, marginClass);
-
-  const viewModel: ResetPasswordFormViewModel = populateViewModel(entity);
-
-  const loginPage = await RestClientForContext.getItem<PageItem>(entity.LoginPage!, { type: RestSdkTypes.Pages, traceContext: ctx });
-  if (loginPage) {
-      viewModel.LoginPageUrl = loginPage.ViewUrl;
-  }
+  try {
+    const loginPage = await RestClientForContext.getItem<PageItem>(entity.LoginPage!, { type: RestSdkTypes.Pages, culture: props.requestContext.culture, traceContext: ctx });
+    if (loginPage) {
+      viewProps.loginPageUrl = loginPage.ViewUrl;
+    }
+  } catch (error) { /* empty */ }
 
   if (context.isLive) {
       const host = getHostServerContext() || RootUrlService.getServerCmsUrl();
-      viewModel.ResetPasswordUrl = host + '/' + context.url;
+      viewProps.resetPasswordUrl = host + '/' + context.url;
   }
 
   const queryList = new URLSearchParams(context.searchParams);
   const queryString = '?' + queryList.toString();
-  viewModel.SecurityToken = queryString;
+  viewProps.securityToken = queryString;
 
   if (isResetPasswordRequest(context)) {
-      viewModel.IsResetPasswordRequest = true;
+      viewProps.isResetPasswordRequest = true;
 
       try {
           const resetPasswordModel: any = await RestClient.getResetPasswordModel(queryString, ctx);
-          viewModel.RequiresQuestionAndAnswer = resetPasswordModel.RequiresQuestionAndAnswer;
-          viewModel.SecurityQuestion = resetPasswordModel.SecurityQuestion;
+          viewProps.requiresQuestionAndAnswer = resetPasswordModel.RequiresQuestionAndAnswer;
+          viewProps.securityQuestion = resetPasswordModel.SecurityQuestion;
       } catch (Exception) {
           // In terms of security, if there is some error with the user get, we display common error message to the user.
-          viewModel.Error = true;
+          viewProps.error = true;
       }
   }
 
-  const labels = viewModel.Labels!;
   return (
-    <>
-      <div {...dataAttributes}>
-        {viewModel.IsResetPasswordRequest ?
-          <div data-sf-role="sf-reset-password-container">
-            {viewModel.Error || (viewModel.RequiresQuestionAndAnswer && !viewModel.SecurityQuestion) ?
-              <>
-                <h2>{labels.ResetPasswordHeader}</h2>
-                <div data-sf-role="error-message-container" className="alert alert-danger" role="alert" aria-live="assertive">{labels.ErrorMessage}</div>
-              </>
-              :
-              <ResetPasswordFormClient viewModel={viewModel} context={context} securityQuestionInputId={securityQuestionInputId} newPasswordInputId={newPasswordInputId} repeatPasswordInputId={repeatPasswordInputId}/>
-            }
-          </div>
-      : <div data-sf-role="sf-forgotten-password-container">
-        <h2 className="mb-3">{labels.ForgottenPasswordHeader}</h2>
-        <ForgottenPasswordFormClient viewModel={viewModel} context={context} emailInputId={emailInputId} />
-        {viewModel.LoginPageUrl &&
-          <a href={viewModel.LoginPageUrl} className="text-decoration-none">{labels.BackLinkLabel}</a>
-        }
-      </div>
-      }
-      </div>
-      {Tracer.endSpan(span)}
-    </>
+    <RenderView
+      viewName={entity.SfViewName}
+      widgetKey={props.model.Name}
+      traceSpan={span}
+      viewProps={viewProps}>
+      <ResetPasswordDefaultTemplate {...viewProps}/>
+    </RenderView>
   );
 }
 
-function populateViewModel(entity: ResetPasswordEntity): ResetPasswordFormViewModel {
+function populateViewProps(entity: ResetPasswordEntity, widgetContext: WidgetContext<ResetPasswordEntity>): ResetPasswordViewProps<ResetPasswordEntity> {
+    const dataAttributes = htmlAttributes(widgetContext);
+    const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
+    dataAttributes['className'] = classNames(entity.CssClass, marginClass);
+    const customAttributes = getCustomAttributes(entity.Attributes, 'ResetPassword');
+
     return {
-        Attributes: entity.Attributes,
-        ResetUserPasswordHandlerPath: `/${RootUrlService.getWebServicePath()}/ResetUserPassword`,
-        SendResetPasswordEmailHandlerPath: `/${RootUrlService.getWebServicePath()}/SendResetPasswordEmail`,
-        VisibilityClasses: StylingConfig.VisibilityClasses,
-        InvalidClass: StylingConfig.InvalidClass,
-        Labels: {
-            ResetPasswordHeader: entity.ResetPasswordHeader,
-            NewPasswordLabel: entity.NewPasswordLabel,
-            RepeatNewPasswordLabel: entity.RepeatNewPasswordLabel,
-            SecurityQuestionLabel: entity.SecurityQuestionLabel,
-            SaveButtonLabel: entity.SaveButtonLabel,
-            BackLinkLabel: entity.BackLinkLabel,
-            SuccessMessage: entity.SuccessMessage,
-            ErrorMessage: entity.ErrorMessage,
-            AllFieldsAreRequiredErrorMessage: entity.AllFieldsAreRequiredErrorMessage,
-            PasswordsMismatchErrorMessage: entity.PasswordsMismatchErrorMessage,
-            ForgottenPasswordHeader: entity.ForgottenPasswordHeader,
-            EmailLabel: entity.EmailLabel,
-            ForgottenPasswordLinkMessage: entity.ForgottenPasswordLinkMessage,
-            ForgottenPasswordSubmitMessage: entity.ForgottenPasswordSubmitMessage,
-            SendButtonLabel: entity.SendButtonLabel,
-            ForgottenPasswordLabel: entity.ForgottenPasswordLabel,
-            InvalidEmailFormatMessage: entity.InvalidEmailFormatMessage,
-            FieldIsRequiredMessage: entity.FieldIsRequiredMessage
-        }
+        resetUserPasswordHandlerPath: `/${RootUrlService.getWebServicePath()}/ResetUserPassword`,
+        sendResetPasswordEmailHandlerPath: `/${RootUrlService.getWebServicePath()}/SendResetPasswordEmail`,
+        visibilityClasses: StylingConfig.VisibilityClasses,
+        invalidClass: StylingConfig.InvalidClass,
+        membershipProviderName: entity.MembershipProviderName,
+        labels: {
+            resetPasswordHeader: entity.ResetPasswordHeader,
+            newPasswordLabel: entity.NewPasswordLabel,
+            repeatNewPasswordLabel: entity.RepeatNewPasswordLabel,
+            securityQuestionLabel: entity.SecurityQuestionLabel,
+            saveButtonLabel: entity.SaveButtonLabel,
+            backLinkLabel: entity.BackLinkLabel,
+            successMessage: entity.SuccessMessage,
+            errorMessage: entity.ErrorMessage,
+            allFieldsAreRequiredErrorMessage: entity.AllFieldsAreRequiredErrorMessage,
+            passwordsMismatchErrorMessage: entity.PasswordsMismatchErrorMessage,
+            forgottenPasswordHeader: entity.ForgottenPasswordHeader,
+            emailLabel: entity.EmailLabel,
+            forgottenPasswordLinkMessage: entity.ForgottenPasswordLinkMessage,
+            forgottenPasswordSubmitMessage: entity.ForgottenPasswordSubmitMessage,
+            sendButtonLabel: entity.SendButtonLabel,
+            forgottenPasswordLabel: entity.ForgottenPasswordLabel,
+            invalidEmailFormatMessage: entity.InvalidEmailFormatMessage,
+            fieldIsRequiredMessage: entity.FieldIsRequiredMessage
+        },
+        attributes: {...dataAttributes, ...customAttributes},
+        widgetContext: getMinimumWidgetContext(widgetContext)
     };
 }

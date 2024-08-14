@@ -1,13 +1,13 @@
 import { TextType } from './interfaces/text-type';
 import { StylingConfig } from '../../styling/styling-config';
-import { TextFieldClient } from './textfield-client';
 import { classNames } from '../../../editor/utils/classNames';
-import { getUniqueId } from '../../../editor/utils/getUniqueId';
 import { htmlAttributes } from '../../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../../editor/widget-framework/widget-context';
+import { WidgetContext, getMinimumWidgetContext } from '../../../editor/widget-framework/widget-context';
 import { TextFieldEntity } from './text-field.entity';
-import { TextFieldViewModel } from './text-field-viewmodel';
+import { TextFieldViewProps } from './text-field.view-props';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { RenderView } from '../../common/render-view';
+import { TextFieldDefaultView } from './text-field.view';
 
 const InvalidDefaultValidationMessageWithLabel = '{0} field is invalid';
 const InvalidDefaultValidationMessage = 'Field is invalid';
@@ -15,66 +15,55 @@ const InvalidDefaultValidationMessage = 'Field is invalid';
 export function TextField(props: WidgetContext<TextFieldEntity>) {
     const {span} = Tracer.traceWidget(props, false);
     const entity = props.model.Properties;
-    const viewModel: TextFieldViewModel = {
-        CssClass: classNames(entity.CssClass, (StylingConfig.FieldSizeClasses as { [key: string]: string })[('Width' + entity.FieldSize)]) || null,
-        FieldName: entity.SfFieldName,
-        HasDescription: !entity.InstructionalText,
-        InputType: entity.InputType === TextType.Phone ? 'tel' : entity.InputType.toLowerCase(),
-        Label: entity.Label,
-        PlaceholderText: entity.PlaceholderText,
-        InstructionalText: entity.InstructionalText,
-        PredefinedValue: entity.PredefinedValue,
-        ValidationAttributes: buildValidationAttributes(entity),
-        ViolationRestrictionsJson: {
+    const viewProps: TextFieldViewProps<TextFieldEntity> = {
+        cssClass: classNames(entity.CssClass, (StylingConfig.FieldSizeClasses as { [key: string]: string })[('Width' + entity.FieldSize)]) || null,
+        fieldName: entity.SfFieldName,
+        hasDescription: !entity.InstructionalText,
+        inputType: entity.InputType === TextType.Phone ? 'tel' : entity.InputType.toLowerCase(),
+        label: entity.Label,
+        placeholderText: entity.PlaceholderText,
+        instructionalText: entity.InstructionalText,
+        predefinedValue: entity.PredefinedValue,
+        validationAttributes: buildValidationAttributes(entity),
+        violationRestrictionsJson: {
             maxLength: entity.Range?.Max || null,
             minLength: entity.Range?.Min || null
         },
-        ViolationRestrictionsMessages: {
+        violationRestrictionsMessages: {
             invalid: InvalidDefaultValidationMessage,
             invalidLength: entity.TextLengthViolationMessage,
             regularExpression: entity.RegularExpressionViolationMessage,
             required: entity.RequiredErrorMessage
-        }
+        },
+        attributes: {...htmlAttributes(props)},
+        widgetContext: getMinimumWidgetContext(props)
     };
 
     if (entity.Label) {
         if (entity.TextLengthViolationMessage) {
-            viewModel.ViolationRestrictionsMessages.invalidLength = entity.TextLengthViolationMessage?.replace('{0}', entity.Label);
+            viewProps.violationRestrictionsMessages.invalidLength = entity.TextLengthViolationMessage?.replace('{0}', entity.Label);
         }
 
         if (entity.RequiredErrorMessage) {
-            viewModel.ViolationRestrictionsMessages.required = entity.RequiredErrorMessage.replace('{0}', entity.Label);
+            viewProps.violationRestrictionsMessages.required = entity.RequiredErrorMessage.replace('{0}', entity.Label);
         }
 
         if (entity.RegularExpressionViolationMessage) {
-            viewModel.ViolationRestrictionsMessages.regularExpression = entity.RegularExpressionViolationMessage.replace('{0}', entity.Label);
+            viewProps.violationRestrictionsMessages.regularExpression = entity.RegularExpressionViolationMessage.replace('{0}', entity.Label);
         }
 
-        viewModel.ViolationRestrictionsMessages.invalid = InvalidDefaultValidationMessageWithLabel.replace('{0}', entity.Label);
+        viewProps.violationRestrictionsMessages.invalid = InvalidDefaultValidationMessageWithLabel.replace('{0}', entity.Label);
     }
 
-    const textBoxUniqueId = entity.SfFieldName;
-    const textBoxErrorMessageId = getUniqueId('TextboxErrorMessage');
-    const textBoxInfoMessageId = getUniqueId('TextboxInfo');
-    const ariaDescribedByAttribute = viewModel.HasDescription ? `${textBoxUniqueId} ${textBoxErrorMessageId}` : textBoxErrorMessageId;
-    const dataAttributes = htmlAttributes(props);
-    const defaultRendering = (<>
-      <script data-sf-role={`start_field_${textBoxUniqueId}`} data-sf-role-field-name={textBoxUniqueId} />
-      <TextFieldClient viewModel={viewModel}
-        textBoxUniqueId={textBoxUniqueId}
-        textBoxErrorMessageId={textBoxErrorMessageId}
-        textBoxInfoMessageId={textBoxInfoMessageId}
-        ariaDescribedByAttribute={ariaDescribedByAttribute} />
-      <script data-sf-role={`end_field_${textBoxUniqueId}`} />
-    </>);
-     return (
-       <>
-         {props.requestContext.isEdit
-         ? <div {...dataAttributes}> {defaultRendering} </div>
-         :defaultRendering}
-         { Tracer.endSpan(span) }
-       </>
-     );
+    return (
+      <RenderView
+        viewName={entity.SfViewName}
+        widgetKey={props.model.Name}
+        traceSpan={span}
+        viewProps={viewProps}>
+        <TextFieldDefaultView {...viewProps}/>
+      </RenderView>
+    );
 }
 
 function buildValidationAttributes(entity: TextFieldEntity) {

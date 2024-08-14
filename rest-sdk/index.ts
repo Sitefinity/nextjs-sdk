@@ -1,3 +1,5 @@
+export { RENDERER_NAME } from '../proxy/headers';
+
 export * from './rest-client';
 export * from './service-metadata';
 export * from './root-url.service';
@@ -51,6 +53,7 @@ export * from './dto/taxonomy-type';
 export * from './dto/thumbnail-item';
 export * from './dto/video-item';
 export * from './dto/widget';
+export * from './dto/page-template-category.dto';
 
 export * from './dto/user-item';
 export * from './dto/site-item';

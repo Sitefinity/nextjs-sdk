@@ -3,26 +3,28 @@
 import React, { FocusEvent, MouseEvent } from 'react';
 import { classNames } from '../../editor/utils/classNames';
 import { getCustomAttributes } from '../../editor/widget-framework/attributes';
-import { SearchBoxViewModel } from './search-box-viewmodel';
-import { RestClient } from '../../rest-sdk/rest-client';
+import { SearchBoxViewProps } from './search-box.view-props';
 import { getSearchBoxParams, getSearchUrl } from './utils';
+import { SearchBoxEntity } from './search-box.entity';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const dataSfItemAttribute = 'data-sfitem';
 const activeAttribute = 'data-sf-active';
 
-export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
-    const { searchModel } = props;
+export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
     const [ searchItems, setSearchItems ] = React.useState<string[]>([]);
     const [ dropDownWidth, setDropDownWidth ] = React.useState<number | undefined>(undefined);
     const [ dropDownShow, setDropDownShow ] = React.useState<boolean>(false);
     const [ suggestions, setSuggestions ] = React.useState<string[]>([]);
+    const searchParams = useSearchParams();
+    const router = useRouter();
 
     const dropdownRef = React.useRef<HTMLUListElement>(null);
     const inputRef = React.useRef<HTMLInputElement>(null);
-    const searchBoxCustomAttributes = getCustomAttributes(searchModel.Attributes, 'SearchBox');
-    const disabled = searchModel.IsEdit;
+    const searchBoxCustomAttributes = getCustomAttributes(props.widgetContext.model.Properties.Attributes, 'SearchBox');
+    const disabled = props.isEdit;
 
-    const activeClass = searchModel.ActiveClass;
+    const activeClass = props.activeClass;
 
     const handleOnSearch =(suggestions: string[])=>{
         const items = Array.isArray(suggestions) ? suggestions : [];
@@ -31,7 +33,7 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
     };
 
     const handleShowDropdown = () => {
-        const inputWidth = inputRef.current!.clientWidth;
+        const inputWidth = inputRef.current?.clientWidth;
         setDropDownWidth(inputWidth);
         setDropDownShow(true);
     };
@@ -45,7 +47,7 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
     };
 
     const getSuggestions = (input: HTMLInputElement) => {
-        let data = getSearchBoxParams(searchModel);
+        const data = getSearchBoxParams(props, searchParams.get('orderby') || '');
         let requestUrl = data.servicePath +
             '/Default.GetSuggestions()' +
             '?indexName=' + data.catalogue +
@@ -74,27 +76,30 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
     const navigateToResults = () => {
         const input = inputRef.current!;
         if ((window as any).DataIntelligenceSubmitScript) {
-            (window as any).DataIntelligenceSubmitScript._client.sentenceClient.writeSentence({
-                predicate: 'Search for',
-                object: input.value.trim(),
-                objectMetadata: [{
-                    'K': 'PageUrl',
-                    'V': location.href
-                }]
+            (window as any).DataIntelligenceSubmitScript._client.fetchClient.sendInteraction({
+                P: 'Search for',
+                O: input.value.trim(),
+                OM: {
+                    PageUrl: location.href
+                }
             });
         }
 
-        const url = getSearchUrl(input.value.trim(), searchModel);
-        (window as Window).location = url;
+        const url = getSearchUrl(input.value.trim(), props, searchParams.get('orderby') || '');
+        handleHideDropdown();
+        router.push(url);
     };
 
     const inputKeyupHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        const keyCode = e.keyCode || e.charCode;
+
         if (e.code !== 'ArrowUp' &&
             e.code !== 'ArrowDown' &&
-            e.code !== 'Escape') {
+            e.code !== 'Escape' &&
+            keyCode !== 13) {
 
-            let searchText =  (e.target as HTMLInputElement).value.trim();
-            let config = getSearchBoxParams(searchModel);
+            const searchText =  (e.target as HTMLInputElement).value.trim();
+            const config = getSearchBoxParams(props, searchParams.get('orderby') || '');
 
             if (config.minSuggestionLength && searchText.length >= config.minSuggestionLength) {
                 getSuggestions(e.target as HTMLInputElement);
@@ -123,11 +128,11 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
     };
 
     const handleDropDownClick = (e: MouseEvent) =>{
-        let target = e.target as any;
-        let content = target.innerText;
+        const target = e.target as any;
+        const content = target.innerText;
         inputRef.current!.value = content;
-        navigateToResults();
         handleHideDropdown();
+        navigateToResults();
     };
 
     const handleDropDownBlur = (e: FocusEvent) => {
@@ -139,16 +144,16 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
     const handleDropDownKeyUp =  (e: React.KeyboardEvent) => {
         const dropdown = dropdownRef.current;
 
-        let key = e.keyCode || e.charCode;
-        let activeLinkSelector = `[${dataSfItemAttribute}][${activeAttribute}]`;
+        const key = e.keyCode || e.charCode;
+        const activeLinkSelector = `[${dataSfItemAttribute}][${activeAttribute}]`;
 
-        let activeLink = dropdown!.querySelector(activeLinkSelector);
+        const activeLink = dropdown!.querySelector(activeLinkSelector);
         if (!activeLink) {
             return;
         }
 
-        let previousParent = activeLink.parentElement!.previousElementSibling;
-        let nextParent = activeLink.parentElement!.nextElementSibling;
+        const previousParent = activeLink.parentElement!.previousElementSibling;
+        const nextParent = activeLink.parentElement!.nextElementSibling;
         if (key === 38 && previousParent) {
             e.preventDefault();
             focusItem(previousParent);
@@ -178,7 +183,7 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
     const focusItem = (item: any) => {
         resetActiveClass();
 
-        let link = item.querySelector(`[${dataSfItemAttribute}]`);
+        const link = item.querySelector(`[${dataSfItemAttribute}]`);
 
         if (link && activeClass) {
             link.classList.add(...activeClass);
@@ -192,7 +197,7 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
 
     const resetActiveClass = () => {
         const dropdown = dropdownRef.current;
-        let activeLink = dropdown!.querySelector(`[${activeAttribute}]`);
+        const activeLink = dropdown!.querySelector(`[${activeAttribute}]`);
 
         if (activeLink && activeClass) {
             activeLink.classList.remove(...activeClass);
@@ -200,19 +205,20 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
         }
     };
     return (
-      <>
+      <div {...props.attributes}>
         <div className="d-flex">
-          <input type="text" className="form-control" disabled={disabled} placeholder={searchModel.SearchBoxPlaceholder || undefined} defaultValue={searchModel.SearchQuery} ref={inputRef}
+          <input type="text" className="form-control" disabled={disabled} placeholder={props.searchBoxPlaceholder || undefined}
+            defaultValue={searchParams.get('searchQuery') || ''} ref={inputRef}
             onKeyUp={inputKeyupHandler} onKeyDown={inputKeydownHandler} onBlur={handleDropDownBlur} {...searchBoxCustomAttributes} />
           <button data-sf-role="search-button" className="btn btn-primary ms-2 flex-shrink-0" disabled={disabled} onClick={navigateToResults}>
-            {searchModel.SearchButtonLabel}
+            {props.searchButtonLabel}
           </button>
         </div>
         {
-           searchModel.SuggestionsTriggerCharCount != null && searchModel.SuggestionsTriggerCharCount >= 2 &&
+           props.suggestionsTriggerCharCount != null && props.suggestionsTriggerCharCount >= 2 &&
                 (
                 <ul role="listbox" onClick={handleDropDownClick} onKeyUp={handleDropDownKeyUp} onBlur={handleDropDownBlur} style={{ width:dropDownWidth }}
-                  ref={dropdownRef} className={classNames('border bg-body list-unstyled position-absolute', { [searchModel.VisibilityClassHidden]: !dropDownShow})}>
+                  ref={dropdownRef} className={classNames('border bg-body list-unstyled position-absolute', { [props.visibilityClassHidden]: !dropDownShow})}>
                   {
                     searchItems.map((item: string, idx: number)=>{
                         return  (item && <li key={idx} role={'option'} aria-selected={false}>
@@ -224,6 +230,6 @@ export function SearchBoxClient(props: { searchModel: SearchBoxViewModel }) {
                 </ul>
                 )
         }
-      </>
+      </div>
     );
 }

@@ -6,25 +6,18 @@ import { VisibilityStyle } from '../../styling/visibility-style';
 import { classNames } from '../../../editor/utils/classNames';
 import { FormContext } from '../../form/form-context';
 import { ChoiceOption } from '../common/choice-option';
+import { DropdownEntity } from './dropdown.entity';
+import { DropdownViewProps } from './interfaces/dropdown.view-props';
 
-export interface DropdownViewModel {
-    Choices: ChoiceOption[],
-    Required: boolean;
-    RequiredErrorMessage: string;
-    Label: string;
-    CssClass: string;
-    InstructionalText: string;
-}
-
-export function DropdownFieldSet(props: { viewModel: DropdownViewModel, dropdownUniqueId: string}) {
-    const {viewModel, dropdownUniqueId} = props;
+export function DropdownFieldSet(props: DropdownViewProps<DropdownEntity>) {
+    const dropdownUniqueId = props.sfFieldName;
     const {
-        formViewModel, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged, dispatchValidity,
         hiddenInputs, skippedInputs,
         formSubmitted
     } = React.useContext(FormContext);
     const selectRef = React.useRef<HTMLSelectElement>(null);
-    const initiallySelectedItem = viewModel.Choices.find((ch: ChoiceOption) => ch.Selected);
+    const initiallySelectedItem = props.choices.find((ch: ChoiceOption) => ch.Selected);
     const [selectValue, setSelectValue] = React.useState(initiallySelectedItem ? initiallySelectedItem.Value : '');
     const [errorMessageText, setErrorMessageText] = React.useState('');
     const isHidden = hiddenInputs[dropdownUniqueId];
@@ -39,7 +32,7 @@ export function DropdownFieldSet(props: { viewModel: DropdownViewModel, dropdown
 
     const handleDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         handleDropdownValidation();
-        const selectedItem = viewModel.Choices.find(ch => ch.Value?.toString() === event.target.value);
+        const selectedItem = props.choices.find(ch => ch.Value?.toString() === event.target.value);
 
         setSelectValue(selectedItem ? selectedItem.Value : '');
         dispatchValueChanged();
@@ -47,8 +40,8 @@ export function DropdownFieldSet(props: { viewModel: DropdownViewModel, dropdown
 
     const handleDropdownValidation = () => {
         const select = selectRef.current!;
-        if (viewModel.Required && select.value === '') {
-            setErrorMessageText(viewModel.RequiredErrorMessage.replace('{0}', viewModel.Label));
+        if (props.required && select.value === '') {
+            setErrorMessageText(props.requiredErrorMessage.replace('{0}', props.label));
             return false;
         } else {
             setErrorMessageText('');
@@ -68,7 +61,7 @@ export function DropdownFieldSet(props: { viewModel: DropdownViewModel, dropdown
 
     const rootClass = classNames(
         'mb-3',
-        viewModel.CssClass,
+        props.cssClass,
         isHidden
             ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
             : StylingConfig.VisibilityClasses[VisibilityStyle.Visible]
@@ -78,27 +71,27 @@ export function DropdownFieldSet(props: { viewModel: DropdownViewModel, dropdown
       <fieldset data-sf-role="dropdown-list-field-container" className={rootClass}
         aria-labelledby={`choice-field-label-${dropdownUniqueId} choice-field-description-${dropdownUniqueId}`}>
 
-        <legend className="h6" id={`choice-field-label-${dropdownUniqueId}`}>{viewModel.Label}</legend>
+        <legend className="h6" id={`choice-field-label-${dropdownUniqueId}`}>{props.label}</legend>
 
         <select
           className={classNames('form-select',{
-                [formViewModel.InvalidClass!]: formViewModel.InvalidClass && viewModel.Required && errorMessageText
+                [formViewProps.invalidClass!]: formViewProps.invalidClass && props.required && errorMessageText
           })}
           ref={selectRef}
           data-sf-role="dropdown-list-field-select"
           name={dropdownUniqueId}
-          required={viewModel.Required}
+          required={props.required}
           value={selectValue}
           disabled={isHidden || isSkipped}
           onChange={handleDropdownChange}>
-          { viewModel.Choices.map((choiceOption: ChoiceOption, idx: number) => {
+          { props.choices.map((choiceOption: ChoiceOption, idx: number) => {
             return <option key={idx} value={choiceOption.Value || ''}>{choiceOption.Name}</option>;
             })
            }
         </select>
-        { viewModel.InstructionalText &&
+        { props.instructionalText &&
         <p className="text-muted small mt-1" id={`choice-field-description-${dropdownUniqueId}`}>
-          {viewModel.InstructionalText}
+          {props.instructionalText}
         </p>
         }
         {errorMessageText && <div data-sf-role="error-message" role="alert" aria-live="assertive" className="invalid-feedback" >

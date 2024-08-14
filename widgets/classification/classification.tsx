@@ -2,10 +2,13 @@ import { StyleGenerator } from '../styling/style-generator.service';
 import { ClassificationEntity } from './classification-entity';
 import { classNames } from '../../editor/utils/classNames';
 import { htmlAttributes, getCustomAttributes, setHideEmptyVisual } from '../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../editor/widget-framework/widget-context';
+import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { TaxonDto } from '../../rest-sdk/dto/taxon-dto';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { RenderView } from '../common/render-view';
+import { ClassificationDefaultView } from './classification.view';
+import { ClassificationViewProps } from './interfaces/classification.view-props';
 
 const mapTaxonProperties = (taxon: TaxonDto, taxonomyName: string, viewUrl?: string, searchParams?: { [key: string]: string; }) => {
     const children: TaxonDto[] = [];
@@ -105,47 +108,25 @@ export async function Classification(props: WidgetContext<ClassificationEntity>)
     const defaultClass = properties.CssClass;
     const marginClass = properties.Margins && StyleGenerator.getMarginClasses(properties.Margins);
     const classificationCustomAttributes = getCustomAttributes(properties.Attributes, 'Classification');
+    const viewName = props.model.Properties.SfViewName;
     dataAttributes['className'] = classNames(defaultClass, marginClass);
 
     dataAttributes['data-sf-role'] = 'classification';
 
-    const renderSubTaxa = (taxa: TaxonDto[], show: boolean) => {
-        return (taxa && taxa.length > 0 ? <ul>
-          {
-                taxa.map((t: TaxonDto, idx: number) => {
-                    const count = show ? `(${t.AppliedTo})` : '';
-                    return (<li key={idx} className="list-unstyled">
-                      <a className="text-decoration-none" href={t.UrlName}>{t.Title}</a>
-                      { count }
-                      { t.SubTaxa && renderSubTaxa(t.SubTaxa, show) }
-                    </li>);
-                })
-            }
-        </ul> : null
-          );
+    const viewProps: ClassificationViewProps<ClassificationEntity> = {
+        items: updatedTokens,
+        showItemCount: showItemCount,
+        attributes: {...dataAttributes, ...classificationCustomAttributes},
+        widgetContext: getMinimumWidgetContext(props)
     };
 
     return (
-      <>
-        <ul
-          {...dataAttributes}
-          {...classificationCustomAttributes}
-        >
-          {
-                updatedTokens.map((item: TaxonDto, idx: number) => {
-                    const count = showItemCount ? `(${item.AppliedTo})` : '';
-                    return (<li key={idx} className="list-unstyled">
-                      <a className="text-decoration-none" href={item.UrlName}>{item.Title}</a>
-                      {count}
-                      {
-                          item.SubTaxa && renderSubTaxa(item.SubTaxa, showItemCount)
-                        }
-                    </li>);
-                }
-            )
-        }
-        </ul>
-        { Tracer.endSpan(span) }
-      </>
+      <RenderView
+        viewName={viewName}
+        widgetKey={props.model.Name}
+        traceSpan={span}
+        viewProps={viewProps}>
+        <ClassificationDefaultView {...viewProps}/>
+      </RenderView>
     );
 }

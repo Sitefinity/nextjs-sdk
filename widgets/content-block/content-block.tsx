@@ -7,6 +7,7 @@ import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { SanitizerService } from '../../services/sanitizer-service';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { ErrorCodeException } from '../../rest-sdk/errors/error-code.exception';
 
 export async function ContentBlock(props: WidgetContext<ContentBlockEntity>) {
     const { span, ctx } = Tracer.traceWidget(props, true);
@@ -14,8 +15,14 @@ export async function ContentBlock(props: WidgetContext<ContentBlockEntity>) {
 
     let content = props.model.Properties.Content;
     if (props.model.Properties?.SharedContentID && props.model.Properties.SharedContentID !== '00000000-0000-0000-0000-000000000000') {
-        const contentItem = await RestClient.getSharedContent(props.model.Properties.SharedContentID, props.requestContext.culture, ctx);
-        content = contentItem.Content;
+        try {
+            const contentItem = await RestClient.getSharedContent(props.model.Properties.SharedContentID, props.requestContext.culture, ctx);
+            content = contentItem.Content;
+        } catch (error) {
+            const errorMessage = error instanceof ErrorCodeException ? error.message : error as string;
+            const attributes = htmlAttributes(props, errorMessage);
+            return (props.requestContext.isEdit ? <div {...attributes} /> : null);
+        }
     }
 
     const tagName = props.model.Properties.TagName || 'div';

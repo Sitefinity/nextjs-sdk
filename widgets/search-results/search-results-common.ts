@@ -2,10 +2,9 @@ import { SearchResultsEntity } from './search-results.entity';
 import { SearchParams } from './interfaces/search-params';
 import { SearchResultsSorting } from './interfaces/search-results-sorting';
 import { ContentListSettings } from './content-list-settings';
-import { SearchResultDocumentDto } from '../../rest-sdk/dto/search-results-document-dto';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
-import { SearchResultsViewModel } from './interfaces/search-results-viewmodel';
+import { ReadonlyURLSearchParams } from 'next/navigation';
 
 export async function performSearch(entity: SearchResultsEntity, searchParams: SearchParams, traceContext?: any) {
     if (searchParams.searchQuery) {
@@ -46,6 +45,7 @@ export async function performSearch(entity: SearchResultsEntity, searchParams: S
             scoringInfo: searchParams.scoringInfo,
             resultsForAllSites: searchParams.resultsForAllSites === 'True',
             filter: searchParams.filter,
+            indexFields: entity.AdditionalResultFields,
             traceContext
           });
 
@@ -56,18 +56,11 @@ export async function performSearch(entity: SearchResultsEntity, searchParams: S
     }
 }
 
-export function updateViewModel(viewModel: SearchResultsViewModel, response: { totalCount: number, searchResults: SearchResultDocumentDto[] } | null | undefined) {
-    if (response) {
-        viewModel.TotalCount = response?.totalCount || 0;
-        viewModel.SearchResults = response?.searchResults || [];
-    }
+export function getQueryParams(currentQueryParams: ReadonlyURLSearchParams) {
+    const queryParams: {[key: string]: any} = {};
+    currentQueryParams.forEach((v, k) => {
+      queryParams[k] = v;
+    });
 
-}
-
-export function updateSearchResultsHeader(entity: SearchResultsEntity, viewModel: SearchResultsViewModel, searchParams: SearchParams) {
-    if (entity.SearchResultsHeader) {
-        if (viewModel.SearchResults && viewModel.SearchResults.length > 0) {
-            viewModel.ResultsHeader = entity.SearchResultsHeader.replace('{0}', searchParams.searchQuery);
-        }
-    }
+    return queryParams;
 }

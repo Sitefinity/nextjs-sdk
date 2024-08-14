@@ -1,99 +1,92 @@
-import React from 'react';
-import { ExternalLoginBase } from '../external-login-base';
-import { StyleGenerator } from '../styling/style-generator.service';
 import { StylingConfig } from '../styling/styling-config';
-import { LoginFormClient } from './login-form.client';
 import { PostLoginAction } from './interfaces/post-login-action';
 import { LoginFormEntity } from './login-form.entity';
-import { VisibilityStyle } from '../styling/visibility-style';
-import { classNames } from '../../editor/utils/classNames';
-import { getCustomAttributes, htmlAttributes } from '../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../editor/widget-framework/widget-context';
+import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
 import { ExternalProvider } from '../../rest-sdk/dto/external-provider';
-import { LoginFormViewModel } from './interfaces/login-form-view-model';
+import { LoginFormViewProps } from './interfaces/login-form.view-props';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
-import { getUniqueId } from '../../editor/utils/getUniqueId';
+import { RenderView } from '../common/render-view';
+import { LoginFormDefaultView } from './login-form.view';
+import { getCustomAttributes, htmlAttributes } from '../../editor/widget-framework/attributes';
+import { StyleGenerator } from '../styling/style-generator.service';
+import { classNames } from '../../editor/utils/classNames';
 
 export async function LoginForm(props: WidgetContext<LoginFormEntity>) {
     const {span, ctx} = Tracer.traceWidget(props, true);
     const entity: LoginFormEntity = props.model.Properties;
-    const context = props.requestContext;
-    const dataAttributes = htmlAttributes(props);
-    const defaultClass =  entity.CssClass;
-    const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
-    const usernameInputId = getUniqueId('sf-username-');
-    const passwordInputId = getUniqueId('sf-password-');
-    const rememberInputId = getUniqueId('sf-remember-');
-
-    dataAttributes['className'] = classNames(defaultClass, marginClass);
-
-    const viewModel: LoginFormViewModel = populateViewModel(entity);
+    const viewProps: LoginFormViewProps<LoginFormEntity> = populateviewProps(entity, props);
 
     if (entity.ExternalProviders && entity.ExternalProviders.length) {
         const externalProviders = await RestClient.getExternalProviders(ctx);
-        viewModel.ExternalProviders = externalProviders.filter((p: ExternalProvider) => entity.ExternalProviders?.indexOf(p.Name) !== -1);
+        viewProps.externalProviders = externalProviders.filter((p: ExternalProvider) => entity.ExternalProviders?.indexOf(p.Name) !== -1);
     }
 
-    if (entity.PostLoginAction === PostLoginAction.RedirectToPage) {
-        const postLoginRedirectPage = await RestClientForContext.getItem<PageItem>(entity.PostLoginRedirectPage!, { type: RestSdkTypes.Pages, traceContext: ctx });
-        if (postLoginRedirectPage) {
-            viewModel.RedirectUrl =  postLoginRedirectPage.ViewUrl;
+    try {
+        if (entity.PostLoginAction === PostLoginAction.RedirectToPage) {
+            const postLoginRedirectPage = await RestClientForContext.getItem<PageItem>(entity.PostLoginRedirectPage!, { type: RestSdkTypes.Pages, culture: props.requestContext.culture, traceContext: ctx });
+            if (postLoginRedirectPage) {
+                viewProps.redirectUrl = postLoginRedirectPage.ViewUrl;
+            }
         }
-    }
+    } catch { /* empty */ };
 
-    const registrationPage = await RestClientForContext.getItem<PageItem>(entity.RegistrationPage!, { type: RestSdkTypes.Pages, traceContext: ctx });
-    if (registrationPage) {
-        viewModel.RegistrationLink = registrationPage.ViewUrl;
-    }
+    try {
+        const registrationPage = await RestClientForContext.getItem<PageItem>(entity.RegistrationPage!, { type: RestSdkTypes.Pages, culture: props.requestContext.culture, traceContext: ctx });
+        if (registrationPage) {
+            viewProps.registrationLink = registrationPage.ViewUrl;
+        }
+    } catch { /* empty */ };
 
-    const resetPasswordPage = await RestClientForContext.getItem<PageItem>(entity.ResetPasswordPage!, { type: RestSdkTypes.Pages, traceContext: ctx });
-    if (resetPasswordPage) {
-        viewModel.ForgottenPasswordLink = resetPasswordPage.ViewUrl;
-    }
-
-    const customAttributes = getCustomAttributes(entity.Attributes, 'LoginForm');
+    try {
+        const resetPasswordPage = await RestClientForContext.getItem<PageItem>(entity.ResetPasswordPage!, { type: RestSdkTypes.Pages, culture: props.requestContext.culture, traceContext: ctx });
+        if (resetPasswordPage) {
+            viewProps.forgottenPasswordLink = resetPasswordPage.ViewUrl;
+        }
+    } catch { /* empty */ };
 
     return (
-      <>
-        <div
-          data-sf-invalid={viewModel.InvalidClass}
-          data-sf-role="sf-login-form-container"
-          data-sf-visibility-hidden={viewModel.VisibilityClasses[VisibilityStyle.Hidden]}
-          {...dataAttributes}
-          {...customAttributes}>
-          <LoginFormClient viewModel={viewModel} context={context} usernameInputId={usernameInputId} passwordInputId={passwordInputId} rememberInputId={rememberInputId} />
-        </div>
-        {Tracer.endSpan(span)}
-      </>
+      <RenderView
+        viewName={entity.SfViewName}
+        widgetKey={props.model.Name}
+        traceSpan={span}
+        viewProps={viewProps}>
+        <LoginFormDefaultView {...viewProps}/>
+      </RenderView>
     );
 }
 
 // TODO: figure out login handler path generation
-function populateViewModel(entity: LoginFormEntity): LoginFormViewModel {
+function populateviewProps(entity: LoginFormEntity, widgetContext: WidgetContext<LoginFormEntity>): LoginFormViewProps<LoginFormEntity> {
+    const dataAttributes = htmlAttributes(widgetContext);
+    const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
+    dataAttributes['className'] = classNames(entity.CssClass, marginClass);
+    const customAttributes = getCustomAttributes(entity.Attributes, 'LoginForm');
+
     return {
-        LoginHandlerPath: '/sitefinity/login-handler',
-        RememberMe: entity.RememberMe,
-        MembershipProviderName: entity.MembershipProviderName,
-        Attributes: entity.Attributes,
-        VisibilityClasses: StylingConfig.VisibilityClasses,
-        InvalidClass: StylingConfig.InvalidClass,
-        Labels: {
-            EmailLabel: entity.EmailLabel,
-            ErrorMessage: entity.ErrorMessage,
-            ExternalProvidersHeader: entity.ExternalProvidersHeader,
-            ForgottenPasswordLinkLabel: entity.ForgottenPasswordLinkLabel,
-            Header: entity.Header,
-            NotRegisteredLabel: entity.NotRegisteredLabel,
-            PasswordLabel: entity.PasswordLabel,
-            RegisterLinkText: entity.RegisterLinkText,
-            RememberMeLabel: entity.RememberMeLabel,
-            SubmitButtonLabel: entity.SubmitButtonLabel,
-            ValidationInvalidEmailMessage: entity.ValidationInvalidEmailMessage,
-            ValidationRequiredMessage: entity.ValidationRequiredMessage
-        }
+        loginHandlerPath: '/sitefinity/login-handler',
+        rememberMe: entity.RememberMe,
+        membershipProviderName: entity.MembershipProviderName,
+        visibilityClasses: StylingConfig.VisibilityClasses,
+        invalidClass: StylingConfig.InvalidClass,
+        labels: {
+            emailLabel: entity.EmailLabel,
+            errorMessage: entity.ErrorMessage,
+            externalProvidersHeader: entity.ExternalProvidersHeader,
+            forgottenPasswordLinkLabel: entity.ForgottenPasswordLinkLabel,
+            header: entity.Header,
+            notRegisteredLabel: entity.NotRegisteredLabel,
+            passwordLabel: entity.PasswordLabel,
+            registerLinkText: entity.RegisterLinkText,
+            rememberMeLabel: entity.RememberMeLabel,
+            submitButtonLabel: entity.SubmitButtonLabel,
+            validationInvalidEmailMessage: entity.ValidationInvalidEmailMessage,
+            validationRequiredMessage: entity.ValidationRequiredMessage
+        },
+        attributes: {...dataAttributes, ...customAttributes},
+        widgetContext: getMinimumWidgetContext(widgetContext)
     };
 
 }

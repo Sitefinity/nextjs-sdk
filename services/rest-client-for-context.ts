@@ -5,6 +5,7 @@ import { CollectionResponse } from '../rest-sdk/dto/collection-response';
 import { SdkItem } from '../rest-sdk/dto/sdk-item';
 import { FilterConverterService } from '../rest-sdk/filters/filter-converter';
 import { RestClient } from '../rest-sdk/rest-client';
+import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 
 export class RestClientForContext {
     public static async getItem<T extends SdkItem>(contentContext: MixedContentContext, externalArgs?: CommonArgs): Promise<T> {
@@ -12,7 +13,15 @@ export class RestClientForContext {
             ...externalArgs,
             type: externalArgs?.type as string,
             traceContext: externalArgs?.traceContext
-         }).then(x => x.Items[0]);
+        }).then((x) => {
+            if (x.Items.length === 0) {
+                const key = contentContext.ItemIdsOrdered?.length ? contentContext.ItemIdsOrdered[0] : null;
+                const errorMessage = key ? `The item with key '${key}' was not found` : 'The item was not found';
+                throw new ErrorCodeException('NotFound', errorMessage);
+            } else {
+                return x.Items[0];
+            }
+        });
     }
 
     public static async getItems<T extends SdkItem>(contentContext: MixedContentContext, externalArgs?: GetAllArgs): Promise<CollectionResponse<T>> {
@@ -45,6 +54,10 @@ export class RestClientForContext {
 
         if (externalArgs?.orderBy && externalArgs?.orderBy.length > 0) {
             args.orderBy = externalArgs.orderBy;
+        }
+
+        if (externalArgs?.culture) {
+            args.culture = externalArgs.culture;
         }
 
         const itemsForContext = await RestClient.getItems<T>(args);

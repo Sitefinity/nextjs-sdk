@@ -1,11 +1,12 @@
 import React from 'react';
 import { RequestContext } from '../editor/request-context';
-import { WidgetContext } from '../editor/widget-framework/widget-context';
+import { WidgetContext, getMinimumWidgetContext } from '../editor/widget-framework/widget-context';
 import { WidgetModel } from '../editor/widget-framework/widget-model';
 import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { LazyComponent } from '../widgets/lazy/lazy-component';
+import { deepCopy } from '../editor/utils/object-utils';
 import { EntityMetadataGenerator } from '@progress/sitefinity-widget-designers-sdk';
-import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
+import { WidgetMetadata, getMinimumMetadata } from '../editor/widget-framework/widget-metadata';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { ErrorBoundaryCustom } from '../pages/error-boundary';
 
@@ -13,14 +14,14 @@ export class RenderWidgetService {
     public static widgetRegistry: WidgetRegistry;
     public static errorComponentType: any;
 
-    public static createComponent(widgetModel: WidgetModel<any>, requestContext: RequestContext, traceContext?: any) {
+    public static createComponent(widgetModel: WidgetModel, requestContext: RequestContext, traceContext?: any) {
         Tracer.logEvent(`render widget start: ${widgetModel.Caption || widgetModel.Name}`);
         const registeredType = RenderWidgetService.widgetRegistry.widgets[widgetModel.Name];
 
-        const propsForWidget: WidgetContext<any> = {
-            metadata: registeredType,
-            model: widgetModel,
-            requestContext,
+        const propsForWidget: WidgetContext = {
+            metadata: getMinimumMetadata(registeredType), // modify props to remove functions in order to pass them to client component
+            model: deepCopy(widgetModel),
+            requestContext: deepCopy(requestContext),
             traceContext: registeredType?.ssr ? traceContext : null
         };
 
@@ -29,7 +30,7 @@ export class RenderWidgetService {
                 throw new Error(`No widget named "${widgetModel.Name}" found in the registry`);
             }
 
-            RenderWidgetService.parseProperties(propsForWidget.model, registeredType);
+            propsForWidget.model.Properties = RenderWidgetService.parseProperties(propsForWidget.model.Properties, registeredType);
             let componentType = registeredType.componentType;
             if (!requestContext.isEdit && widgetModel.Lazy) {
                 componentType = LazyComponent;
@@ -37,11 +38,8 @@ export class RenderWidgetService {
 
             const element = React.createElement(componentType, { key: widgetModel.Id, ...propsForWidget });
 
-            // modify props to remove functions in otder to pass them to client component
-            const propsCopy = JSON.parse(JSON.stringify(propsForWidget));
-            propsCopy.metadata.componentType = null;
-            propsCopy.metadata.designerMetadata = null;
-            const result = React.createElement(ErrorBoundaryCustom, { key: 'err' + widgetModel.Id, children: element, context: propsCopy });
+            const propsForErrorBoundary = getMinimumWidgetContext(propsForWidget);
+            const result = React.createElement(ErrorBoundaryCustom, { key: 'err' + widgetModel.Id, children: element, context: propsForErrorBoundary });
             return result;
         } catch (err) {
             if (requestContext.isEdit) {
@@ -59,10 +57,10 @@ export class RenderWidgetService {
         }
     }
 
-    public static parseProperties(widgetModel: WidgetModel<any>, widgetMetadata: WidgetMetadata) {
+    public static parseProperties(widgetProperties: {[key: string]: any}, widgetMetadata: WidgetMetadata) {
         const defaultValues = EntityMetadataGenerator.extractDefaultValues(widgetMetadata?.designerMetadata) || {};
-        const persistedProperties = widgetMetadata?.designerMetadata ? EntityMetadataGenerator.parseValues(widgetModel.Properties, widgetMetadata.designerMetadata) : {};
+        const persistedProperties = widgetMetadata?.designerMetadata ? EntityMetadataGenerator.parseValues(widgetProperties, widgetMetadata.designerMetadata) : {};
 
-        widgetModel.Properties = Object.assign(defaultValues, persistedProperties);
+        return Object.assign({}, defaultValues, persistedProperties);
     }
 }

@@ -3,18 +3,17 @@
 import React from 'react';
 import { SearchResultsSorting } from './interfaces/search-results-sorting';
 import { getWhiteListSearchParams } from '../document-list/common/utils';
-import { RequestContext } from '../../editor/request-context';
 import { SearchParams } from './interfaces/search-params';
 
 export function OrderByDropDown(props: {
     sortingSelectId: string;
     searchParams: SearchParams,
+    queryParams: {[key: string]: any},
     sorting: string;
-    context: RequestContext
 }) {
-    const { sortingSelectId, searchParams, sorting, context } = props;
+    const { sortingSelectId, searchParams, sorting, queryParams } = props;
     const whitelistedQueryParams = ['sf_site', 'sfaction', 'sf_provider'];
-    const queryList = new URLSearchParams(getWhiteListSearchParams(context.searchParams || {}, whitelistedQueryParams));
+    const queryList = new URLSearchParams(getWhiteListSearchParams(queryParams || {}, whitelistedQueryParams));
     const query = searchParams['searchQuery'];
     const index = searchParams['indexCatalogue'];
     const wordsMode = searchParams['wordsMode'];

@@ -1,4 +1,3 @@
-
 import { RenderPageClient } from './render-page-client';
 import { pageLayout } from './utils';
 import { AppState } from './app-state';
@@ -20,8 +19,9 @@ import { ContentListEntityBase } from '../widgets/content-lists-common/content-l
 import { ContentListsCommonRestService } from '../widgets/content-lists-common/content-lists-rest.setvice';
 import { initServerSideRestSdk } from '../rest-sdk/init';
 import { setHostServerContext } from '../services/server-context';
+import { TemplateRegistry } from '..';
 
-export async function RenderPage({ params, searchParams, relatedFields }: { params: { slug: string[] }, searchParams: Dictionary, relatedFields?: string[] }) {
+export async function RenderPage({ params, searchParams, relatedFields, templates }: { params: { slug: string[] }, searchParams: Dictionary, relatedFields?: string[], templates?: TemplateRegistry }) {
     const host = headers().get('host') || '';
     setHostServerContext(host);
 
@@ -108,16 +108,38 @@ export async function RenderPage({ params, searchParams, relatedFields }: { para
 
     const liveUrl = params.slug.join('/') + '?' + new URLSearchParams(searchParams).toString();
 
+    let pageTemplate;
+    if (layout.TemplateName && templates && templates[layout.TemplateName]) {
+        let template = templates[layout.TemplateName];
+        if (template && template.templateFunction) {
+            const sortedWidgets: {[key: string]: (JSX.Element | null) [] } = {};
+            appState.widgets.forEach(widget => {
+                const placeholder = widget.PlaceHolder;
+                if (!sortedWidgets[placeholder]) {
+                    sortedWidgets[placeholder] = [];
+                }
+
+                sortedWidgets[placeholder].push(RenderWidgetService.createComponent(widget, appState.requestContext, ctx));
+            });
+
+            pageTemplate = template.templateFunction({ widgets: sortedWidgets, requestContext: appState.requestContext });
+        }
+    }
+
+    if (!pageTemplate) {
+        pageTemplate = appState.widgets.map((child) => {
+            return RenderWidgetService.createComponent(child, appState.requestContext, ctx);
+        });
+    }
+
     return (
       <>
-        <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} additionalQueryParams={{ sf_culutre: layout.Culture, sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''}} />
+        <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} additionalQueryParams={{ sf_culture: layout.Culture, sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''}} />
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} />
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} />
         {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} />}
         {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} />}
-        {appState.widgets.map((child) => {
-                return RenderWidgetService.createComponent(child, appState.requestContext, ctx);
-            })}
+        {pageTemplate}
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyBottom} />
         {Tracer.endSpan(span)}
       </>

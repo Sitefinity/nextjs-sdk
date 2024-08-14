@@ -46,6 +46,9 @@ import { SiteDto } from './dto/site-item';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { QueryParamNames } from './query-params-names';
 import { getAdditionalFetchDataServerContext, getHostServerContext, getQueryParamsServerContext } from '../services/server-context';
+import { getServerSideCookie } from '../server-side-cookie';
+import { ProviderDto } from './dto/provider.dto';
+import { ChangeLocationPriorityArgs, MovingDirection } from './args/change-location-priority.args';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
@@ -57,7 +60,7 @@ export class RestClient {
         };
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.GetItemWithFallback()${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
-        return this.sendRequest<T>({ url: wholeUrl, traceContext: args.traceContext });
+        return this.sendRequest<T>({ url: wholeUrl, traceContext: args.traceContext }, true);
     }
 
     public static getTaxons(args: GetTaxonArgs): Promise<TaxonDto[]> {
@@ -111,7 +114,7 @@ export class RestClient {
         }
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.GenericContent)}/Default.GetItemById(itemId=${id})${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
-        return this.sendRequest<GenericContentItem>({ url: wholeUrl, traceContext });
+        return this.sendRequest<GenericContentItem>({ url: wholeUrl, traceContext }, true);
     }
 
     public static getItems<T extends SdkItem>(args: GetAllArgs): Promise<CollectionResponse<T>> {
@@ -213,6 +216,19 @@ export class RestClient {
         });
     }
 
+    public static saveDraftItem(args: PublishArgs): Promise<void> {
+        const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/operation${RestClient.buildQueryParams(RestClient.getQueryParams(args, undefined))}`;
+        return RestClient.sendRequest({
+            url: wholeUrl,
+            data: {
+                action: 'SaveDraft',
+                actionParameters: {}
+            },
+            method: 'POST',
+            headers: args.additionalHeaders
+        });
+    }
+
     public static syncPage(args: UpdateArgs): Promise<void> {
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})${RestClient.buildQueryParams(RestClient.getQueryParams(args, undefined))}`;
         return RestClient.sendRequest({
@@ -223,13 +239,11 @@ export class RestClient {
         });
     }
 
-    public static lockItem(args: ItemArgs): Promise<void> {
+    public static lockItem(args: UpdateArgs): Promise<void> {
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.SaveTemp()${RestClient.buildQueryParams(RestClient.getQueryParams(args, undefined))}`;
         return RestClient.sendRequest({
             url: wholeUrl,
-            data: {
-                model: {}
-            },
+            data: Object.assign({}, args.data),
             method: 'POST',
             headers: args.additionalHeaders
         });
@@ -336,7 +350,8 @@ export class RestClient {
             ['highlightedFields']: args.highlightedFields,
             ['resultsForAllSites']: '',
             ['scoringInfo']: args.scoringInfo,
-            ['filter']: args.filter
+            ['filter']: args.filter,
+            ['indexFields']: args.indexFields
         };
 
         if (!!args.resultsForAllSites) {
@@ -349,10 +364,37 @@ export class RestClient {
 
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.PerformSearch()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, query))}`;
-        return RestClient.sendRequest<{ TotalCount: number, SearchResults: SearchResultDocumentDto[] }>({ url: wholeUrl, traceContext: args.traceContext }).then(x => {
+        const searchResultsDocumentsDefaultKeys = ['HighLighterResult', 'Language', 'Provider', 'Link', 'Title', 'ContentType', 'Id', 'ThumbnailUrl'];
+
+        return RestClient.sendRequest<{ TotalCount: number, SearchResults: SearchResultDocumentDto[] | any[] }>({ url: wholeUrl, traceContext: args.traceContext }).then(x => {
+            const mappedSearchResults : SearchResultDocumentDto[] = x.SearchResults.map(searchResult => {
+                const document = {
+                    HighLighterResult: searchResult.HighLighterResult,
+                    Language: searchResult.Language,
+                    Provider: searchResult.Provider,
+                    Link: searchResult.Language,
+                    Title: searchResult.Title,
+                    ContentType: searchResult.ContentType,
+                    Id: searchResult.Id,
+                    ThumbnailUrl: searchResult.ThumbnailUrl,
+                    IndexedFields: new Map<string, any>()
+                };
+
+                Object.keys(searchResult)
+                .filter(p => !p.includes('@odata.type'))
+                .forEach(propertyName=> {
+                    // exclude the default properties and the odata typevalue properties
+                    if (!searchResultsDocumentsDefaultKeys.includes(propertyName)) {
+                        document.IndexedFields.set(propertyName, searchResult[propertyName]);
+                    }
+                });
+
+                return document;
+            });
+
             return {
                 totalCount: x.TotalCount,
-                searchResults: x.SearchResults
+                searchResults: mappedSearchResults
             };
         });
     }
@@ -479,6 +521,58 @@ export class RestClient {
         });
     }
 
+    public static async getPreviewLink(args: ItemArgs): Promise<any> {
+        const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.Operation()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+        return this.sendRequest({
+            url: wholeUrl,
+            data: {
+                'action': 'Preview'
+            },
+            method: 'POST',
+            headers: args.additionalHeaders
+        });
+    }
+
+    public static async getContentLocations(args: CommonArgs): Promise<any> {
+        const wholeUrl = `${RootUrlService.getClientCmsUrl()}/Sitefinity/Services/LocationService/${RestClient.buildQueryParams({itemType: args.type, provider: args.provider})}`;
+        return this.sendRequest({
+            url: wholeUrl,
+            method: 'GET',
+            headers: args.additionalHeaders
+        });
+    }
+
+    public static async getDisplayPages(args: ItemArgs): Promise<any> {
+        const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/DisplayPages${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+        return this.sendRequest({
+            url: wholeUrl,
+            method: 'GET',
+            headers: args.additionalHeaders
+        });
+    }
+
+    public static async getProviders(args: CommonArgs): Promise<any> {
+        const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}/sfproviders`;
+        return this.sendRequest<{ value: ProviderDto[] } >({
+            url: wholeUrl,
+            method: 'GET',
+            headers: args.additionalHeaders
+        }).then((x) => {
+            return x.value;
+        });
+    }
+
+    public static async changeLocationPriority(args: ChangeLocationPriorityArgs): Promise<any> {
+        const direction = args.direction || MovingDirection.Top;
+        const directionCode = direction.toString();
+        const wholeUrl = `${RootUrlService.getClientCmsUrl()}/Sitefinity/Services/LocationService/${RestClient.buildQueryParams({'id': args.id, 'direction': directionCode})}`;
+        return this.sendRequest({
+            url: wholeUrl,
+            method: 'PUT',
+            headers: args.additionalHeaders
+        });
+    }
+
     public static async getFormLayout(args: GetFormLayoutArgs): Promise<LayoutServiceResponse> {
         const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Form)}(${args.id})/Default.Model()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
         return RestClient.sendRequest({ url: wholeUrl, headers: args.additionalHeaders, traceContext: args.traceContext });
@@ -491,6 +585,16 @@ export class RestClient {
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.HierarchicalWidgetModel(componentId='${args.widgetId}')${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
         return RestClient.sendRequest({ url: wholeUrl, headers: args.additionalHeaders, traceContext: args.traceContext });
+    }
+
+    public static async getLazyWidget(args: GetHierarchicalWidgetModelArgs): Promise<WidgetModel<any> | undefined> {
+        args.additionalQueryParams = args.additionalQueryParams || {};
+        args.additionalQueryParams.sfwidgetsegment = args.widgetSegmentId || '';
+        args.additionalQueryParams.segment = args.segmentId || '';
+
+        let lazyComponentsUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.LazyComponents()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+
+        return RestClient.sendRequest<{ Components: Array<WidgetModel<any>> }>({ url: lazyComponentsUrl, headers: args.additionalHeaders }).then(x => x.Components.find(y => y.Id === args.widgetId));
     }
 
     public static async getLazyWidgets(args: GetLazyWidgetsArgs): Promise<Array<WidgetModel<any>>> {
@@ -673,7 +777,7 @@ export class RestClient {
         return result;
     }
 
-    private static parseInnerFields(input: string): string[] {
+    private static parseInnerFields (input: string): string[] {
         const allFields: string[] = [];
 
         let fieldStartIndex = 0;
@@ -767,7 +871,6 @@ export class RestClient {
 
         if (typeof window === 'undefined') {
             const queryParamsFromServerContext = getQueryParamsServerContext();
-            queryParams = Object.assign({}, queryParamsFromServerContext || {}, queryParams);
             return Object.assign({}, queryParamsFromServerContext || {}, queryParamsFromArgs, args?.additionalQueryParams || {}, queryParams || {});
         }
 
@@ -796,11 +899,16 @@ export class RestClient {
         return Object.assign(headers, requestData.headers);
     }
 
-    public static sendRequest<T>(request: RequestData): Promise<T> {
+    public static async sendRequest<T>(request: RequestData, throwErrorAsJson?: boolean): Promise<T> {
         const headers = this.buildHeaders(request);
 
         if (process.env.NODE_ENV === 'test') {
             RestClient.addAuthHeaders(undefined, headers);
+        }
+
+        if (typeof window === 'undefined') {
+            const cookie = await getServerSideCookie();
+            RestClient.addAuthHeaders(cookie, headers);
         }
 
         request.method = request.method || 'GET';
@@ -824,7 +932,7 @@ export class RestClient {
 
         return Tracer.withContext(() => {
             return fetch(request.url, args).then((x => {
-                return RestClient.handleApiResponse<T>(x, request);
+                return RestClient.handleApiResponse<T>(x, request, throwErrorAsJson);
             }));
         }, request.traceContext);
     }
@@ -900,6 +1008,9 @@ export class RestSdkTypes {
     public static readonly Form: string = 'Telerik.Sitefinity.Forms.Model.FormDescription';
     public static readonly Site: string = 'Telerik.Sitefinity.Multisite.Model.Site';
     public static readonly Blog: string = 'Telerik.Sitefinity.Blogs.Model.Blog';
+    public static readonly Event: string = 'Telerik.Sitefinity.Events.Model.Event';
+    public static readonly Calendar: string = 'Telerik.Sitefinity.Events.Model.Calendar';
+    public static readonly BlogPost: string = 'Telerik.Sitefinity.Blogs.Model.BlogPost';
 }
 
 interface RequestData {

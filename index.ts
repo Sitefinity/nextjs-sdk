@@ -1,12 +1,7 @@
 export * from './widgets/error/widget-execution-error-component';
 export * from './widgets/default-widget-registry';
 export * from './widgets/legacy-widget-registry';
-
-export * from './pages/render-page';
-export * from './pages/render-widget';
-export * from './pages/render-lazy-widgets';
-export * from './pages/useSfEvents';
-export { initRendering, pageMetadata, pageLayout } from './pages/utils';
+export * from './editor/default-template-registry';
 
 export * from './editor/utils/classNames';
 export * from './editor/utils/getUniqueId';
@@ -32,4 +27,5 @@ export * from './services/render-widget-service';
 export * from './services/renderer-contract';
 export * from './services/rest-client-for-context';
 export * from './services/sanitizer-service';
-export * from './widgets/search-box/utils';
+
+export * from './server-side-cookie';

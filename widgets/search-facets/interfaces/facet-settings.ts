@@ -68,7 +68,7 @@ export class FacetSettings {
     @DisplayName('Prefix')
     @Description('Add text before the values, such as units, currency, etc. For example, $0 - $10, $10 - $20, $20 - $30, etc.')
     @ConditionalVisibility({'operator':'And','conditions':[
-        {'fieldName':'RangeType','operator':'Equals','value':0 }, 
+        {'fieldName':'RangeType','operator':'Equals','value':0 },
         {'fieldName':'FacetType','operator':'Contains','value':'Number' }]})
     @StringLength(20, 'Your text must be less than 20 characters')
     @DefaultValue(null)
@@ -77,7 +77,7 @@ export class FacetSettings {
 
     @DisplayName('Suffix')
     @Description('Add text after the values, such as units, currency, etc. For example, 0 in - 10 in, 10 in - 20 in, 20 in - 30 in, etc.')
-    @ConditionalVisibility({'operator':'And','conditions':[{'fieldName':'RangeType','operator':'Equals','value':0 }, 
+    @ConditionalVisibility({'operator':'And','conditions':[{'fieldName':'RangeType','operator':'Equals','value':0 },
         {'fieldName':'FacetType','operator':'Contains','value':'Number' }]})
     @StringLength(20, 'Your text must be less than 20 characters')
     @DefaultValue(null)
@@ -86,11 +86,10 @@ export class FacetSettings {
 
     @DisplayName('Users can enter custom values')
     @Description('If enabled, empty fields for entering custom values are displayed on your site.')
-    @DefaultValue(false)
     @DataType(KnownFieldTypes.ChipChoice)
     @ConditionalVisibility({'operator':'Or','conditions':[{'fieldName':'RangeType','operator':'Equals','value':1 },{'fieldName':'FacetType','operator':'Contains','value':'Number' }]})
-    @Choice({ Choices: [{'Title':'Yes','Name':'Yes','Value':true,'Icon':null},{'Title':'No','Name':'No','Value':false,'Icon':null}] })
-    DisplayCustomRange?: boolean;
+    @Choice('[{"Title":"Yes","Name":"Yes","Value":true,"Icon":null},{"Title":"No","Name":"No","Value":false,"Icon":null}]')
+    DisplayCustomRange: boolean = false;
 
     @DisplaySettings(true)
     @DataType('string')

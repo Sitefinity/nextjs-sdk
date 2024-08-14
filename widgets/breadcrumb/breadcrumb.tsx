@@ -1,12 +1,14 @@
-import React from 'react';
 import { StyleGenerator } from '../styling/style-generator.service';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { BreadcrumbEntity } from './breadcrumb.entity';
 import { GetBreadcrumbArgs } from '../../rest-sdk/args/get-breadcrumb.args';
 import { combineClassNames } from '../../editor/utils/classNames';
 import { htmlAttributes, getCustomAttributes } from '../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../editor/widget-framework/widget-context';
+import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { RenderView } from '../common/render-view';
+import { BreadcrumbViewProps } from './breadcrumb.view-props';
+import { BreadcrumbDefaultView } from './breadcrumb.view';
 
 const PAGE_MISSING_MESSAGE = 'Breadcrumb is visible when you are on a particular page.';
 
@@ -49,29 +51,22 @@ export async function Breadcrumb(props: WidgetContext<BreadcrumbEntity>) {
     const breadcrumbCustomAttributes = getCustomAttributes(entity.Attributes, 'Breadcrumb');
 
     dataAttributes['className'] = combineClassNames(defaultClass, marginClass);
+    const viewName = props.model.Properties.SfViewName;
+
+    const viewProps: BreadcrumbViewProps<BreadcrumbEntity> = {
+        widgetContext: getMinimumWidgetContext(props),
+        attributes: {...dataAttributes, ...breadcrumbCustomAttributes},
+        items
+    };
 
     return (
-      <>
-        <div
-          {...dataAttributes}
-          {...breadcrumbCustomAttributes}
-          >
-
-          <nav aria-label="Full path to the current page">
-            <ol className="breadcrumb">
-              {
-                items.map((node: { Title: string, ViewUrl: string }, idx: number) => {
-                      if (idx === items.length - 1) {
-                        return <li key={idx} className="breadcrumb-item active" aria-current="page">{node.Title}</li>;
-                      }
-                      return <li key={idx} className="breadcrumb-item"><a href={node.ViewUrl}>{node.Title}</a></li>;
-                    })
-                  }
-            </ol>
-          </nav>
-        </div>
-        {Tracer.endSpan(span)}
-      </>
+      <RenderView
+        viewName={viewName}
+        widgetKey={props.model.Name}
+        traceSpan={span}
+        viewProps={viewProps}>
+        <BreadcrumbDefaultView {...viewProps} />
+      </RenderView>
     );
 }
 

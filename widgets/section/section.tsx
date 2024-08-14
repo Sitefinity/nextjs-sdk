@@ -1,6 +1,7 @@
 
 import { htmlAttributes } from '../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../editor/widget-framework/widget-context';
+import { getMinimumMetadata } from '../../editor/widget-framework/widget-metadata';
 import { ItemArgs } from '../../rest-sdk/args/item.args';
 import { ImageItem } from '../../rest-sdk/dto/image-item';
 import { VideoItem } from '../../rest-sdk/dto/video-item';
@@ -73,7 +74,7 @@ function populateColumns(context: WidgetContext<SectionEntity>): ColumnHolder[] 
             children = context.model.Children.filter(x => x.PlaceHolder === currentName).map((x => {
                 let ret: WidgetContext<any> = {
                     model: x,
-                    metadata: RenderWidgetService.widgetRegistry.widgets[x.Name],
+                    metadata: getMinimumMetadata(RenderWidgetService.widgetRegistry.widgets[x.Name]),
                     requestContext: context.requestContext
                 };
 

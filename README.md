@@ -1,6 +1,6 @@
 # Sitefinity Next.js SDK
 
-Provides OOB widgets for Sitefinity, written in the Next.js framework; abstraction for communicating with Sitefinity; additional API, typings, and tooling.
+Provides OOB widgets developed using the Next.js framework, which includes an abstraction layer for Sitefinity communication. Additionally, it offers an expanded API, typings, and tools for further development and integration.
 
 ## Getting started
 
@@ -27,18 +27,20 @@ The root module contains mainly tooling and interfaces related to widget renderi
 
 Creating and declaring custom widgets should adhere to the following convention.
 Widgets should be registered in a __WidgetRegistry__ by __WidgetMetadata__, which consists of:
-- _componentType_ - reference to the component funciton
+- _componentType_ - reference to the component function
 - metadata, describing the properties of the widget:
     - _entity_? - class reference, decorated using the [_@progress/sitefinity-widget-designers-sdk_](https://www.npmjs.com/package/@progress/sitefinity-widget-designers-sdk) custom decorators
     - _designerMetadata_? - JSON format for a custom designer
 - _editorMetadata_? - implementing the interface _EditorMetadata_, providing information to the editor about widget category, name, and other visual and operational data
 - _ssr_? - indicating whether the widget should be server-side rendered or not
+- _views_? - Used to make custom views/detail views for a widget.
+
 
 For more information and samples visit our [NextJS samples repo](https://github.com/Sitefinity/nextjs-samples).
 
 #### Required html attributes
 
-In order for the WYSIWYG page and form editor to work properly, several custom html attributes need to be provided while viewing the markup in edit mode. The __htmlAttributes__ handles the general case for this need. For aggregating custom CSS classes we provide the helper __classNames__.
+To ensure the WYSIWYG page and form editor functions correctly, it is necessary to include certain custom HTML attributes when viewing the markup in edit mode. The __htmlAttributes__ is designed to address this requirement comprehensively. Additionally, the __classNames__ helper is provided to facilitate the accumulation of custom CSS classes.
 ```tsx
 import { htmlAttributes, classNames } from '@progress/sitefinity-nextjs-sdk';
 

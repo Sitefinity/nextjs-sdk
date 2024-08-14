@@ -1,65 +1,34 @@
-import { getUniqueId } from '../../../editor/utils/getUniqueId';
 import { htmlAttributes } from '../../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../../editor/widget-framework/widget-context';
-import { MultipleChoiceClient, MultipleChoiceClientViewModel } from './multiple-choice-client';
+import { WidgetContext, getMinimumWidgetContext } from '../../../editor/widget-framework/widget-context';
+import { RenderView } from '../../common/render-view';
+import { MultipleChoiceViewProps } from './interfaces/multiple-choice.view-props';
+import { MultipleChoiceDefaultView } from './multiple-choice.view';
 import { MultipleChoiceEntity } from './multiple-choice.entity';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export function MultipleChoice(props: WidgetContext<MultipleChoiceEntity>) {
     const { span } = Tracer.traceWidget(props, false);
     const entity = props.model.Properties;
-    const viewModel: MultipleChoiceClientViewModel = {
-        Choices: entity.Choices || [],
-        CssClass: entity.CssClass || '',
-        HasAdditionalChoice: entity.HasAdditionalChoice,
-        InstructionalText: entity.InstructionalText || '',
-        Label: entity.Label || '',
-        Required: entity.Required,
-        RequiredErrorMessage: entity.RequiredErrorMessage
+    const viewProps: MultipleChoiceViewProps<MultipleChoiceEntity> = {
+        choices: entity.Choices || [],
+        cssClass: entity.CssClass || '',
+        hasAdditionalChoice: entity.HasAdditionalChoice,
+        instructionalText: entity.InstructionalText || '',
+        label: entity.Label || '',
+        required: entity.Required,
+        requiredErrorMessage: entity.RequiredErrorMessage,
+        sfFieldName: entity.SfFieldName!,
+        attributes: {...htmlAttributes(props)},
+        widgetContext: getMinimumWidgetContext(props)
     };
 
-    let layoutClass = '';
-    let innerColumnClass = '';
-    const parsed = parseInt(entity.ColumnsNumber.toString(), 10);
-    switch (parsed) {
-        case 0:
-            layoutClass = 'd-flex flex-wrap';
-            innerColumnClass = 'me-2';
-            break;
-        case 2:
-            layoutClass = 'row m-0';
-            innerColumnClass = 'col-6';
-            break;
-        case 3:
-            layoutClass = 'row m-0';
-            innerColumnClass = 'col-4';
-            break;
-        default:
-            break;
-    }
-    const multipleChoiceUniqueId = entity.SfFieldName!;
-    const inputMultipleChoiceUniqueId = getUniqueId(multipleChoiceUniqueId);
-    const otherChoiceOptionId = getUniqueId(`choiceOption-other-${multipleChoiceUniqueId}`);
-    const dataAttributes = htmlAttributes(props);
-    const defaultRendering = (
-      <>
-        <script data-sf-role={`start_field_${multipleChoiceUniqueId}`} data-sf-role-field-name={`${multipleChoiceUniqueId}`} />
-        <MultipleChoiceClient viewModel={viewModel}
-          multipleChoiceUniqueId={multipleChoiceUniqueId}
-          inputMultipleChoiceUniqueId={inputMultipleChoiceUniqueId}
-          otherChoiceOptionId={otherChoiceOptionId}
-          innerColumnClass={innerColumnClass}
-          layoutClass={layoutClass}
-           />
-        <script data-sf-role={`end_field_${multipleChoiceUniqueId}`} />
-      </>
-    );
     return (
-      <>
-        { props.requestContext.isEdit
-        ? <div {...dataAttributes}> {defaultRendering} </div>
-        :defaultRendering }
-        { Tracer.endSpan(span) }
-      </>
+      <RenderView
+        viewName={entity.SfViewName!}
+        widgetKey={props.model.Name}
+        traceSpan={span}
+        viewProps={viewProps}>
+        <MultipleChoiceDefaultView {...viewProps}/>
+      </RenderView>
     );
 }

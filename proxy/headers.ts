@@ -1,5 +1,7 @@
 import { RootUrlService } from '../rest-sdk/root-url.service';
 
+export const RENDERER_NAME = 'NextJS';
+
 export function getProxyHeaders(host: string) {
     let resolvedHost = process.env.SF_PROXY_ORIGINAL_HOST || host;
     if (!resolvedHost) {
@@ -21,6 +23,7 @@ export function getProxyHeaders(host: string) {
     }
 
     headersCollection['X-SFRENDERER-PROXY'] = 'true';
+    headersCollection['X-SFRENDERER-PROXY-NAME'] = RENDERER_NAME;
     if (!headersCollection['X-SF-WEBSERVICEPATH']) {
         headersCollection['X-SF-WEBSERVICEPATH'] = RootUrlService.getWebServicePath();
     }

@@ -3,6 +3,7 @@ import { classNames } from '../../editor/utils/classNames';
 import { RequestContext } from '../../editor/request-context';
 import { PagerMode } from '../common/page-mode';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { pagerLinkAttributes } from './pager-link-attributes';
 
 export interface PagerProps {
   itemsTotalCount: number;
@@ -12,7 +13,7 @@ export interface PagerProps {
   pagerTemplate?: string;
   itemsPerPage?: number;
   pagerMode: PagerMode;
-  traceContext?: any;
+  navigateFunc?: Function;
 }
 
 export function Pager(props: PagerProps) {
@@ -36,7 +37,7 @@ export function Pager(props: PagerProps) {
         {pagerModel.IsPreviousButtonVisible &&
           <li className="page-item">
             <a className="page-link"
-              href={pagerModel.getPagerUrl(pagerModel.PreviousPageIndex, context)}
+              {...pagerLinkAttributes(pagerModel.getPagerUrl(pagerModel.PreviousPageIndex, context), props.navigateFunc)}
               aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
@@ -49,7 +50,7 @@ export function Pager(props: PagerProps) {
               return (<li key={idx} className={classNames('page-item', {
                 'active': pagerModel.CurrentPage === pageNumber
               })}>
-                <a className="page-link" href={pagerModel.getPagerUrl(pageNumber, context)}>
+                <a className="page-link" {...pagerLinkAttributes(pagerModel.getPagerUrl(pageNumber, context), props.navigateFunc)}>
                   {pageNumber}
                 </a>
               </li>);
@@ -57,7 +58,7 @@ export function Pager(props: PagerProps) {
         }
         {pagerModel.IsNextButtonVisible &&
           <li className="page-item">
-            <a className="page-link" href={pagerModel.getPagerUrl(pagerModel.NextPageIndex, context)}
+            <a className="page-link" {...pagerLinkAttributes(pagerModel.getPagerUrl(pagerModel.NextPageIndex, context), props.navigateFunc)}
               aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
             </a>

@@ -60,6 +60,12 @@ export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key
         <>
           {
             lazyWidgets.map((lazy) => {
+              const widgetEntry = RenderWidgetService.widgetRegistry.widgets[lazy.Name];
+              if (widgetEntry && !widgetEntry.ssr) {
+                return (<div key={lazy.Id} id={lazy.Id} data-sfmodel={true}>
+                  {JSON.stringify(lazy)}
+                </div>);
+              }
                 return (
                   <div key={lazy.Id} id={lazy.Id}>
                     {RenderWidgetService.createComponent(lazy, requestContext)}

@@ -1,12 +1,12 @@
-import { ParagraphClient } from './paragraph-client';
 import { StylingConfig } from '../../styling/styling-config';
 import { classNames } from '../../../editor/utils/classNames';
-import { getUniqueId } from '../../../editor/utils/getUniqueId';
 import { htmlAttributes } from '../../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../../editor/widget-framework/widget-context';
+import { WidgetContext, getMinimumWidgetContext } from '../../../editor/widget-framework/widget-context';
 import { ParagraphEntity } from './paragraph.entity';
-import { TextFieldViewModel } from '../textfield/text-field-viewmodel';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { RenderView } from '../../common/render-view';
+import { ParagraphDefaultTemplate } from './paragraph.view';
+import { ParagraphViewProps } from './paragraph.view-props';
 
 const InvalidDefaultValidationMessageWithLabel = '{0} field is invalid';
 const InvalidDefaultValidationMessage = 'Field is invalid';
@@ -15,68 +15,48 @@ export function Paragraph(props: WidgetContext<ParagraphEntity>) {
     const { span } = Tracer.traceWidget(props, false);
     const entity = props.model.Properties;
 
-    const viewModel: TextFieldViewModel = {
-        CssClass: classNames(entity.CssClass, (StylingConfig.FieldSizeClasses as { [key: string]: string })[('Width' + entity.FieldSize)]) || null,
-        FieldName: entity.SfFieldName,
-        HasDescription: !entity.InstructionalText,
-        Label: entity.Label,
-        PlaceholderText: entity.PlaceholderText,
-        InstructionalText: entity.InstructionalText,
-        PredefinedValue: entity.PredefinedValue,
-        ValidationAttributes: entity.Required ? { 'required': 'required' } : {},
-        ViolationRestrictionsJson: {
+    const viewProps: ParagraphViewProps<ParagraphEntity> = {
+        cssClass: classNames(entity.CssClass, (StylingConfig.FieldSizeClasses as { [key: string]: string })[('Width' + entity.FieldSize)]) || null,
+        fieldName: entity.SfFieldName,
+        hasDescription: !entity.InstructionalText,
+        label: entity.Label,
+        placeholderText: entity.PlaceholderText,
+        instructionalText: entity.InstructionalText,
+        predefinedValue: entity.PredefinedValue,
+        validationAttributes: entity.Required ? { 'required': 'required' } : {},
+        violationRestrictionsJson: {
             maxLength: entity.Range?.Max || null,
             minLength: entity.Range?.Min || null
         },
-        ViolationRestrictionsMessages: {
+        violationRestrictionsMessages: {
             invalid: InvalidDefaultValidationMessage,
             invalidLength: entity.TextLengthViolationMessage,
             required: entity.RequiredErrorMessage
-        }
+        },
+        attributes: {...htmlAttributes(props)},
+        widgetContext: getMinimumWidgetContext(props)
     };
 
     if (entity.Label) {
         if (entity.TextLengthViolationMessage) {
-            viewModel.ViolationRestrictionsMessages.invalidLength = entity.TextLengthViolationMessage?.replace('{0}', entity.Label);
+            viewProps.violationRestrictionsMessages.invalidLength = entity.TextLengthViolationMessage?.replace('{0}', entity.Label);
         }
 
         if (entity.RequiredErrorMessage) {
-            viewModel.ViolationRestrictionsMessages.required = entity.RequiredErrorMessage.replace('{0}', entity.Label);
+            viewProps.violationRestrictionsMessages.required = entity.RequiredErrorMessage.replace('{0}', entity.Label);
         }
 
-        viewModel.ViolationRestrictionsMessages.invalid = InvalidDefaultValidationMessageWithLabel.replace('{0}', entity.Label);
+        viewProps.violationRestrictionsMessages.invalid = InvalidDefaultValidationMessageWithLabel.replace('{0}', entity.Label);
     }
 
-    const paragraphUniqueId = entity.SfFieldName;
-    const paragraphErrorMessageId = getUniqueId('ParagraphErrorMessage');
-    const paragraphInfoMessageId = getUniqueId('ParagraphInfo');
-    let ariaDescribedByAttribute = '';
-
-    if (viewModel.InstructionalText) {
-        if (viewModel.InstructionalText) {
-            ariaDescribedByAttribute = `${paragraphUniqueId} ${paragraphErrorMessageId}`;
-        } else {
-            ariaDescribedByAttribute = paragraphErrorMessageId;
-        }
-    }
-
-    const dataAttributes = htmlAttributes(props);
-    const defaultRendering = (<>
-      <script data-sf-role={`start_field_${paragraphUniqueId}`} data-sf-role-field-name={paragraphUniqueId} />
-      <ParagraphClient viewModel={viewModel}
-        paragraphUniqueId={paragraphUniqueId}
-        paragraphErrorMessageId={paragraphErrorMessageId}
-        paragraphInfoMessageId={paragraphInfoMessageId}
-        ariaDescribedByAttribute={ariaDescribedByAttribute}
-        />
-      <script data-sf-role={`end_field_${paragraphUniqueId}`} />
-    </>);
-    return (<>
-      { props.requestContext.isEdit
-        ? <div {...dataAttributes}> {defaultRendering} </div>
-        : defaultRendering }
-      { Tracer.endSpan(span) }
-    </>
+    return (
+      <RenderView
+        viewName={entity.SfViewName}
+        widgetKey={props.model.Name}
+        traceSpan={span}
+        viewProps={viewProps}>
+        <ParagraphDefaultTemplate {...viewProps}/>
+      </RenderView>
     );
 }
 

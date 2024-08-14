@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { StyleGenerator } from '../styling/style-generator.service';
 import { Horizontal } from './horizontal';
 import { Accordion } from './accordion';
@@ -9,7 +7,10 @@ import { NavigationEntity } from './navigation.entity';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { combineClassNames } from '../../editor/utils/classNames';
 import { htmlAttributes, getCustomAttributes } from '../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../editor/widget-framework/widget-context';
+import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
+import { RenderView } from '../common/render-view';
+import { NavigationViewProps } from './navigation.view-props';
+
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 export async function Navigation(props: WidgetContext<NavigationEntity>) {
@@ -28,20 +29,21 @@ export async function Navigation(props: WidgetContext<NavigationEntity>) {
     }) || [];
 
     const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
-    const navCustomAttributes = getCustomAttributes(entity.Attributes, 'SitefinityNavigation');
+    const customAttributes = getCustomAttributes(entity.Attributes, 'SitefinityNavigation');
 
     dataAttributes['className'] = combineClassNames(marginClass, entity.WrapperCssClass);
-
     const viewName = props.model.Properties.SfViewName;
+    const viewProps: NavigationViewProps<NavigationEntity> = { navCustomAttributes: customAttributes, items: navItems, attributes: dataAttributes, widgetContext: getMinimumWidgetContext(props) };
     return (
-      <>
-        <div {...dataAttributes}>
-          { viewName === 'Accordion' && <Accordion items={navItems} {...navCustomAttributes} />}
-          { viewName === 'Horizontal' && <Horizontal items={navItems} {...navCustomAttributes} />}
-          { viewName === 'Tabs' && <Tabs items={navItems} {...navCustomAttributes} />}
-          { viewName === 'Vertical' && <Vertical items={navItems} {...navCustomAttributes} />}
-        </div>
-        {Tracer.endSpan(span)}
-      </>
+      <RenderView
+        viewName={viewName}
+        widgetKey={props.model.Name}
+        traceSpan={span}
+        viewProps={viewProps}>
+        { viewName === 'Accordion' && <Accordion {...viewProps} />}
+        { viewName === 'Horizontal' && <Horizontal {...viewProps} />}
+        { viewName === 'Tabs' && <Tabs {...viewProps} />}
+        { viewName === 'Vertical' && <Vertical {...viewProps} />}
+      </RenderView>
     );
 }

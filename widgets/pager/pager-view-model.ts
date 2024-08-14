@@ -85,8 +85,8 @@ export class PagerViewModel {
         let queryString = `${new URLSearchParams(context?.searchParams)}`;
 
         if (this.PagerMode === PagerMode.URLSegments) {
-            let desiredPage = this.PagerSegmentTemplate.replace(this.PageNumberSlot, pageNumber.toString());
-            let pattern = this.PagerSegmentTemplate.replace(this.PageNumberSlot, '(\\d{1,})');
+            const desiredPage = this.PagerSegmentTemplate.replace(this.PageNumberSlot, pageNumber.toString());
+            const pattern = this.PagerSegmentTemplate.replace(this.PageNumberSlot, '(\\d{1,})');
 
             if (queryString) {
                 queryString = `?${queryString}`;
@@ -116,9 +116,8 @@ export class PagerViewModel {
     }
 
     private isSegmentMatch(url: string, pattern: string): boolean {
-
-        let regex = new RegExp(pattern);
-        let pagingMatch = regex.test(url);
+        const regex = new RegExp(pattern);
+        const pagingMatch = regex.test(url);
 
         return pagingMatch;
     }
@@ -128,7 +127,6 @@ export function getPageNumber(pagerMode: PagerMode, requestContext: RequestConte
     if (pagerMode === PagerMode.QueryParameter) {
         const template = pagerQueryTemplate !== '' ? pagerQueryTemplate : PagerViewModel.PageNumberDefaultQueryTemplate;
         const queryParams = requestContext.searchParams;
-
         const pagerQueryParam = parseInt(queryParams[template], 10);
 
         return !isNaN(pagerQueryParam) ? pagerQueryParam : 1;

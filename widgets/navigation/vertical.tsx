@@ -1,21 +1,18 @@
-import { PageViewModel } from './interfaces/page-view-model';
 import { getClass } from './utils';
-import { NavigationItem } from '../../rest-sdk/dto/navigation-item';
 import { classNames } from '../../editor/utils/classNames';
+import { NavigationViewProps } from './navigation.view-props';
+import { NavigationEntity } from './navigation.entity';
+import { NavigationItem } from '../../rest-sdk/dto/navigation-item';
 
-export function Vertical(props: {
-    items: NavigationItem[];
-    className?: string;
- }) {
-    const {items, ...customAttrs } = props;
-    const renderSubLevelsRecursive: any = (node: PageViewModel) => {
+export function Vertical({ navCustomAttributes, items, attributes }: NavigationViewProps<NavigationEntity>) {
+    const renderSubLevelsRecursive: any = (node: NavigationItem) => {
 
         return (<li key={node.Key} className="nav-item">
           <a className={classNames('nav-link',  getClass(node))} href={node.Url} target={node.LinkTarget}>{node.Title}</a>
 
           { node.ChildNodes.length > 0 &&
           <ul className="nav flex-column ms-3">
-            {node.ChildNodes.map((node:PageViewModel, idx: number)=> {
+            {node.ChildNodes.map((node: NavigationItem, idx: number)=> {
                             return renderSubLevelsRecursive(node);
                             })
                         }
@@ -23,17 +20,19 @@ export function Vertical(props: {
         </li>);
     };
     return (
-      <nav
-        {...customAttrs}
+      <div {...attributes}>
+        <nav
+          {...navCustomAttributes}
         >
 
-        <ul className="nav flex-column">
-          {
-                items.map((node:PageViewModel, idx: number)=> {
+          <ul className="nav flex-column">
+            {
+                items.map((node: NavigationItem, idx: number)=> {
                     return renderSubLevelsRecursive(node);
                 })
             }
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      </div>
     );
 }

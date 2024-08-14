@@ -1,200 +1,99 @@
 /* eslint-disable @next/next/no-img-element */
 import { ImageClickAction } from './interfaces/image-click-action';
 import { ImageDisplayMode } from './interfaces/image-display-mode';
-import { ImageViewModel } from './interfaces/image-view-model';
-import { Dictionary } from '../../typings/dictionary';
-import { StyleGenerator } from '../styling/style-generator.service';
+import { ImageViewProps } from './interfaces/image.view-props';
 import { ImageEntity } from './image.entity';
-import { htmlAttributes, generateAnchorAttrsFromLink, getCustomAttributes } from '../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../editor/widget-framework/widget-context';
+import { htmlAttributes, getCustomAttributes } from '../../editor/widget-framework/attributes';
+import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
 import { ImageItem } from '../../rest-sdk/dto/image-item';
 import { ThumbnailItem } from '../../rest-sdk/dto/thumbnail-item';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
-
-const imageWrapperClass = 'd-inline-block';
+import { RenderView } from '../common/render-view';
+import { ImageDefaultView } from './image.view';
+import { ErrorCodeException } from '../../rest-sdk/errors/error-code.exception';
 
 export async function Image(props: WidgetContext<ImageEntity>) {
     const { span, ctx } = Tracer.traceWidget(props, true);
-    const dataAttributes = htmlAttributes(props);
-
     const entity: ImageEntity = props.model.Properties;
-    if (!entity.Item) {
-        return (
-          <>
-            <div {...dataAttributes} />
-            { Tracer.endSpan(span) }
-          </>
-        );
-    }
 
     let imageItem: ImageItem | undefined = undefined;
     if (entity.Item && entity.Item.Id) {
-        imageItem = await RestClient.getItemWithFallback<ImageItem>({
-            type: RestSdkTypes.Image,
-            id: entity.Item.Id.toString(),
-            provider: entity.Item.Provider,
-            traceContext: ctx
-        });
-    }
-
-    if (!imageItem) {
-        return (
-          <>
-            <div {...dataAttributes} />
-            { Tracer.endSpan(span) }
-          </>
-        );
-    }
-
-    const isSvg = imageItem.MimeType === 'image/svg+xml';
-    const hasZeroDimensions = imageItem.Width === 0 && imageItem.Height === 0;
-
-    let imageViewModel: ImageViewModel = {
-        Item: imageItem,
-        Title: entity.Title || imageItem.Title,
-        AlternativeText: entity.AlternativeText || imageItem.AlternativeText,
-        ClickAction: entity.ClickAction || ImageClickAction.DoNothing,
-        ImageSize: entity.ImageSize || ImageDisplayMode.Responsive,
-        FitToContainer: entity.FitToContainer === undefined ? true : entity.FitToContainer,
-        Attributes: entity.Attributes || {},
-        Thumbnails: [],
-        ActionLink: '',
-        SelectedImageUrl: imageItem.Url,
-        Width: isSvg && hasZeroDimensions ? undefined : imageItem.Width,
-        Height: isSvg && hasZeroDimensions ? undefined : imageItem.Height
-    };
-
-    if (imageItem.Thumbnails) {
-        imageViewModel.Thumbnails = imageItem.Thumbnails.sort((a: ThumbnailItem, b: ThumbnailItem) => a.Width - b.Width);
-        if (entity.ImageSize === ImageDisplayMode.Thumbnail) {
-            if (imageItem.Thumnail) {
-                imageViewModel.SelectedImageUrl = imageItem.Thumnail.Url;
-            }
-
-            let selectedThumbnail = imageItem.Thumbnails.find((t: ThumbnailItem) => t.Title === entity.Thumnail!.Name);
-            if (selectedThumbnail) {
-                imageViewModel.SelectedImageUrl = selectedThumbnail.Url as string;
-                imageViewModel.Width = selectedThumbnail.Width;
-                imageViewModel.Height = selectedThumbnail.Height;
-            }
+        try {
+            imageItem = await RestClient.getItemWithFallback<ImageItem>({
+                type: RestSdkTypes.Image,
+                id: entity.Item.Id.toString(),
+                provider: entity.Item.Provider,
+                traceContext: ctx
+            });
+        } catch (error) {
+            const errorMessage = error instanceof ErrorCodeException ? error.message : error as string;
+            const attributes = htmlAttributes(props, errorMessage);
+            return (props.requestContext.isEdit ? <div {...attributes} /> : null);
         }
     }
 
-    // Thumbnails for images imported from DAM providers are not stored in Sitefinity and we do not know their width and height.
-    // We have to set width and heigth to null otherwise the image is zoomed and selected thumbnail not applied correctly.
-    if (entity.ImageSize === ImageDisplayMode.Thumbnail && imageItem.IsDamMedia) {
-        imageViewModel.Width = undefined;
-        imageViewModel.Height = undefined;
+    const dataAttributes = htmlAttributes(props);
+    const customAttributes = getCustomAttributes(entity.Attributes, 'Image');
+    let viewProps: ImageViewProps<ImageEntity> = {
+        item: imageItem,
+        title: entity.Title,
+        alternativeText: entity.AlternativeText,
+        clickAction: entity.ClickAction || ImageClickAction.DoNothing,
+        imageSize: entity.ImageSize || ImageDisplayMode.Responsive,
+        fitToContainer: entity.FitToContainer === undefined ? true : entity.FitToContainer,
+        attributes: {...dataAttributes, ...customAttributes},
+        thumbnails: [],
+        actionLink: '',
+        widgetContext: getMinimumWidgetContext(props)
+    };
+
+    if (imageItem) {
+        viewProps.title = viewProps.title || imageItem.Title;
+        viewProps.alternativeText = viewProps.alternativeText || imageItem.AlternativeText;
+
+        const isSvg = imageItem.MimeType === 'image/svg+xml';
+        const hasZeroDimensions = imageItem.Width === 0 && imageItem.Height === 0;
+        viewProps.width = isSvg && hasZeroDimensions ? undefined : imageItem.Width;
+        viewProps.height = isSvg && hasZeroDimensions ? undefined : imageItem.Height;
+        viewProps.selectedImageUrl = imageItem.Url;
+
+        if (imageItem.Thumbnails) {
+            viewProps.thumbnails = imageItem.Thumbnails.sort((a: ThumbnailItem, b: ThumbnailItem) => a.Width - b.Width);
+            if (entity.ImageSize === ImageDisplayMode.Thumbnail) {
+                if (imageItem.Thumnail) {
+                    viewProps.selectedImageUrl = imageItem.Thumnail.Url;
+                }
+
+                let selectedThumbnail = imageItem.Thumbnails.find((t: ThumbnailItem) => t.Title === entity.Thumnail!.Name);
+                if (selectedThumbnail) {
+                    viewProps.selectedImageUrl = selectedThumbnail.Url as string;
+                    viewProps.width = selectedThumbnail.Width;
+                    viewProps.height = selectedThumbnail.Height;
+                }
+            }
+        }
+
+        // Thumbnails for images imported from DAM providers are not stored in Sitefinity and we do not know their width and height.
+        // We have to set width and heigth to null otherwise the image is zoomed and selected thumbnail not applied correctly.
+        if (entity.ImageSize === ImageDisplayMode.Thumbnail && imageItem.IsDamMedia) {
+            viewProps.width = undefined;
+            viewProps.height = undefined;
+        }
     }
 
     if (entity.CustomSize && entity.ImageSize === ImageDisplayMode.CustomSize) {
-        imageViewModel.Width = entity.CustomSize.Width;
-        imageViewModel.Height = entity.CustomSize.Height;
-    }
-
-    let anchorClass = imageWrapperClass;
-    if (entity.CssClass) {
-        anchorClass = `${imageWrapperClass} ${entity.CssClass}`;
-    }
-
-    let viewModelCssClass = entity.CssClass;
-    if (entity.Margins) {
-        let margins = StyleGenerator.getMarginClasses(entity.Margins)?.trim();
-        if (margins) {
-            if (viewModelCssClass) {
-                viewModelCssClass = `${viewModelCssClass} ${margins}`;
-            } else {
-                viewModelCssClass = margins;
-            }
-        }
-    }
-
-    if (entity.ClickAction === ImageClickAction.OpenOriginalSize) {
-        return (
-          <a href={imageItem.Url} className={anchorClass} {...dataAttributes}>
-            {renderImageTag(imageViewModel, {})}
-            {Tracer.endSpan(span)}
-          </a>
-        );
-    } else if (entity.ClickAction === ImageClickAction.OpenLink && !!entity.ActionLink?.href) {
-        const anchorAttributes = generateAnchorAttrsFromLink(entity.ActionLink, anchorClass);
-        return (
-          <a {...anchorAttributes} {...dataAttributes}>
-            {renderImageTag(imageViewModel, {})}
-            {Tracer.endSpan(span)}
-          </a>
-        );
-    } else {
-        return (
-          <>
-            {renderImageTag(imageViewModel, dataAttributes, viewModelCssClass)}
-            {Tracer.endSpan(span)}
-          </>
-        );
-    }
-}
-
-function renderImageTag(imageModel: ImageViewModel, dataAttributes: Dictionary, classAttributeValue?: string) {
-    let imageClassName: string | undefined = imageModel.FitToContainer ? 'img-fluid' : undefined;
-    let imageCustomAttributes = getCustomAttributes(imageModel.Attributes, 'Image');
-    const imageAltAttribute = imageModel.AlternativeText || undefined;
-
-    if (imageModel.ImageSize === ImageDisplayMode.Responsive) {
-        let pictureWrapperClass = imageWrapperClass;
-        if (classAttributeValue) {
-            pictureWrapperClass = `${pictureWrapperClass} ${classAttributeValue}`;
-        }
-
-        return (
-          <picture className={pictureWrapperClass} {...dataAttributes}>
-            {
-                    imageModel.Thumbnails.map((thumbnail, idx) => {
-                        const sourceWidth = imageModel.Width && thumbnail.Width !== imageModel.Width ? thumbnail.Width : undefined;
-                        const sourceHeight = imageModel.Height && thumbnail.Height !== imageModel.Height ? thumbnail.Height : undefined;
-                        if (sourceWidth && sourceHeight) {
-                            return (<source key={idx} media={`(max-width: ${thumbnail.Width}px)`}
-                              srcSet={thumbnail.Url} type={thumbnail.MimeType}
-                              width={sourceWidth}
-                              height={sourceHeight}
-                            />);
-                        }
-                    })
-                }
-            {renderImage(imageCustomAttributes, imageClassName, imageModel.SelectedImageUrl, imageModel.Title, imageAltAttribute)}
-          </picture>
-        );
-    }
-
-    if (classAttributeValue) {
-        if (imageClassName) {
-            imageClassName = `${imageClassName} ${classAttributeValue}`;
-        } else {
-            imageClassName = classAttributeValue;
-        }
-    }
-
-    if (imageModel.ImageSize === ImageDisplayMode.CustomSize || imageModel.ImageSize === ImageDisplayMode.Thumbnail) {
-        if (imageModel.Width) {
-            imageCustomAttributes['width'] = imageModel.Width.toString();
-        }
-
-        if (imageModel.Height) {
-            imageCustomAttributes['height'] = imageModel.Height.toString();
-        }
+        viewProps.width = entity.CustomSize.Width;
+        viewProps.height = entity.CustomSize.Height;
     }
 
     return (
-      <span {...dataAttributes}>
-        {renderImage(imageCustomAttributes, imageClassName, imageModel.SelectedImageUrl, imageModel.Title, imageAltAttribute)}
-      </span>
-    );
-}
-
-function renderImage(attributes: Dictionary, className: string | undefined, src: string, title: string, alt: string | undefined) {
-    return (
-      <img {...attributes}
-        loading="lazy" className={className}
-        src={src} title={title} alt={alt} />
+      <RenderView
+        viewName={props.model.Properties.ViewName}
+        widgetKey={props.model.Name}
+        traceSpan={span}
+        viewProps={viewProps}>
+        <ImageDefaultView {...viewProps} />
+      </RenderView>
     );
 }

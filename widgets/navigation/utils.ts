@@ -1,6 +1,6 @@
-import { PageViewModel } from './interfaces/page-view-model';
+import { NavigationItem } from '../../rest-sdk/dto/navigation-item';
 
-export const getClass = (node: PageViewModel): string | undefined => {
+export const getClass = (node: NavigationItem): string | undefined => {
     if (node.IsCurrentlyOpened) {
         return 'active';
     }

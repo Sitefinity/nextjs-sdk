@@ -1,9 +1,9 @@
 import { createContext } from 'react';
-import { FormViewModel } from './form-view-model';
+import { FormViewProps } from './form.view-props';
 import { StylingConfig } from '../styling/styling-config';
 
 export const FormContext = createContext<{
-    formViewModel: FormViewModel,
+    formViewProps: FormViewProps,
     hiddenInputs: {[key:string]: boolean},
     skippedInputs: {[key:string]: boolean},
     formSubmitted: boolean,
@@ -11,10 +11,10 @@ export const FormContext = createContext<{
     sfFormValueChanged: ()=>void,
     dispatchValidity: (inputKey: string, valid: boolean)=>void,
 }>({
-    formViewModel: {
-        CustomSubmitAction: false,
-        VisibilityClasses: StylingConfig.VisibilityClasses,
-        InvalidClass: StylingConfig.InvalidClass
+    formViewProps: {
+        customSubmitAction: false,
+        visibilityClasses: StylingConfig.VisibilityClasses,
+        invalidClass: StylingConfig.InvalidClass
     },
     sfFormValueChanged: ()=>{},
     dispatchValidity: ()=>{},

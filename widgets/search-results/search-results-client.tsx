@@ -3,10 +3,9 @@
 import Image from 'next/image';
 import { Suspense, useEffect, useState } from 'react';
 import { LoadingIndicator } from './loading-indicator';
-import { SearchResultsViewModel } from './interfaces/search-results-viewmodel';
+import { SearchResultsViewProps } from './interfaces/search-results.view-props';
 import { SearchParams } from './interfaces/search-params';
 import { OrderByDropDown } from './orderby-dropdown';
-import { RequestContext } from '../../editor/request-context';
 import { LanguagesList } from './languages-list';
 import { SearchResultDocumentDto } from '../../rest-sdk/dto/search-results-document-dto';
 import { SanitizerService } from '../../services/sanitizer-service';
@@ -14,65 +13,87 @@ import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode
 import { SearchResultsEntity } from './search-results.entity';
 import { Pager } from '../pager/pager';
 import { PagerMode } from '../common/page-mode';
-import { EVENTS, useSfEvents } from '../../pages/useSfEvents';
-import { performSearch, updateSearchResultsHeader, updateViewModel } from './search-results-common';
+import { getQueryParams, performSearch } from './search-results-common';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getPageNumber } from '../pager/pager-view-model';
+import { getUniqueId } from '../../editor/utils/getUniqueId';
 
-export function SearchResultsClient(props: {
-     viewModel: SearchResultsViewModel,
-     searchParams: SearchParams,
-     sortingSelectId: string,
-     context: RequestContext,
-     sorting: string,
-     entity: SearchResultsEntity,
-     currentPage: number,
-     ctx: any
-     }) {
-    const { viewModel, searchParams, sortingSelectId, context, sorting, entity, currentPage, ctx } = props;
-    const [payload, setPayload] = useSfEvents<{[key: string]: any, attach?: boolean}>(EVENTS.FACETS, true);
-    const [searchResultsClientProps, setSearchResultsClientProps] = useState({ searchParams, entity, viewModel });
+export function SearchResultsClient(props: SearchResultsViewProps<SearchResultsEntity>) {
+    const searchParamsNext = useSearchParams();
+    const router = useRouter();
+    const searchParams = getQueryParams(searchParamsNext);
+    const sortingSelectId = getUniqueId('sf-sort-', props.widgetContext.model.Id);
+    const context = props.widgetContext.requestContext;
+    const entity = props.widgetContext.model.Properties;
+    const sorting = searchParams.orderBy ?  searchParams.orderBy : (props.sorting || '');
+    const defaultResultsValue = context.isEdit ? {totalCount: 0, searchResults: []} : undefined;
+    const [searchResults, setSearchResults] = useState<{ totalCount: number, searchResults: SearchResultDocumentDto[] | any[] } | null | undefined>(defaultResultsValue);
+    if (!Object.keys(context.searchParams).length){
+      context.searchParams = searchParams;
+    }
+
+    const currentPage = getPageNumber(PagerMode.QueryParameter, context);
+
+    let initialHeader = '';
+    if (entity.SearchResultsHeader) {
+      initialHeader = entity.SearchResultsHeader.replace('\"{0}\"', '');
+    }
+
+    if (entity.NoResultsHeader) {
+      initialHeader = entity.NoResultsHeader.replace('\"{0}\"', searchParams.searchQuery || '\"\"');
+    }
+
+    const [resultsHeader, setResultsHeader] = useState<string>(initialHeader);
+
+    const loadResults = async (newSearchParams: SearchParams) => {
+      const searchResponse = await performSearch(entity, newSearchParams);
+      setSearchResults(searchResponse);
+      if (entity.SearchResultsHeader && searchResponse?.searchResults?.length) {
+        setResultsHeader(entity.SearchResultsHeader.replace('{0}', searchParams.searchQuery));
+      }
+    };
 
     useEffect(() => {
-        if (payload) {
-            const newSearchParams = (payload as unknown) as SearchParams;
+      !context.isEdit && loadResults(getQueryParams(searchParamsNext) as SearchParams);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParamsNext]);
 
-            const fetchData = async () =>{
-                const searchResponse = await performSearch(entity, newSearchParams, ctx);
-                updateViewModel(viewModel, searchResponse);
-                updateSearchResultsHeader(entity, viewModel, searchParams);
-                setSearchResultsClientProps({searchParams: newSearchParams, entity, viewModel});
-            };
-
-            fetchData();
-        }
-    }, [payload, entity, viewModel]); // eslint-disable-line
-
-    return (
+    return ((searchParams.searchQuery || context.isEdit) &&
       <>
-        <div className="d-flex align-items-center justify-content-between my-3">
-          <h1 role="alert" aria-live="assertive">{searchResultsClientProps.viewModel.ResultsHeader}</h1>
-          <div className="d-flex align-items-center gap-2">
-            {(searchResultsClientProps.viewModel.AllowUsersToSortResults && !!searchResultsClientProps.viewModel.TotalCount && searchResultsClientProps.viewModel.TotalCount > 0) &&
+        { searchResults === undefined && <LoadingIndicator /> }
+        { searchResults !== undefined &&
+        <>
+          <div className="d-flex align-items-center justify-content-between my-3">
+            <h1 role="alert" aria-live="assertive">{resultsHeader}</h1>
+            <div className="d-flex align-items-center gap-2">
+              {(props.allowUsersToSortResults && !!searchResults?.totalCount && searchResults?.totalCount > 0) &&
               <>
                 <label htmlFor={sortingSelectId} className="form-label text-nowrap mb-0">
-                  {searchResultsClientProps.viewModel.SortByLabel}
+                  {props.sortByLabel}
                 </label>
-                <OrderByDropDown context={context} sortingSelectId={sortingSelectId} searchParams={searchResultsClientProps.searchParams} sorting={sorting} />
+                <OrderByDropDown queryParams={searchParams}
+                  sortingSelectId={sortingSelectId}
+                  searchParams={searchParams as SearchParams}
+                  sorting={sorting} />
               </>
                 }
+            </div>
           </div>
-        </div>
-        <div>
-          <h4>{searchResultsClientProps.viewModel.TotalCount} {searchResultsClientProps.viewModel.ResultsNumberLabel}</h4>
+          <div>
+            <h4>{searchResults?.totalCount} {props.resultsNumberLabel}</h4>
+            <Suspense fallback={<LoadingIndicator/>}>
+              <p>
+                {props.languagesLabel + ' '}
+                <LanguagesList
+                  queryParams={searchParams}
+                  languages={props.languages}
+                  searchParams={searchParams as SearchParams} />
+              </p>
+            </Suspense>
+          </div>
           <Suspense fallback={<LoadingIndicator/>}>
-            <p>
-              {searchResultsClientProps.viewModel.LanguagesLabel + ' '}
-              <LanguagesList context={context} languages={searchResultsClientProps.viewModel.Languages} searchParams={searchResultsClientProps.searchParams} />
-            </p>
-          </Suspense>
-        </div>
-        <Suspense fallback={<LoadingIndicator/>}>
-          <div className="mt-4">
-            {searchResultsClientProps.viewModel.SearchResults.map((item: SearchResultDocumentDto, idx: number) => {
+            <div className="mt-4">
+              {searchResults?.searchResults.map((item: SearchResultDocumentDto, idx: number) => {
               const hasLink: boolean = !!item.Link;
               return (
                 <div className="mb-3 d-flex" key={idx}>
@@ -95,21 +116,22 @@ export function SearchResultsClient(props: {
                 </div>
               );
             })}
-          </div>
-        </Suspense>
-        {searchResultsClientProps.viewModel.SearchResults && searchResultsClientProps.entity.ListSettings?.DisplayMode === ListDisplayMode.Paging &&
-        <Suspense fallback={<LoadingIndicator/>}>
-          <div className="mt-4" id="sf-search-result-pager">
-            <Pager
-              currentPage={currentPage}
-              itemsTotalCount={searchResultsClientProps.viewModel.TotalCount}
-              pagerMode={PagerMode.QueryParameter}
-              itemsPerPage={searchResultsClientProps.entity.ListSettings?.ItemsPerPage}
-              context={context}
-              traceContext={ctx} />
-          </div>
-        </Suspense>
+            </div>
+          </Suspense>
+          {searchResults?.searchResults && entity.ListSettings?.DisplayMode === ListDisplayMode.Paging &&
+          <Suspense fallback={<LoadingIndicator/>}>
+            <div className="mt-4" id="sf-search-result-pager">
+              <Pager
+                currentPage={currentPage}
+                itemsTotalCount={searchResults?.totalCount}
+                pagerMode={PagerMode.QueryParameter}
+                itemsPerPage={entity.ListSettings?.ItemsPerPage}
+                navigateFunc={router.push}
+                context={context} />
+            </div>
+          </Suspense>
         }
+        </>}
       </>
     );
 }

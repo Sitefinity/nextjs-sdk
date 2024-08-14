@@ -5,15 +5,28 @@ import { StylingConfig } from '../../styling/styling-config';
 import { VisibilityStyle } from '../../styling/visibility-style';
 import { classNames } from '../../../editor/utils/classNames';
 import { FormContext } from '../../form/form-context';
-import { ParagraphViewModel } from './paragraph-viewmodel';
+import { ParagraphViewProps } from './paragraph.view-props';
+import { ParagraphEntity } from './paragraph.entity';
+import { getUniqueId } from '../../../editor/utils/getUniqueId';
 
-export function ParagraphClient(props: { viewModel: ParagraphViewModel, paragraphUniqueId: string, paragraphInfoMessageId: string, paragraphErrorMessageId: string, ariaDescribedByAttribute: string }) {
-    const { viewModel, paragraphUniqueId, paragraphInfoMessageId, paragraphErrorMessageId, ariaDescribedByAttribute } = props;
+export function ParagraphClient(props: ParagraphViewProps<ParagraphEntity>) {
+    const paragraphUniqueId = props.widgetContext.model.Properties.SfFieldName;
+    const paragraphErrorMessageId = getUniqueId('ParagraphErrorMessage', props.widgetContext.model.Id);
+    const paragraphInfoMessageId = getUniqueId('ParagraphInfo', props.widgetContext.model.Id);
+
+    let ariaDescribedByAttribute = '';
+    if (props.instructionalText) {
+        if (props.instructionalText) {
+            ariaDescribedByAttribute = `${paragraphUniqueId} ${paragraphErrorMessageId}`;
+        } else {
+            ariaDescribedByAttribute = paragraphErrorMessageId;
+        }
+    }
 
     const inputRef = React.useRef<HTMLTextAreaElement>(null);
-    const [inputValue, setInputValue] = React.useState(viewModel.PredefinedValue || '');
+    const [inputValue, setInputValue] = React.useState(props.predefinedValue || '');
     const {
-        formViewModel, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged, dispatchValidity,
         hiddenInputs, skippedInputs,
         formSubmitted
     } = useContext(FormContext);
@@ -40,8 +53,8 @@ export function ParagraphClient(props: { viewModel: ParagraphViewModel, paragrap
 
     const handleTextValidation = (): boolean => {
         const target = inputRef.current!;
-        const validationMessages = viewModel.ViolationRestrictionsMessages;
-        const validationRestrictions = viewModel.ViolationRestrictionsJson;
+        const validationMessages = props.violationRestrictionsMessages;
+        const validationRestrictions = props.violationRestrictionsJson;
         setInputValue((target as HTMLTextAreaElement).value);
 
         if (validationRestrictions) {
@@ -90,21 +103,21 @@ export function ParagraphClient(props: { viewModel: ParagraphViewModel, paragrap
 
     const rootClass = classNames(
         'mb-3',
-        viewModel.CssClass,
+        props.cssClass,
         isHidden
             ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
             : StylingConfig.VisibilityClasses[VisibilityStyle.Visible]
         );
 
     return (<div className={rootClass} data-sf-role="paragraph-text-field-container">
-      <label className="h6" htmlFor={paragraphUniqueId}>{viewModel.Label}</label>
+      <label className="h6" htmlFor={paragraphUniqueId}>{props.label}</label>
       <textarea id={paragraphUniqueId}
         ref={inputRef}
         className={classNames('form-control',{
-                [formViewModel.InvalidClass!]: formViewModel.InvalidClass && errorMessageText
+                [formViewProps.invalidClass!]: formViewProps.invalidClass && errorMessageText
             })}
-        name={viewModel.FieldName!}
-        placeholder={viewModel.PlaceholderText || undefined}
+        name={props.fieldName!}
+        placeholder={props.placeholderText || undefined}
         value={inputValue}
         data-sf-role="paragraph-text-field-textarea"
         disabled={isHidden || isSkipped}
@@ -112,10 +125,10 @@ export function ParagraphClient(props: { viewModel: ParagraphViewModel, paragrap
         onChange={handleTextValidation}
         onInput={handleInputEvent}
         onInvalid={handleTextValidation}
-        {...viewModel.ValidationAttributes}
+        {...props.validationAttributes}
         />
-      { viewModel.InstructionalText &&
-        <div id={paragraphInfoMessageId} className="form-text">{viewModel.InstructionalText}</div>
+      { props.instructionalText &&
+        <div id={paragraphInfoMessageId} className="form-text">{props.instructionalText}</div>
       }
       {errorMessageText && <div id={paragraphErrorMessageId} data-sf-role="error-message" role="alert" aria-live="assertive" className="invalid-feedback" >
         {errorMessageText}

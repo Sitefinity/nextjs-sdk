@@ -1,32 +1,33 @@
-import { SearchBoxViewModel } from './search-box-viewmodel';
+import { SearchBoxViewProps } from './search-box.view-props';
+import { SearchBoxEntity } from './search-box.entity';
 
-export function serializeScoringProfile (scoringProfile: {ScoringSetting: string, ScoringParameters: string}) {
-    let res = scoringProfile.ScoringSetting;
+export function serializeScoringProfile (scoringProfile: {scoringSetting: string, scoringParameters: string}) {
+    let res = scoringProfile.scoringSetting;
 
-    if (!!scoringProfile.ScoringParameters) {
-        res = `${res};${scoringProfile.ScoringParameters}`;
+    if (!!scoringProfile.scoringParameters) {
+        res = `${res};${scoringProfile.scoringParameters}`;
     }
 
     return btoa(res);
 };
 
-export function getSearchBoxParams (searchModel: SearchBoxViewModel) {
+export function getSearchBoxParams(searchModel: SearchBoxViewProps<SearchBoxEntity>, orderBy: string) {
     return {
-        resultsUrl: searchModel.SearchResultsPageUrl,
-        catalogue: searchModel.SearchIndex,
-        scoringSetting: serializeScoringProfile(searchModel.ScoringProfile),
-        minSuggestionLength: searchModel.SuggestionsTriggerCharCount,
-        siteId: searchModel.SiteId,
-        culture: searchModel.Culture,
-        suggestionFields: searchModel.SuggestionFields,
-        servicePath: searchModel.WebServicePath,
-        orderBy: searchModel.Sort,
-        resultsForAllSites: searchModel.ShowResultsForAllIndexedSites
+        resultsUrl: searchModel.searchResultsPageUrl,
+        catalogue: searchModel.searchIndex,
+        scoringSetting: serializeScoringProfile(searchModel.scoringProfile),
+        minSuggestionLength: searchModel.suggestionsTriggerCharCount,
+        siteId: searchModel.siteId,
+        culture: searchModel.culture,
+        suggestionFields: searchModel.suggestionFields,
+        servicePath: searchModel.webServicePath,
+        orderBy,
+        resultsForAllSites: searchModel.showResultsForAllIndexedSites
     };
 };
 
-export function getSearchUrl (query: string, searchModel: SearchBoxViewModel) {
-    const searchParams = getSearchBoxParams(searchModel);
+export function getSearchUrl (query: string, searchModel: SearchBoxViewProps<SearchBoxEntity>, orderBy: string) {
+    const searchParams = getSearchBoxParams(searchModel, orderBy);
     let resultsUrl = searchParams.resultsUrl || '';
 
     const queryParams: {[key: string]: string} = {

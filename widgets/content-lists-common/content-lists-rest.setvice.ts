@@ -23,7 +23,7 @@ export class ContentListsCommonRestService {
 
     static async getItems(entity: ContentListEntityBase, detailItem: DetailItem | undefined, requestContext?: RequestContext, currentPage: number = 1, traceContext?: any, showListViewOnChildDetailsView = true): Promise<CollectionResponse<SdkItem>> {
         if (entity.SelectedItems && entity.SelectedItems.Content && entity.SelectedItems.Content.length > 0
-            && entity.SelectedItems.Content[0].Variations) {
+            && entity.SelectedItems.Content[0].Type && entity.SelectedItems.Content[0].Variations) {
             const selectedContent = entity.SelectedItems.Content[0];
             const variation = selectedContent.Variations![0];
 

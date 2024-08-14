@@ -3,9 +3,12 @@ import { guid } from './guid';
 /**
  * @hidden
  */
-export const getUniqueId = (name?: string): string =>{
+export const getUniqueId = (name?: string, uniqueId?: string): string =>{
     if (!name) {
         return guid();
     }
-    return `${name}-${guid().substring(0,4)}`;
+
+    const uniqueIdString = uniqueId || guid();
+
+    return `${name}-${uniqueIdString}`;
 };

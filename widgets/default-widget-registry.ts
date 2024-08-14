@@ -55,17 +55,17 @@ import { TextFieldEntity } from './form-widgets/textfield/text-field.entity';
 import { FormSectionEntity } from './form-widgets/section/section.entity';
 import { FormContentBlockEntity } from './form-widgets/content-block/content-block.entity';
 import { DynamicListEntity } from './form-widgets/dynamic-list/dynamic-list.entity';
-import { BlogPostDetail } from './content-list/detail/content-list-detail.blog-post';
-import { DynamicDetail } from './content-list/detail/content-list-detail.dynamic';
-import { EventDetail } from './content-list/detail/content-list-detail.event';
-import { ListItemDetail } from './content-list/detail/content-list-detail.list-item';
-import { NewsItemDetail } from './content-list/detail/content-list-detail.news';
-import { CardsList } from './content-list/master/cards-list/cards-list';
-import { ListWithImage } from './content-list/master/list-with-image/list-with-image';
-import { ListWithSummary } from './content-list/master/list-with-summary/list-with-summary';
-import { DocumentDetailItem } from './document-list/document-list-detail-item';
-import { DocumentListGrid } from './document-list/document-list-grid';
-import { DocumentListList } from './document-list/document-list-list';
+import { BlogPostDetailView } from './content-list/detail/content-list-detail.blog-post.view';
+import { DynamicDetailView } from './content-list/detail/content-list-detail.dynamic.view';
+import { EventDetailView } from './content-list/detail/content-list-detail.event.view';
+import { ListItemDetailView } from './content-list/detail/content-list-detail.list-item.view';
+import { NewsItemDetailView } from './content-list/detail/content-list-detail.news.view';
+import { CardsListView } from './content-list/master/cards-list/cards-list.view';
+import { ListWithImageView } from './content-list/master/list-with-image/list-with-image.view';
+import { ListWithSummaryView } from './content-list/master/list-with-summary/list-with-summary.view';
+import { DocumentDetailItemView } from './document-list/document-list-detail-item.view';
+import { DocumentListGridView } from './document-list/document-list-grid.view';
+import { DocumentListListView } from './document-list/document-list-list.view';
 import { FormCSR } from './form/form.csr';
 import { DynamicListCSR } from './form-widgets/dynamic-list/dynamic-list.csr';
 import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
@@ -82,7 +82,10 @@ export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
             EmptyIconText: 'Select a form',
             Category: 'Content',
             Section: 'Basic',
-            HasQuickEditOperation: true
+            HasQuickEditOperation: true,
+            InitialProperties: {
+                ContentViewDisplayMode: 'Detail'
+            }
         },
         ssr: false
     },
@@ -240,7 +243,10 @@ export const SSRFormComponents: {[key: string]: WidgetMetadata} = {
             Category: 'Content',
             Section: 'Basic',
             HasQuickEditOperation: true,
-            IconName: 'form'
+            IconName: 'form',
+            InitialProperties: {
+                ContentViewDisplayMode: 'Detail'
+            }
         },
         ssr: true
     },
@@ -448,15 +454,30 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 IconName: 'content-list'
             },
             ssr: true,
-            templates: {
-                'ListWithImage': ListWithImage,
-                'ListWithSummary': ListWithSummary,
-                'CardsList': CardsList,
-                'Details.BlogPosts.Default': BlogPostDetail,
-                'Details.Dynamic.Default': DynamicDetail,
-                'Details.Events.Default': EventDetail,
-                'Details.ListItems.Default': ListItemDetail,
-                'Details.News.Default': NewsItemDetail
+            views: {
+                'ListWithImage': {
+                    Title: 'List with image',
+                    ViewFunction: ListWithImageView
+                },
+                'ListWithSummary': {
+                    Title: 'List with summary',
+                    ViewFunction: ListWithSummaryView
+                },
+                'CardsList': {
+                    Title: 'Cards list',
+                    ViewFunction: CardsListView
+                },
+                'Details.BlogPosts.Default': {
+                    Title: 'Details.Blog posts.Default',
+                    ViewFunction: BlogPostDetailView
+                },
+                'Details.Dynamic.Default': DynamicDetailView,
+                'Details.Events.Default': EventDetailView,
+                'Details.ListItems.Default': {
+                    Title: 'Details.List items.Default',
+                    ViewFunction: ListItemDetailView
+                },
+                'Details.News.Default': NewsItemDetailView
             }
         },
         'SitefinityDocumentList': {
@@ -473,10 +494,19 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 IconName: 'document'
             },
             ssr: true,
-            templates: {
-                'DocumentList': DocumentListList,
-                'DocumentTable': DocumentListGrid,
-                'Details.DocumentDetails': DocumentDetailItem
+            views: {
+                'DocumentList': {
+                    Title: 'Document list',
+                    ViewFunction: DocumentListListView
+                },
+                'DocumentTable': {
+                    Title: 'Document table',
+                    ViewFunction: DocumentListGridView
+                },
+                'Details.DocumentDetails': {
+                    Title: 'Details.Document details',
+                    ViewFunction: DocumentDetailItemView
+                }
             }
         },
         'SitefinityNavigation': {

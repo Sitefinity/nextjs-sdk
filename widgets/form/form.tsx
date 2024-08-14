@@ -11,11 +11,12 @@ import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { WidgetModel } from '../../editor/widget-framework/widget-model';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { LayoutServiceResponse } from '../../rest-sdk/dto/layout-service.response';
-import { FormViewModel, getFormRulesViewModel, getFormHiddenFields } from './form-view-model';
+import { FormViewProps, getFormRulesViewProps, getFormHiddenFields } from './form.view-props';
 import { FormEntity } from './form.entity';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { ErrorCodeException } from '../../rest-sdk/errors/error-code.exception';
 
 export async function Form(props: WidgetContext<FormEntity>) {
     const { span, ctx } = Tracer.traceWidget(props, true);
@@ -24,63 +25,67 @@ export async function Form(props: WidgetContext<FormEntity>) {
     const searchParams = context.searchParams;
     const queryParams = { ...searchParams };
 
-    const viewModel: FormViewModel = {
-        CustomSubmitAction: false,
-        VisibilityClasses: StylingConfig.VisibilityClasses,
-        InvalidClass: StylingConfig.InvalidClass
+    const viewProps: FormViewProps = {
+        customSubmitAction: false,
+        visibilityClasses: StylingConfig.VisibilityClasses,
+        invalidClass: StylingConfig.InvalidClass
     };
 
     if (entity.SelectedItems && entity.SelectedItems.ItemIdsOrdered && entity.SelectedItems.ItemIdsOrdered.length > 0) {
         let formDto: FormDto | null = null;
         try {
-            formDto = await RestClientForContext.getItem<FormDto>(entity.SelectedItems, { type: RestSdkTypes.Form, traceContext: ctx});
+            formDto = await RestClientForContext.getItem<FormDto>(entity.SelectedItems, { type: RestSdkTypes.Form, culture: props.requestContext.culture, traceContext: ctx});
         } catch (error) {
-            const attributes = htmlAttributes(props, error as string);
-            return (props.requestContext.isEdit ? <div {...attributes} /> : null);
-        }
+            let errorMessage: string;
+            if (error instanceof ErrorCodeException) {
+                errorMessage = error.message;
+            } else {
+                errorMessage = error as string;
+            }
 
-        if (!formDto) {
-            const attributes = htmlAttributes(props, `The item with key '${entity.SelectedItems.ItemIdsOrdered[0]}' was not found`);
+            const attributes = htmlAttributes(props, errorMessage);
             return (props.requestContext.isEdit ? <div {...attributes} /> : null);
         }
 
         if (searchParams && searchParams['sf-content-action']) {
-            viewModel.SkipDataSubmission = true;
+            viewProps.skipDataSubmission = true;
             queryParams['sf-content-action'] = encodeURIComponent(searchParams['sf-content-action']);
         }
 
         if (!context.isLive) {
-            viewModel.SkipDataSubmission = true;
+            viewProps.skipDataSubmission = true;
         }
 
         let formModel: LayoutServiceResponse;
         try {
-            formModel = await RestClient.getFormLayout({ id: formDto.Id, queryParams: queryParams, traceContext: ctx });
+            formModel = await RestClient.getFormLayout({ id: formDto.Id, additionalQueryParams: queryParams, traceContext: ctx });
         } catch (err) {
             if (context.isEdit) {
                 queryParams[QueryParamNames.Action] = 'edit';
                 formModel = await RestClient.getFormLayout({ id: formDto.Id, queryParams: queryParams, traceContext: ctx });
-                viewModel.Warning = 'This form is a Draft and will not be displayed on the site until you publish the form.';
+                viewProps.warning = 'This form is a Draft and will not be displayed on the site until you publish the form.';
             } else {
                 throw err;
             }
         }
 
-        viewModel.FormModel = formModel;
-        viewModel.Rules = getFormRulesViewModel(formDto);
-        viewModel.SubmitUrl = `/forms/submit/${formDto.Name}/${context.culture}?${QueryParamNames.Site}=${context.layout.SiteId}&${QueryParamNames.SiteTempFlag}=true`;
-        viewModel.HiddenFields = getFormHiddenFields(viewModel.FormModel).join(',');
-        viewModel.Attributes = entity.Attributes;
+        viewProps.formModel = formModel;
+        viewProps.rules = getFormRulesViewProps(formDto);
+        viewProps.submitUrl = `/forms/submit/${formDto.Name}/${context.culture}?${QueryParamNames.Site}=${context.layout?.SiteId}&${QueryParamNames.SiteTempFlag}=true`;
+        viewProps.hiddenFields = getFormHiddenFields(viewProps.formModel).join(',');
+        viewProps.attributes = entity.Attributes;
 
         if (entity.FormSubmitAction === FormSubmitAction.Redirect && entity.RedirectPage) {
-            const redirectPage = await RestClientForContext.getItem<PageItem>(entity.RedirectPage, { type: RestSdkTypes.Pages, traceContext: ctx });
-            if (redirectPage) {
-                viewModel.CustomSubmitAction = true;
-                viewModel.RedirectUrl = await redirectPage.ViewUrl;
-            }
+            try {
+                const redirectPage = await RestClientForContext.getItem<PageItem>(entity.RedirectPage, { type: RestSdkTypes.Pages, culture: props.requestContext.culture, traceContext: ctx });
+                if (redirectPage) {
+                    viewProps.customSubmitAction = true;
+                    viewProps.redirectUrl = await redirectPage.ViewUrl;
+                }
+            } catch (error) { /* empty */ }
         } else if (entity.FormSubmitAction === FormSubmitAction.Message) {
-            viewModel.CustomSubmitAction = true;
-            viewModel.SuccessMessage = entity.SuccessMessage as string;
+            viewProps.customSubmitAction = true;
+            viewProps.successMessage = entity.SuccessMessage as string;
         }
     }
 
@@ -93,12 +98,12 @@ export async function Form(props: WidgetContext<FormEntity>) {
     );
 
     const renderForm = (<FormClient
-      viewModel={viewModel}
+      viewProps={viewProps}
       className={containerClass}
       formDataAttributes={formDataAttributes}>
-      {(viewModel.Rules) &&
+      {(viewProps.rules) &&
         <>
-          <input type="hidden" data-sf-role="form-rules" value={viewModel.Rules} />
+          <input type="hidden" data-sf-role="form-rules" value={viewProps.rules} />
           <input type="hidden" data-sf-role="form-rules-skip-fields" name="sf_FormSkipFields" autoComplete="off" />
           <input type="hidden" data-sf-role="form-rules-notification-emails" name="sf_FormNotificationEmails" autoComplete="off" />
           <input type="hidden" data-sf-role="form-rules-message" name="sf_FormMessage" autoComplete="off" />
@@ -106,12 +111,12 @@ export async function Form(props: WidgetContext<FormEntity>) {
         </>
         }
 
-      <input type="hidden" data-sf-role="form-rules-hidden-fields" name="sf_FormHiddenFields" value={viewModel.HiddenFields} autoComplete="off" />
-      <input type="hidden" data-sf-role="redirect-url" value={viewModel.RedirectUrl} />
-      <input type="hidden" data-sf-role="custom-submit-action" value={viewModel.CustomSubmitAction!.toString()} />
-      {viewModel.SkipDataSubmission && <span data-sf-role="skip-data-submission" />}
+      <input type="hidden" data-sf-role="form-rules-hidden-fields" name="sf_FormHiddenFields" value={viewProps.hiddenFields} autoComplete="off" />
+      <input type="hidden" data-sf-role="redirect-url" value={viewProps.redirectUrl} />
+      <input type="hidden" data-sf-role="custom-submit-action" value={viewProps.customSubmitAction!.toString()} />
+      {viewProps.skipDataSubmission && <span data-sf-role="skip-data-submission" />}
       <div data-sf-role="fields-container" >
-        {viewModel.FormModel && viewModel.FormModel.ComponentContext.Components.map((widgetModel: WidgetModel<any>, idx: number) => {
+        {viewProps.formModel && viewProps.formModel.ComponentContext.Components.map((widgetModel: WidgetModel<any>, idx: number) => {
                 return RenderWidgetService.createComponent(widgetModel, context, ctx);
             })
             }
@@ -120,12 +125,12 @@ export async function Form(props: WidgetContext<FormEntity>) {
 
     return (
       <>
-        {viewModel.FormModel &&
+        {viewProps.formModel &&
         <>
           {renderForm}
         </>
             }
-        {!viewModel.FormModel && context.isEdit &&
+        {!viewProps.formModel && context.isEdit &&
         <>
           <div {...formDataAttributes} />
         </>}

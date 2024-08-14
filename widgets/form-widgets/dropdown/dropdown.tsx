@@ -1,48 +1,45 @@
-import { DropdownFieldSet, DropdownViewModel } from './dropdown-client';
-import { StylingConfig } from '../../styling/styling-config';
-import { classNames } from '../../../editor/utils/classNames';
 import { htmlAttributes } from '../../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../../editor/widget-framework/widget-context';
+import { WidgetContext, getMinimumWidgetContext } from '../../../editor/widget-framework/widget-context';
 import { DropdownEntity } from './dropdown.entity';
-import { ChoiceOption } from '../common/choice-option';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { RenderView } from '../../common/render-view';
+import { DropdownDefaultView } from './dropdown.view';
+import { DropdownViewProps } from './interfaces/dropdown.view-props';
+import { classNames } from '../../../editor/utils/classNames';
+import { StylingConfig } from '../../styling/styling-config';
+import { ChoiceOption } from '../common/choice-option';
 
 export function Dropdown(props: WidgetContext<DropdownEntity>) {
 	const { span } = Tracer.traceWidget(props, false);
-	const dataAttributes = htmlAttributes(props);
-	const defaultRendering = (<DropdownDefaultRender entity={props.model.Properties} />);
-	return (
-  <>
-    { props.requestContext.isEdit
-		? <div {...dataAttributes}> {defaultRendering} </div>
-		: defaultRendering }
-    { Tracer.endSpan(span) }
-  </>
-		);
-}
+	const entity = props.model.Properties;
 
-export function DropdownDefaultRender(props: { entity: DropdownEntity }) {
-	const entity = props.entity;
-	const dropdownUniqueId = entity.SfFieldName as string;
-
-	const viewModel: DropdownViewModel = {
-		Choices: entity.Choices || [],
-		CssClass: entity.CssClass || '',
-		InstructionalText: entity.InstructionalText!,
-		Label: entity.Label || '',
-		Required: entity.Required,
-		RequiredErrorMessage: entity.RequiredErrorMessage || ''
-	};
-
-    if (entity.Sorting === 'Alphabetical') {
-        viewModel.Choices = viewModel.Choices.sort((a: ChoiceOption, b: ChoiceOption) => a.Name.localeCompare(b.Name));
+	let choices = entity.Choices || [];
+	if (entity.Sorting === 'Alphabetical') {
+        choices = choices.sort((a: ChoiceOption, b: ChoiceOption) => a.Name.localeCompare(b.Name));
     }
 
-    viewModel.CssClass = classNames(entity.CssClass, (StylingConfig.FieldSizeClasses as { [key: string]: string })[('Width' + entity.FieldSize)]) || '';
+	const cssClass = entity.CssClass || '';
+	const viewProps: DropdownViewProps<DropdownEntity> = {
+		choices: choices,
+		cssClass: classNames(cssClass, (StylingConfig.FieldSizeClasses as { [key: string]: string })[('Width' + entity.FieldSize)]) || '',
+		instructionalText: entity.InstructionalText!,
+		label: entity.Label || '',
+		required: entity.Required,
+		requiredErrorMessage: entity.RequiredErrorMessage || '',
+		sorting: entity.Sorting,
+		sfFieldName: entity.SfFieldName!,
+		fieldSize: entity.FieldSize,
+		attributes: { ...htmlAttributes(props) },
+		widgetContext: getMinimumWidgetContext(props)
+	};
 
-	return (<>
-  <script data-sf-role={`start_field_${dropdownUniqueId}`} data-sf-role-field-name={dropdownUniqueId} />
-  <DropdownFieldSet viewModel={viewModel} dropdownUniqueId={dropdownUniqueId} />
-  <script data-sf-role={`end_field_${dropdownUniqueId}`} />
-	</>);
+	return (
+  <RenderView
+    viewName={entity.SfViewName!}
+    widgetKey={props.model.Name}
+    traceSpan={span}
+    viewProps={viewProps}>
+    <DropdownDefaultView {...viewProps} />
+  </RenderView>
+	);
 }

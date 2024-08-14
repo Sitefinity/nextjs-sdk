@@ -3,23 +3,20 @@
 import React, { useEffect } from 'react';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { invalidDataAttr, invalidateElement, serializeForm } from '../common/utils';
-import { ChangePasswordViewModel } from './interfaces/change-password-view-model';
+import { ChangePasswordViewProps } from './interfaces/change-password.view-props';
 import { classNames } from '../../editor/utils/classNames';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { SecurityService } from '../../services/security-service';
+import { ChangePasswordEntity } from './change-password.entity';
+import { getUniqueId } from '../../editor/utils/getUniqueId';
 
-interface ChangeFormProps {
-    viewModel: ChangePasswordViewModel,
-    oldPasswordInputId: string,
-    newPasswordInputId: string,
-    repeatPasswordInputId: string
-}
+export function ChangePasswordFormClient(props: ChangePasswordViewProps<ChangePasswordEntity>) {
+    const oldPasswordInputId = getUniqueId('sf-old-password-', props.widgetContext.model.Id);
+    const newPasswordInputId = getUniqueId('sf-new-password-', props.widgetContext.model.Id);
+    const repeatPasswordInputId = getUniqueId('sf-repeat-password-', props.widgetContext.model.Id);
 
-export function ChangePasswordFormClient(props: ChangeFormProps) {
-    const { viewModel, oldPasswordInputId, newPasswordInputId, repeatPasswordInputId } = props;
-
-    const labels = viewModel.Labels;
-    const visibilityClassHidden = viewModel.VisibilityClasses[VisibilityStyle.Hidden];
+    const labels = props.labels;
+    const visibilityClassHidden = props.visibilityClasses[VisibilityStyle.Hidden];
     const formRef = React.useRef<HTMLFormElement>(null);
     const newPassInputRef = React.useRef<HTMLInputElement>(null);
     const oldPassInputRef = React.useRef<HTMLInputElement>(null);
@@ -79,14 +76,14 @@ export function ChangePasswordFormClient(props: ChangeFormProps) {
     };
 
     const postPasswordChangeAction = () => {
-        const action = viewModel.PostPasswordChangeAction;
+        const action = props.postPasswordChangeAction;
 
         if (action === 'ViewAMessage') {
-            const message = viewModel.PostPasswordChangeMessage || '';
+            const message = props.postPasswordChangeMessage || '';
 
             setSuccessMessage(message);
         } else if (action === 'RedirectToPage') {
-            const redirectUrl = viewModel.RedirectUrl || '';
+            const redirectUrl = props.redirectUrl || '';
 
             window.location = (redirectUrl as Location | (string & Location));
         }
@@ -94,6 +91,9 @@ export function ChangePasswordFormClient(props: ChangeFormProps) {
 
     const validateForm = (form: HTMLFormElement) => {
         setInvalidInputs({});
+        setErrorMessage('');
+        setSuccessMessage('');
+
         const requiredInputs = form.querySelectorAll('input[data-sf-role=\'required\']');
         const emptyInputs = {};
         let isValid = true;
@@ -106,7 +106,7 @@ export function ChangePasswordFormClient(props: ChangeFormProps) {
         });
 
         if (!isValid) {
-            const errorMessage = labels.ValidationRequiredMessage || '';
+            const errorMessage = labels.validationRequiredMessage || '';
             setErrorMessage(errorMessage);
             setInvalidInputs(emptyInputs);
 
@@ -121,7 +121,7 @@ export function ChangePasswordFormClient(props: ChangeFormProps) {
             setInvalidInputs(emptyInputs);
             isValid = false;
 
-            const errorMessage = labels.ValidationMismatchMessage || '';
+            const errorMessage = labels.validationMismatchMessage || '';
             setErrorMessage(errorMessage);
         }
 
@@ -131,7 +131,7 @@ export function ChangePasswordFormClient(props: ChangeFormProps) {
     const inputValidationAttrs = (name: string) => {
         return {
             className: classNames('form-control', {
-                [viewModel.InvalidClass]: invalidInputs[name]
+                [props.invalidClass]: invalidInputs[name]
             }
             ),
             [invalidDataAttr]: invalidInputs[name],
@@ -150,8 +150,8 @@ export function ChangePasswordFormClient(props: ChangeFormProps) {
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        action={viewModel.ChangePasswordHandlerPath} method="post" role="form">
-        <h2 className="mb-3">{labels.Header}</h2>
+        action={props.changePasswordHandlerPath} method="post" role="form">
+        <h2 className="mb-3">{labels.header}</h2>
         {<div data-sf-role="error-message-container"
           className={errorMessageClass}
           style={errorMessageStyles}
@@ -169,10 +169,10 @@ export function ChangePasswordFormClient(props: ChangeFormProps) {
           {successMessage}
         </div>}
         <div className="mb-3">
-          <label htmlFor={oldPasswordInputId} className="form-label">{labels.OldPassword}</label>
+          <label htmlFor={oldPasswordInputId} className="form-label">{labels.oldPassword}</label>
           <input ref={oldPassInputRef} type="password"
             className={classNames('form-control', {
-                      [viewModel.InvalidClass]: invalidInputs['OldPassword']
+                      [props.invalidClass]: invalidInputs['OldPassword']
                   }
                   )}
             id={oldPasswordInputId} name="OldPassword" data-sf-role="required"
@@ -181,35 +181,35 @@ export function ChangePasswordFormClient(props: ChangeFormProps) {
                   }} />
         </div>
         <div className="mb-3">
-          <label htmlFor={newPasswordInputId} className="form-label">{labels.NewPassword}</label>
+          <label htmlFor={newPasswordInputId} className="form-label">{labels.newPassword}</label>
           <input ref={newPassInputRef} type="password"
             id={newPasswordInputId} data-sf-role="required"
             {...inputValidationAttrs('NewPassword')} />
         </div>
         <div className="mb-3">
-          <label htmlFor={repeatPasswordInputId} className="form-label">{labels.RepeatPassword}</label>
+          <label htmlFor={repeatPasswordInputId} className="form-label">{labels.repeatPassword}</label>
           <input ref={repeatPassInputRef} type="password"
             id={repeatPasswordInputId} data-sf-role="required"
             {...inputValidationAttrs('RepeatPassword')} />
         </div>
 
         <input type="hidden" value="" name="sf_antiforgery" />
-        <input className="btn btn-primary w-100" type="submit" value={labels.SubmitButtonLabel} />
+        <input className="btn btn-primary w-100" type="submit" value={labels.submitButtonLabel} />
       </form>
 
-      <input type="hidden" name="redirectUrl" value={viewModel.RedirectUrl} />
-      <input type="hidden" name="postChangeMessage" value={viewModel.PostPasswordChangeMessage} />
-      <input type="hidden" name="postChangeAction" value={viewModel.PostPasswordChangeAction} />
-      <input type="hidden" name="validationRequiredMessage" value={labels.ValidationRequiredMessage} />
-      <input type="hidden" name="validationMismatchMessage" value={labels.ValidationMismatchMessage} />
+      <input type="hidden" name="redirectUrl" value={props.redirectUrl} />
+      <input type="hidden" name="postChangeMessage" value={props.postPasswordChangeMessage} />
+      <input type="hidden" name="postChangeAction" value={props.postPasswordChangeAction} />
+      <input type="hidden" name="validationRequiredMessage" value={labels.validationRequiredMessage} />
+      <input type="hidden" name="validationMismatchMessage" value={labels.validationMismatchMessage} />
     </>);
 
-    if (!viewModel.IsLive) {
+    if (!props.isLive) {
         return formElement;
     }
 
-    const externalProviderElement = (<div>{`${labels.ExternalProviderMessageFormat}${externalProviderName}`}</div>);
-    const notLoggedUserElement = (<div className="alert alert-danger my-3">{labels.LoginFirstMessage}</div>);
+    const externalProviderElement = (<div>{`${labels.externalProviderMessageFormat}${externalProviderName}`}</div>);
+    const notLoggedUserElement = (<div className="alert alert-danger my-3">{labels.loginFirstMessage}</div>);
 
     if (isUserLoaded === true) {
         if (!hasUser) {

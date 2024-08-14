@@ -1,8 +1,9 @@
 import { htmlAttributes } from '../../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../../editor/widget-framework/widget-context';
+import { getMinimumMetadata } from '../../../editor/widget-framework/widget-metadata';
 import { RenderWidgetService } from '../../../services/render-widget-service';
 import { FormSectionEntity } from './section.entity';
-import { FormSectionColumnHolder, FormSectionComponentContainer } from './section.viewmodel';
+import { FormSectionColumnHolder, FormSectionComponentContainer } from './section.view-props';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 
 const ColumnNamePrefix = 'Column';
@@ -19,8 +20,8 @@ export function FormSection(props: WidgetContext<FormSectionEntity>) {
         <section className="row" {...dataAttributes}>
           {columns.map((x, i) => {
           return (
-            <div key={i} {...x.Attributes}>
-              {x.Children.map(y => {
+            <div key={i} {...x.attributes}>
+              {x.children.map(y => {
                     return RenderWidgetService.createComponent(y.model, props.requestContext, ctx);
                 })}
             </div>
@@ -44,7 +45,7 @@ function populateColumns(context: WidgetContext<FormSectionEntity>): FormSection
             children = context.model.Children.filter(x => x.PlaceHolder === currentName).map((x => {
                 const ret: WidgetContext<any> = {
                     model: x,
-                    metadata: RenderWidgetService.widgetRegistry.widgets[x.Name],
+                    metadata: getMinimumMetadata(RenderWidgetService.widgetRegistry.widgets[x.Name]),
                     requestContext: context.requestContext
                 };
 
@@ -53,15 +54,15 @@ function populateColumns(context: WidgetContext<FormSectionEntity>): FormSection
         }
 
         const column: FormSectionColumnHolder = {
-            Attributes: {
+            attributes: {
                 className: `col-md-${properties.ColumnProportionsInfo![i]}`
             },
-            Children: children
+            children: children
         };
 
         if (context.requestContext.isEdit) {
-            column.Attributes['data-sfcontainer'] = currentName;
-            column.Attributes['data-sfplaceholderlabel'] = currentName!;
+            column.attributes['data-sfcontainer'] = currentName;
+            column.attributes['data-sfplaceholderlabel'] = currentName!;
         }
 
         columns.push(column);

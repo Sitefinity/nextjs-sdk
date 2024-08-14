@@ -1,5 +1,5 @@
 export interface Field {
-    Visible: boolean,
-    Values: string[],
-    FieldControlId: string
+    visible: boolean,
+    values: string[],
+    fieldControlId: string
 };

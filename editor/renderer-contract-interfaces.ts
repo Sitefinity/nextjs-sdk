@@ -31,6 +31,7 @@ export interface WidgetItem {
     /** @deprecated Not used with the new look for widget selector introduced with Sitefinity 15.1 */
     thumbnailUrl?: string;
     iconName?: string;
+    iconUrl?: string;
     initialProperties?: Array<{ name: string, value: string}>
 }
 

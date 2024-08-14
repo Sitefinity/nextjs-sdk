@@ -1,36 +1,37 @@
-import React from 'react';
-import { PageViewModel } from './interfaces/page-view-model';
 import { getClass } from './utils';
-import { NavigationItem } from '../../rest-sdk/dto/navigation-item';
 import { combineClassNames } from '../../editor/utils/classNames';
 import { getUniqueId } from '../../editor/utils/getUniqueId';
+import { NavigationViewProps } from './navigation.view-props';
+import { NavigationEntity } from './navigation.entity';
+import { NavigationItem } from '../../rest-sdk/dto/navigation-item';
 
-export function Horizontal(props: { items: NavigationItem[]; className?: string; }) {
+export function Horizontal({ navCustomAttributes, items, attributes }: NavigationViewProps<NavigationEntity>) {
     let navbarId = getUniqueId('navbar');
-    const {items, ...customAttrs } = props;
 
     return (
-      <nav className="navbar navbar-expand-md navbar-light bg-light" {...customAttrs}>
-        <div className="container-fluid">
-          <a className="navbar-brand" href="#">Navbar</a>
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target={`#${navbarId}`} aria-controls={`#${navbarId}`} aria-expanded="false" aria-label="Toggle Navigation">
-            <span className="navbar-toggler-icon" />
-          </button>
-          <div className="collapse navbar-collapse" id={`#${navbarId}`}>
-            <ul className="navbar-nav me-auto mb-2 mb-md-0 flex-wrap">
-              {
-                items.map((node: PageViewModel, idx: number) => {
+      <div {...attributes}>
+        <nav className="navbar navbar-expand-md navbar-light bg-light" {...navCustomAttributes}>
+          <div className="container-fluid">
+            <a className="navbar-brand" href="#">Navbar</a>
+            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target={`#${navbarId}`} aria-controls={`#${navbarId}`} aria-expanded="false" aria-label="Toggle Navigation">
+              <span className="navbar-toggler-icon" />
+            </button>
+            <div className="collapse navbar-collapse" id={`#${navbarId}`}>
+              <ul className="navbar-nav me-auto mb-2 mb-md-0 flex-wrap">
+                {
+                items.map((node: NavigationItem, idx: number) => {
                     return renderRootLevelNode(node, idx);
                 })
               }
-            </ul>
+              </ul>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      </div>
     );
 }
 
-function renderRootLevelNode(node: PageViewModel, idx: number) {
+function renderRootLevelNode(node: NavigationItem, idx: number) {
     const navbarDropdownId = getUniqueId(`navbarDropdownMenuLink-${node.Key}`);
     if (node.ChildNodes.length > 0) {
         {
@@ -51,7 +52,7 @@ function renderRootLevelNode(node: PageViewModel, idx: number) {
     );
 }
 
-function renderSubLevelsRecursive(node: PageViewModel) {
+function renderSubLevelsRecursive(node: NavigationItem) {
     {
         return node.ChildNodes.map((childNode, idx: number) => {
                 if (childNode.ChildNodes.length) {

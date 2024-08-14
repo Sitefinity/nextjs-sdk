@@ -18,9 +18,6 @@ export class LanguageSelectorEntity {
     @ContentSection('Display settings')
     @DisplayName('Language selector template')
     @DataType('viewSelector')
-    @Choice([
-        { Value: 'Language selector' }
-    ])
     SfViewName: string = 'Language selector';
 
     @ContentSection('Display settings', 1)

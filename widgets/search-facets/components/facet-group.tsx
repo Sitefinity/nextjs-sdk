@@ -3,22 +3,23 @@
 import React, { useCallback } from 'react';
 import { SearchFacetModel, SearchFacetModelExtensions } from '../search-facets-class';
 import { FacetElement } from '../interfaces/facet-element';
-import { SearchFacetsViewModel } from '../search-facets-viewmodel';
+import { SearchFacetsViewProps } from '../search-facets.view-props';
 import { SelectedFacetsState } from '../interfaces/selected-facet-state';
 import { FacetCustomRange } from './facet-custom-range';
 import { RANGE_SEPARATOR, getCheckboxId, formatDateValue, DATE_AND_TIME } from './utils';
+import { SearchFacetsEntity } from '../search-facets.entity';
 
-export function FacetGroup(props: { facet: SearchFacetModel, viewModel: SearchFacetsViewModel , facetValueChanged: any, deselectFacetGroup: any, selectedFacets: SelectedFacetsState }) {
-    const { facet, viewModel, facetValueChanged, deselectFacetGroup, selectedFacets } = {...props};
+export function FacetGroup(props: { facet: SearchFacetModel, viewProps: SearchFacetsViewProps<SearchFacetsEntity>, facetValueChanged: any, deselectFacetGroup: any, selectedFacets: SelectedFacetsState }) {
+    const { facet, viewProps, facetValueChanged, deselectFacetGroup, selectedFacets } = {...props};
     const defaultFacetsCollapseCount = 10;
     let value = 0;
 
-    const [moreLessLabel, setMoreLessLabel] = React.useState({ 'labelToDisplay': viewModel.ShowMoreLabel, isShowMoreSelected: true });
+    const [moreLessLabel, setMoreLessLabel] = React.useState({ 'labelToDisplay': viewProps.showMoreLabel, isShowMoreSelected: true });
 
     const showMoreLessClick = () => {
         const newMoreLessLabel = moreLessLabel.isShowMoreSelected
-            ? { 'labelToDisplay': viewModel.ShowLessLabel, isShowMoreSelected: false }
-            : { 'labelToDisplay': viewModel.ShowMoreLabel, isShowMoreSelected: true };
+            ? { 'labelToDisplay': viewProps.showLessLabel, isShowMoreSelected: false }
+            : { 'labelToDisplay': viewProps.showMoreLabel, isShowMoreSelected: true };
         setMoreLessLabel(newMoreLessLabel);
     };
 
@@ -97,7 +98,7 @@ export function FacetGroup(props: { facet: SearchFacetModel, viewModel: SearchFa
           {facet.FacetElements.map((facetElement: FacetElement, idx: number) => {
                     value++;
                     const hideElement: boolean = (value > defaultFacetsCollapseCount)
-                        && viewModel.IsShowMoreLessButtonActive
+                        && viewProps.isShowMoreLessButtonActive
                         && moreLessLabel['isShowMoreSelected'] === true;
                     const encodedName = facet.FacetFieldName || '';
                     const encodedValue = facetElement.FacetValue || '';
@@ -119,7 +120,7 @@ export function FacetGroup(props: { facet: SearchFacetModel, viewModel: SearchFa
                         {facetElement.FacetLabel}
                       </label>
                       {
-                            viewModel.DisplayItemCount && <span className="small text-muted">({facetElement.FacetCount})</span>
+                            viewProps.displayItemCount && <span className="small text-muted">({facetElement.FacetCount})</span>
                         }
                     </li>);
                 })
@@ -127,7 +128,7 @@ export function FacetGroup(props: { facet: SearchFacetModel, viewModel: SearchFa
         </ul>
         </>}
       {
-            (facet.FacetElements.length > defaultFacetsCollapseCount && viewModel.IsShowMoreLessButtonActive) &&
+            (facet.FacetElements.length > defaultFacetsCollapseCount && viewProps.isShowMoreLessButtonActive) &&
             <button onClick={showMoreLessClick} type="button" className="btn btn-link p-0 text-decoration-none"
               data-facet-type={facet.FacetFieldName} id={`show-more-less-${facet.FacetFieldName}`}>
                 {moreLessLabel['labelToDisplay']}

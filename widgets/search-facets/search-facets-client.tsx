@@ -1,13 +1,16 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SearchFacetModel } from './search-facets-class';
-import { SearchFacetsViewModel } from './search-facets-viewmodel';
+import { SearchFacetsViewProps } from './search-facets.view-props';
 import { FacetGroup } from './components/facet-group';
 import { SelectedFacetsState } from './interfaces/selected-facet-state';
 import { RANGE_SEPARATOR, computeFacetRangeLabelForType, getCheckboxId, getFacetKeyFromCheckboxId } from './components/utils';
 import { EVENTS, useSfEvents } from '../../pages/useSfEvents';
-import { getFacets, getSearchFacets, getSelectedFacetsToBeUsed, updateFacetsViewModel } from './search-facets-common';
+import { getFacets, getInitialFacetsWithModels, getSearchFacets, getSelectedFacetsToBeUsed, updateFacetsViewProps } from './search-facets-common';
+import { SearchFacetsEntity } from './search-facets.entity';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { getQueryParams } from '../search-results/search-results-common';
 
 const FILTER_QUERY_PARAM = 'filter';
 
@@ -27,17 +30,18 @@ interface AppliedFilterObject {
     isDeselected: boolean;
 }
 
-export function SearchFacetsClient(props: { viewModel: SearchFacetsViewModel, searchParams: { [key: string]: string }, ctx: any }) {
-    const { viewModel, searchParams, ctx } = props;
-    const filterQuery = searchParams[FILTER_QUERY_PARAM];
-    const [showClearButton, setShowClearButton] = useState(!!filterQuery);
-    const [newSearchParams, setNewSearchParams] = useState<{[x: string]: string}>();
-    const [sf, setSearchFacets] = useState(viewModel.SearchFacets);
-    const [_, setPayload] = useSfEvents<{[key: string]: any, attach?: boolean}>(EVENTS.FACETS, false);
+export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacetsEntity>) {
+    const searchParamsNext = useSearchParams();
+    const router = useRouter();
+    const queryParams = getQueryParams(searchParamsNext);
+    const [showClearButton, setShowClearButton] = useState(!!queryParams[FILTER_QUERY_PARAM]);
+    const [sf, setSearchFacets] = useState<SearchFacetModel[]>([]);
+    const [hasFacetElements, setHasAnyFacetElements] = useState<boolean>(false);
 
     const markSelectedInputs = useCallback(() => {
-        if (filterQuery || newSearchParams?.filter) {
-            const decodedFilterParam = filterQuery ? atob(filterQuery) : atob(newSearchParams!.filter);
+        const filterQuery = getQueryParams(searchParamsNext)[FILTER_QUERY_PARAM];
+        if (filterQuery) {
+            const decodedFilterParam = atob(filterQuery);
             const jsonFilters: AppliedFilterObject = JSON.parse(decodedFilterParam);
             const newCheckedInputs: SelectedFacetsState = {};
 
@@ -81,7 +85,7 @@ export function SearchFacetsClient(props: { viewModel: SearchFacetsViewModel, se
         }
 
         return {};
-    }, [filterQuery, sf, newSearchParams]);
+    }, [searchParamsNext, sf]);
 
     const initialSelectedInputs = useMemo(() => {
         return markSelectedInputs();
@@ -90,9 +94,22 @@ export function SearchFacetsClient(props: { viewModel: SearchFacetsViewModel, se
     const [selectedFacets, setSelectedFacets] = useState<SelectedFacetsState>(initialSelectedInputs);
 
     useEffect(() => {
-        if (newSearchParams){
-            let getNewSearchFacets = async () => {
-                const selectedFacetsToBeUsed = getSelectedFacetsToBeUsed(viewModel);
+        getInitialFacetsWithModels(queryParams, viewProps.widgetContext.model.Properties).then(({searchFacets, hasAnyFacetElements}) => {
+            setSearchFacets(searchFacets);
+            setHasAnyFacetElements(hasAnyFacetElements);
+        });
+    }, []);
+
+    useEffect(() => {
+        const newSearchParams = getQueryParams(searchParamsNext);
+        if (!newSearchParams[FILTER_QUERY_PARAM]) {
+            setSelectedFacets({}); // clear selected facets
+            setShowClearButton(false);
+        }
+
+        const getNewSearchFacets = async () => {
+            if (sf?.length) {
+                const selectedFacetsToBeUsed = getSelectedFacetsToBeUsed(sf);
                 const facets = getFacets(selectedFacetsToBeUsed, newSearchParams);
                 const facetResponse = await getSearchFacets(
                     newSearchParams.searchQuery,
@@ -101,17 +118,22 @@ export function SearchFacetsClient(props: { viewModel: SearchFacetsViewModel, se
                     newSearchParams.filter,
                     newSearchParams['resultsForAllSites'],
                     null,
-                    facets,
-                    ctx
-                    );
+                    facets
+                );
 
-              await updateFacetsViewModel(viewModel, newSearchParams, facetResponse, selectedFacetsToBeUsed);
-              setSearchFacets(viewModel.SearchFacets);
-            };
+                const { searchFacets, hasAnyFacetElements }= await updateFacetsViewProps(newSearchParams, facetResponse, selectedFacetsToBeUsed);
+                setSearchFacets(searchFacets);
+                setHasAnyFacetElements(hasAnyFacetElements);
+            } else {
+                getInitialFacetsWithModels(queryParams, viewProps.widgetContext.model.Properties).then(({searchFacets, hasAnyFacetElements}) => {
+                    setSearchFacets(searchFacets);
+                    setHasAnyFacetElements(hasAnyFacetElements);
+                });
+            }
+        };
 
-            getNewSearchFacets();
-        }
-    }, [viewModel, newSearchParams]); // eslint-disable-line
+        getNewSearchFacets();
+    }, [viewProps, searchParamsNext]); // eslint-disable-line
 
     const clearButtonClick = () => {
         setSelectedFacets({});
@@ -142,7 +164,7 @@ export function SearchFacetsClient(props: { viewModel: SearchFacetsViewModel, se
 
     const buildFilterObjectBasedOnPopulatedInputs = useCallback((id: string | null, newSelectedFacets: SelectedFacetsState) => {
         let groupedFilters = groupAllCheckedFacetInputs(newSelectedFacets);
-        let lastSelectedElementKey;
+        let lastSelectedElementKey: any;
         let isDeselected = false;
 
         if (id) {
@@ -159,7 +181,7 @@ export function SearchFacetsClient(props: { viewModel: SearchFacetsViewModel, se
     const searchWithFilter = useCallback((inputId: string | null, newSelectedFacets: SelectedFacetsState) => {
         const currentFilterObject = buildFilterObjectBasedOnPopulatedInputs(inputId, newSelectedFacets);
         let filterString = JSON.stringify(currentFilterObject);
-        const newSearchParam = { ...searchParams };
+        const newSearchParam = { ...queryParams };
         delete newSearchParam['slug'];
         if (currentFilterObject && currentFilterObject.appliedFilters && currentFilterObject.appliedFilters.length > 0) {
             let encodedFilterString = btoa(filterString);
@@ -172,12 +194,10 @@ export function SearchFacetsClient(props: { viewModel: SearchFacetsViewModel, se
         }
 
         let url = buildUrl(newSearchParam);
+        router.push(url);
 
-        setPayload(newSearchParam);
-        setNewSearchParams(newSearchParam);
-        window.history.pushState({ path: url }, '', url);
-
-    }, [searchParams, buildFilterObjectBasedOnPopulatedInputs, setPayload]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [queryParams, buildFilterObjectBasedOnPopulatedInputs]);
 
     function handleChipDeleteClick(facetKey: string, facetValue: string) {
         const newSelectedFacets = {...selectedFacets};
@@ -263,15 +283,15 @@ export function SearchFacetsClient(props: { viewModel: SearchFacetsViewModel, se
 
     return (
       <>
-        {(viewModel.HasAnyFacetElements || (!!viewModel.IndexCatalogue && viewModel.IsEdit) || !!Object.keys(selectedFacets).length) &&
+        {(hasFacetElements || (!!viewProps.indexCatalogue && viewProps.isEdit) || !!Object.keys(selectedFacets).length) &&
         (<>
-          <h3 className="h6 mb-3 fw-normal">{viewModel.FilterResultsLabel}</h3>
-          {(viewModel.HasAnyFacetElements || !!Object.keys(selectedFacets).length) &&
+          <h3 className="h6 mb-3 fw-normal">{viewProps.filterResultsLabel}</h3>
+          {(hasFacetElements || !!Object.keys(selectedFacets).length) &&
           <>
             <div className="d-flex align-items-center justify-content-between">
-              <label className="form-label">{viewModel.AppliedFiltersLabel}</label>
+              <label className="form-label">{viewProps.appliedFiltersLabel}</label>
               {showClearButton && <button onClick={clearButtonClick} id="sf-facet-clear-all-btn" className="btn btn-link px-0 py-0 mb-2 text-decoration-none">
-                {viewModel.ClearAllLabel}
+                {viewProps.clearAllLabel}
               </button>}
             </div>
             <ul id="applied-filters" className="list-unstyled list-inline"
@@ -296,7 +316,7 @@ export function SearchFacetsClient(props: { viewModel: SearchFacetsViewModel, se
         </>)}
         {sf && <div id="facetContent" className="mb-3">
             {sf.map((facet: SearchFacetModel, sfIdx: number) => {
-                return <FacetGroup key={sfIdx} viewModel={viewModel} facet={facet} facetValueChanged={facetValueChanged} deselectFacetGroup={deselectFacetGroup} selectedFacets={selectedFacets} />;
+                return <FacetGroup key={sfIdx} viewProps={viewProps} facet={facet} facetValueChanged={facetValueChanged} deselectFacetGroup={deselectFacetGroup} selectedFacets={selectedFacets} />;
             })
         }
         </div>

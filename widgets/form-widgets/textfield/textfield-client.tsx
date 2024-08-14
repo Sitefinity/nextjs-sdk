@@ -5,14 +5,20 @@ import { VisibilityStyle } from '../../styling/visibility-style';
 import { StylingConfig } from '../../styling/styling-config';
 import { classNames } from '../../../editor/utils/classNames';
 import { FormContext } from '../../form/form-context';
-import { TextFieldViewModel } from './text-field-viewmodel';
+import { TextFieldViewProps } from './text-field.view-props';
+import { TextFieldEntity } from './text-field.entity';
+import { getUniqueId } from '../../../editor/utils/getUniqueId';
 
-export function TextFieldClient(props: { viewModel: TextFieldViewModel, textBoxUniqueId: string, textBoxErrorMessageId: string, textBoxInfoMessageId: string, ariaDescribedByAttribute: string }) {
-    const { viewModel, textBoxUniqueId, textBoxErrorMessageId, textBoxInfoMessageId, ariaDescribedByAttribute } = props;
+export function TextFieldClient(props: TextFieldViewProps<TextFieldEntity>) {
+    const textBoxUniqueId = props.widgetContext.model.Properties.SfFieldName;
+    const textBoxErrorMessageId = getUniqueId('TextboxErrorMessage', props.widgetContext.model.Id);
+    const textBoxInfoMessageId = getUniqueId('TextboxInfo', props.widgetContext.model.Id);
+    const ariaDescribedByAttribute = props.hasDescription ? `${textBoxUniqueId} ${textBoxErrorMessageId}` : textBoxErrorMessageId;
+
     const inputRef = React.useRef<HTMLInputElement>(null);
-    const [inputValue, setInputValue] = React.useState(viewModel.PredefinedValue || '');
+    const [inputValue, setInputValue] = React.useState(props.predefinedValue || '');
     const {
-        formViewModel, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged, dispatchValidity,
         hiddenInputs, skippedInputs,
         formSubmitted
     } = useContext(FormContext);
@@ -40,8 +46,8 @@ export function TextFieldClient(props: { viewModel: TextFieldViewModel, textBoxU
 
     const handleTextValidation = (): boolean => {
         const target = inputRef.current!;
-        const validationMessages = viewModel.ViolationRestrictionsMessages;
-        const validationRestrictions = viewModel.ViolationRestrictionsJson;
+        const validationMessages = props.violationRestrictionsMessages;
+        const validationRestrictions = props.violationRestrictionsJson;
         setInputValue((target as HTMLInputElement).value);
 
         if (validationRestrictions) {
@@ -92,20 +98,20 @@ export function TextFieldClient(props: { viewModel: TextFieldViewModel, textBoxU
 
     const rootClass = classNames(
         'mb-3',
-        viewModel.CssClass,
+        props.cssClass,
         isHidden
             ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
             : StylingConfig.VisibilityClasses[VisibilityStyle.Visible]
         );
 
     return (<div className={rootClass} data-sf-role="text-field-container">
-      <label className="h6" htmlFor={textBoxUniqueId}>{viewModel.Label}</label>
+      <label className="h6" htmlFor={textBoxUniqueId}>{props.label}</label>
       <input id={textBoxUniqueId}
-        type={viewModel.InputType}
-        className={classNames('form-control',{ [formViewModel.InvalidClass!]: formViewModel.InvalidClass && errorMessageText })}
+        type={props.inputType}
+        className={classNames('form-control',{ [formViewProps.invalidClass!]: formViewProps.invalidClass && errorMessageText })}
         ref={inputRef}
-        name={viewModel.FieldName!}
-        placeholder={viewModel.PlaceholderText || ''}
+        name={props.fieldName!}
+        placeholder={props.placeholderText || ''}
         value={inputValue}
         data-sf-role="text-field-input"
         disabled={isHidden || isSkipped}
@@ -113,10 +119,10 @@ export function TextFieldClient(props: { viewModel: TextFieldViewModel, textBoxU
         onChange={handleTextValidation}
         onInput={handleInputEvent}
         onInvalid={handleTextValidation}
-        {...viewModel.ValidationAttributes}
+        {...props.validationAttributes}
         />
-      { viewModel.InstructionalText &&
-        <div id={textBoxInfoMessageId} className="form-text">{viewModel.InstructionalText}</div>
+      { props.instructionalText &&
+        <div id={textBoxInfoMessageId} className="form-text">{props.instructionalText}</div>
       }
       {errorMessageText && <div id={textBoxErrorMessageId} data-sf-role="error-message" role="alert" aria-live="assertive" className="invalid-feedback" >
         {errorMessageText}

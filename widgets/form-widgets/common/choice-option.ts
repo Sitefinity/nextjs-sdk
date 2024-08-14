@@ -15,7 +15,6 @@ export class ChoiceOptionModel {
 
 
       @Placeholder('add value')
-      @RegularExpression('^[^,]+$', 'Commas are not allowed.')
       Value?: string | null = null;
 
       Selected?: boolean;

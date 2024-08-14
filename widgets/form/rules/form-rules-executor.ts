@@ -91,11 +91,11 @@ export class FormRulesExecutor {
 
     private _evaluateFormRules(context: ContextInterface): any {
         let currentFieldsVisibility = context.fields.map(function (field: Field) {
-            return field.Visible;
+            return field.visible;
         });
         let updatedContext = this._updateContext(context);
         let updatedFieldsVisibility = updatedContext.fields.map(function (field: Field) {
-            return field.Visible;
+            return field.visible;
         });
 
         let noChanges = this._compareArrays(currentFieldsVisibility, updatedFieldsVisibility);
@@ -194,10 +194,10 @@ export class FormRulesExecutor {
             let fieldType = this._getFieldType(condition.data.id);
 
             let applyRule: boolean = false;
-            if (field.Visible === true && condition.evaluator) {
-                if (field.Values && field.Values.length > 0) {
-                    for (let h = 0; h < field.Values.length; h++) {
-                        applyRule = condition.evaluator.process(field.Values[h], condition.data.value, fieldType!);
+            if (field.visible === true && condition.evaluator) {
+                if (field.values && field.values.length > 0) {
+                    for (let h = 0; h < field.values.length; h++) {
+                        applyRule = condition.evaluator.process(field.values[h], condition.data.value, fieldType!);
                         if (applyRule) {
                             break;
                         }
@@ -316,9 +316,9 @@ export class FormRulesExecutor {
         let formRuleFields = this._getFormRulesFields();
         for (let i = 0; i < formRuleFields.length; i++) {
             fields.push({
-                FieldControlId: formRuleFields[i],
-                Values: this._getFieldValues(formRuleFields[i]),
-                Visible: this._arrayIndexOf(this.hiddenFields, formRuleFields[i]) === -1 && this._arrayIndexOf(this.skipFields, formRuleFields[i]) === -1
+                fieldControlId: formRuleFields[i],
+                values: this._getFieldValues(formRuleFields[i]),
+                visible: this._arrayIndexOf(this.hiddenFields, formRuleFields[i]) === -1 && this._arrayIndexOf(this.skipFields, formRuleFields[i]) === -1
             });
         }
 
@@ -415,7 +415,7 @@ export class FormRulesExecutor {
 
     private _getContextField (context: ContextInterface, fieldControlId: string): Field | null {
         for (let i = 0; i < context.fields.length; i++) {
-            if (context.fields[i].FieldControlId === fieldControlId) {
+            if (context.fields[i].fieldControlId === fieldControlId) {
                 return context.fields[i];
             }
         }
@@ -516,7 +516,7 @@ export class FormRulesExecutor {
 
     private _fieldIndexOf (fields: Field[], fieldControlId: string) {
         for (let i = 0; i < fields.length; i++) {
-            if (fields[i].FieldControlId === fieldControlId) {
+            if (fields[i].fieldControlId === fieldControlId) {
                 return i;
             }
         }

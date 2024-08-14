@@ -1,37 +1,28 @@
 import { Fragment } from 'react';
-import { ContentListModelbase, ContentListViewModel } from './content-list-model-base';
-import { ListWithSummaryItemModel, ListWithSummaryModel } from './list-with-summary/list-with-summary-model';
-import { ListWithImage } from './list-with-image/list-with-image';
-import { ListWithImageModel } from './list-with-image/list-with-image-model';
-import { ListWithSummary } from './list-with-summary/list-with-summary';
-import { CardsList } from './cards-list/cards-list';
-import { CardsListModel } from './cards-list/cards-list-model';
+import { ListWithSummaryItemModel, ListWithSummaryViewProps } from './list-with-summary/list-with-summary.view-props';
+import { ListWithImageView } from './list-with-image/list-with-image.view';
+import { ListWithImageViewProps } from './list-with-image/list-with-image.view-props';
+import { ListWithSummaryView } from './list-with-summary/list-with-summary.view';
+import { CardsListView } from './cards-list/cards-list.view';
+import { CardsListViewProps } from './cards-list/cards-list.view-props';
 import { ImageItem } from '../../../rest-sdk/dto/image-item';
-import { RenderWidgetService } from '../../../services/render-widget-service';
 import { SdkItem } from '../../../rest-sdk/dto/sdk-item';
-import { RequestContext } from '../../../editor/request-context';
+import { RenderView } from '../../common/render-view';
+import { ContentListEntity } from '../content-list-entity';
+import { ContentLisMasterProps, ContentListMasterViewProps } from '../../content-lists-common/content-list.view-props';
 
-export function ContentListMaster(props: { viewModel: ContentListViewModel, requestContext: RequestContext }) {
-    let data: { viewName?: string, model?: ContentListModelbase} = {};
-    const entity = props.viewModel.entity;
-    const model = props.viewModel.listModel!;
+export function ContentListMaster(props: ContentLisMasterProps<ContentListEntity>) {
+    let data: { viewName: string, model: ContentListMasterViewProps<ContentListEntity>} = {} as any;
+    const dataItems = props.items;
 
-    let attributes: { [key: string]: string } = {};
-    if (model.Attributes) {
-        model.Attributes.forEach((pair) => {
-            attributes[pair.Key] = pair.Value;
-        });
-    }
-    const dataItems = model.Items;
-
-    if (model.ViewName === 'CardsList' || model.ViewName === 'ListWithImage') {
-        const viewModel = {
-            Attributes: attributes,
-            DetailPageUrl: model.DetailPageUrl,
-            RequestContext: props.requestContext,
-            Items: dataItems.Items.map((x) => {
+    if (props.viewName === 'CardsList' || props.viewName === 'ListWithImage') {
+        const viewProps = {
+            attributes: props.attributes,
+            detailPageUrl: props.detailPageUrl,
+            widgetContext: props.widgetContext,
+            items: dataItems.Items.map((x) => {
                 let url!: string;
-                const imageProp: ImageItem[] = x[model.FieldMap['Image']];
+                const imageProp: ImageItem[] = x[props.fieldMap['Image']];
                 let image: ImageItem | null = null;
                 if (imageProp && imageProp.length > 0) {
                     image = imageProp[0];
@@ -44,46 +35,45 @@ export function ContentListMaster(props: { viewModel: ContentListViewModel, requ
 
                 return {
                     Title: {
-                        Value: x[model.FieldMap['Title']],
-                        Css: (model.FieldCssClassMap['Title'] || ''),
+                        Value: x[props.fieldMap['Title']],
+                        Css: (props.fieldCssClassMap['Title'] || ''),
                         Link: ''
                     },
                     Image: {
                         Title: image?.Title,
                         Url: url,
                         AlternativeText: image?.AlternativeText,
-                        Css: model.FieldCssClassMap['Image']
+                        Css: props.fieldCssClassMap['Image']
                     },
                     Text: {
-                        Value: x[model.FieldMap['Text']],
-                        Css: `${model.FieldCssClassMap['Text'] || ''}`
+                        Value: x[props.fieldMap['Text']],
+                        Css: `${props.fieldCssClassMap['Text'] || ''}`
                     },
                     Original: x
                 };
             })
         };
 
-        data = { viewName: model.ViewName, model: viewModel };
-    } else if (model.ViewName === 'ListWithSummary') {
-        const viewModel = {
-            Attributes: attributes,
-            DetailPageUrl: model.DetailPageUrl,
-            RequestContext: props.requestContext,
-            Culture: props.viewModel.requestContext.culture,
-            Items: dataItems.Items.map((x) => {
+        data = { viewName: props.viewName, model: viewProps };
+    } else if (props.viewName === 'ListWithSummary') {
+        const viewProps = {
+            attributes: props.attributes,
+            detailPageUrl: props.detailPageUrl,
+            widgetContext: props.widgetContext,
+            items: dataItems.Items.map((x) => {
                 const itemModel = {
                     Title: {
-                        Value: x[model.FieldMap['Title']],
-                        Css: (model.FieldCssClassMap['Title'] || ''),
+                        Value: x[props.fieldMap['Title']],
+                        Css: (props.fieldCssClassMap['Title'] || ''),
                         Link: ''
                     },
                     PublicationDate: {
-                        Value: x[model.FieldMap['Publication date']],
-                        Css: model.FieldCssClassMap['Publication date']
+                        Value: x[props.fieldMap['Publication date']],
+                        Css: props.fieldCssClassMap['Publication date']
                     },
                     Text: {
-                        Value: x[model.FieldMap['Text']],
-                        Css: `${model.FieldCssClassMap['Text'] || ''}`
+                        Value: x[props.fieldMap['Text']],
+                        Css: `${props.fieldCssClassMap['Text'] || ''}`
                     },
                     Original: x
                 } as ListWithSummaryItemModel;
@@ -96,17 +86,17 @@ export function ContentListMaster(props: { viewModel: ContentListViewModel, requ
             })
         };
 
-        data = { viewName: model.ViewName, model: viewModel };
+        data = { viewName: props.viewName, model: viewProps };
     } else {
-        const fieldMap = model.FieldMap || {};
-        const fieldCssMap = model.FieldCssClassMap || {};
+        const fieldMap = props.fieldMap || {};
+        const fieldCssMap = props.fieldCssClassMap || {};
         data = {
-            viewName: model.ViewName,
+            viewName: props.viewName,
             model: {
-                Attributes: attributes,
-                DetailPageUrl: model.DetailPageUrl,
-                RequestContext: props.requestContext,
-                Items: dataItems.Items.map(dataItem => {
+                attributes: props.attributes,
+                detailPageUrl: props.detailPageUrl,
+                widgetContext: props.widgetContext,
+                items: dataItems.Items.map(dataItem => {
                     const item: {Original: SdkItem, [key: string]: any} = { Original: dataItem };
                     Object.keys(fieldMap).forEach(field => {
                         const key = field.split(' ').map(x => x.charAt(0).toUpperCase() + x.slice(1)).join('');
@@ -121,29 +111,24 @@ export function ContentListMaster(props: { viewModel: ContentListViewModel, requ
         };
     }
 
-    const templates = RenderWidgetService.widgetRegistry.widgets[props.viewModel.widgetName]?.templates;
-
-    if (templates && data?.model && data?.viewName && templates[data?.viewName]) {
-        return (
-          <Fragment>
-            {templates[data?.viewName]({entity: entity, model: data?.model})}
-          </Fragment>
-        );
-    }
-
     return (
-      <Fragment>
-        {(data?.model && data?.viewName === 'ListWithImage') &&
-        <ListWithImage entity={entity} model={data?.model as ListWithImageModel} />
+      <RenderView
+        viewName={props.viewName}
+        widgetKey={props.widgetContext.model.Name}
+        viewProps={data?.model}>
+        <Fragment>
+          {(data?.model && data?.viewName === 'ListWithImage') &&
+            <ListWithImageView {...data?.model as ListWithImageViewProps<ContentListEntity>} />
             }
 
-        {(data?.model && data?.viewName === 'ListWithSummary') &&
-        <ListWithSummary entity={entity} model={data?.model as ListWithSummaryModel} />
+          {(data?.model && data?.viewName === 'ListWithSummary') &&
+            <ListWithSummaryView {...data?.model as ListWithSummaryViewProps<ContentListEntity>} />
             }
 
-        {(data?.model && data?.viewName === 'CardsList') &&
-        <CardsList entity={entity} model={data?.model as CardsListModel} />
+          {(data?.model && data?.viewName === 'CardsList') &&
+            <CardsListView {...data?.model as CardsListViewProps<ContentListEntity>} />
             }
-      </Fragment>
+        </Fragment>
+      </RenderView>
     );
 }

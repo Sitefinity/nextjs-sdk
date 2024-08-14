@@ -1,18 +1,17 @@
 'use client';
 
 import React from 'react';
-import { RequestContext } from '../../editor/request-context';
 import { getWhiteListSearchParams } from '../document-list/common/utils';
 import { SearchParams } from './interfaces/search-params';
 
 export function LanguagesList(props: {
     languages: {Name: string, Title: string}[],
     searchParams: SearchParams,
-    context: RequestContext
+    queryParams: {[key: string]: any}
 }) {
-    const { languages, searchParams, context } = props;
+    const { languages, searchParams, queryParams } = props;
     const whitelistedQueryParams = ['sf_site', 'sfaction', 'sf_provider'];
-    const queryList = new URLSearchParams(getWhiteListSearchParams(context.searchParams || {}, whitelistedQueryParams));
+    const queryList = new URLSearchParams(getWhiteListSearchParams(queryParams || {}, whitelistedQueryParams));
     const query = searchParams.searchQuery;
     const index = searchParams.indexCatalogue;
     const wordsMode = searchParams.wordsMode;

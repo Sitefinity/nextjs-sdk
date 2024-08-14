@@ -32,6 +32,10 @@ export class ResetPasswordEntity {
     @Category(PropertyCategory.Advanced)
     CssClass?: string;
 
+    @DisplayName('Membership Provider')
+    @Category(PropertyCategory.Advanced)
+    MembershipProviderName?: string;
+
     @Category(PropertyCategory.Advanced)
     @ContentSection('Labels and messages', 0)
     @DisplayName('Reset password header')

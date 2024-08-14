@@ -1,13 +1,13 @@
-import React from 'react';
-import { PageViewModel } from './interfaces/page-view-model';
 import { getClass } from './utils';
-import { NavigationItem } from '../../rest-sdk/dto/navigation-item';
 import { AccordionLink } from './client/accordion-link';
 import { AccordionGroupLink } from './client/accordion-group-link';
 import { classNames } from '../../editor/utils/classNames';
 import { getUniqueId } from '../../editor/utils/getUniqueId';
+import { NavigationViewProps } from './navigation.view-props';
+import { NavigationEntity } from './navigation.entity';
+import { NavigationItem, PageType } from '../../rest-sdk/dto/navigation-item';
 
-const getAccordionButtonStateClass = (node: PageViewModel) =>{
+const getAccordionButtonStateClass = (node: NavigationItem) =>{
     if (!node.IsCurrentlyOpened && !node.HasChildOpen) {
         return 'collapsed';
     }
@@ -15,7 +15,7 @@ const getAccordionButtonStateClass = (node: PageViewModel) =>{
     return null;
 };
 
-const getAccordionContentStateClass = (node: PageViewModel) => {
+const getAccordionContentStateClass = (node: NavigationItem) => {
     if (node.IsCurrentlyOpened || node.HasChildOpen) {
         return 'show';
     }
@@ -23,7 +23,7 @@ const getAccordionContentStateClass = (node: PageViewModel) => {
     return null;
 };
 
-const isActive = (node: PageViewModel) => {
+const isActive = (node: NavigationItem) => {
     if (node.IsCurrentlyOpened || node.HasChildOpen) {
         return 'true';
     }
@@ -31,7 +31,7 @@ const isActive = (node: PageViewModel) => {
     return 'false';
 };
 
-export function renderSubLevelRecursive(node: PageViewModel, nested: boolean = false) {
+export function renderSubLevelRecursive(node: NavigationItem, nested: boolean = false) {
     if (node.ChildNodes.length === 0) {
         return null;
     }
@@ -52,14 +52,14 @@ export function renderSubLevelRecursive(node: PageViewModel, nested: boolean = f
     ;
 }
 
-export function Accordion(props: { items: NavigationItem[]; className?: string; }) {
+export function Accordion({ navCustomAttributes, items, attributes }: NavigationViewProps<NavigationEntity>) {
     let accordionId = getUniqueId('accordion');
-    const { items, ...customAttrs } = props;
 
     return (
-      <nav className="accordion" id={accordionId} {...customAttrs}>
-        {
-            items.map((node: PageViewModel, idx: number) => {
+      <div {...attributes}>
+        <nav className="accordion" id={accordionId} {...navCustomAttributes}>
+          {
+            items.map((node: NavigationItem, idx: number) => {
                 const headingId = getUniqueId(`heading-${node.Key}`);
                 const collapseId =  getUniqueId(`collapse-${node.Key}`);
                 return (<div key={node.Key} className="accordion-item">
@@ -81,12 +81,12 @@ export function Accordion(props: { items: NavigationItem[]; className?: string; 
                         type="button" data-bs-toggle="collapse"
                         data-bs-target={`#${collapseId}`} aria-expanded={isActive(node)} aria-controls={collapseId}>
 
-                        { node.PageSiteMapNode.PageType === 'Group' &&
-                          <AccordionGroupLink node={node} />
+                        { node.PageSiteMapNode.PageType === PageType.Group &&
+                          <AccordionGroupLink {...node} />
                         }
                       </button>
-                      { node.PageSiteMapNode.PageType !== 'Group' &&
-                        <AccordionLink node={node} />
+                      { node.PageSiteMapNode.PageType !== PageType.Group &&
+                        <AccordionLink {...node} />
                       }
                     </h2>,
                     <div key={node.Key + idx} id={collapseId} className={classNames('accordion-collapse', 'collapse', getAccordionContentStateClass(node))}
@@ -100,6 +100,7 @@ export function Accordion(props: { items: NavigationItem[]; className?: string; 
             })
 
         }
-      </nav>
+        </nav>
+      </div>
     );
 }

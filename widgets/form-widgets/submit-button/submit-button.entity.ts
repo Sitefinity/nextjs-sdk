@@ -14,4 +14,7 @@ export class SubmitButtonEntity {
     @Category('Advanced')
     @DisplayName('CSS class')
     CssClass?: string;
+
+    SfFieldType!: string;
+    SfFieldName!: string;
 }

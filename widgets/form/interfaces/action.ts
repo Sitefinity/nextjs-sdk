@@ -2,9 +2,9 @@ import { FormRuleActionExecutor } from '../rules/extractors/form-rule-action-ext
 import { ActionData } from './action-data';
 
 export interface Action {
-    Visible?: boolean;
+    visible?: boolean;
     data: ActionData;
-    FieldControlId?: string;
+    fieldControlId?: string;
     executor: FormRuleActionExecutor;
     applyRule?: boolean;
 };

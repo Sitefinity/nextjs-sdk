@@ -1,26 +1,29 @@
-import { DetailViewModel } from '../../content-lists-common/content-list-models';
-import { BlogPostDetail } from './content-list-detail.blog-post';
-import { DynamicDetail } from './content-list-detail.dynamic';
-import { EventDetail } from './content-list-detail.event';
-import { ListItemDetail } from './content-list-detail.list-item';
-import { NewsItemDetail } from './content-list-detail.news';
-import { SdkItem } from '../../../rest-sdk/dto/sdk-item';
+import { ContentListDetailProps, ContentListDetailViewProps } from '../../content-lists-common/content-list.view-props';
+import { BlogPostDetailView } from './content-list-detail.blog-post.view';
+import { DynamicDetailView } from './content-list-detail.dynamic.view';
+import { EventDetailView } from './content-list-detail.event.view';
+import { ListItemDetailView } from './content-list-detail.list-item.view';
+import { NewsItemDetailView } from './content-list-detail.news.view';
 import { RestClient } from '../../../rest-sdk/rest-client';
-import { RenderWidgetService } from '../../../services/render-widget-service';
-import { ContentListViewModel } from '../master/content-list-model-base';
+import { RenderView } from '../../common/render-view';
 import { ItemArgs } from '../../../rest-sdk/args/item.args';
+import { ContentListEntity } from '../content-list-entity';
 
-export async function ContentListDetail(props: { viewModel: ContentListViewModel }) {
-    const model = props.viewModel.detailModel!;
-    const queryParams: { [key: string]: string } = props.viewModel.requestContext.searchParams || {};
+export async function ContentListDetail(props: ContentListDetailProps<ContentListEntity>) {
+    const queryParams: { [key: string]: string } = props.widgetContext.requestContext.searchParams || {};
     const itemArgs: ItemArgs = {
-        type: model.DetailItem.ItemType,
-        id: model.DetailItem.Id,
-        provider: model.DetailItem.ProviderName,
-        traceContext: props.viewModel.traceContext,
-        culture: props.viewModel.requestContext.culture
+        type: props.detailItem.ItemType,
+        id: props.detailItem.Id,
+        provider: props.detailItem.ProviderName,
+        traceContext: props.widgetContext.traceContext,
+        culture: props.widgetContext.requestContext.culture
     };
-    let dataItem: SdkItem;
+
+    const viewProps: ContentListDetailViewProps<ContentListEntity> = {
+      widgetContext: props.widgetContext,
+      attributes: props.attributes,
+      detailItem: {} as any
+    };
 
     if (queryParams.hasOwnProperty('sf-content-action')) {
         if (queryParams['sf-auth']) {
@@ -28,43 +31,21 @@ export async function ContentListDetail(props: { viewModel: ContentListViewModel
         }
 
         itemArgs.additionalQueryParams = queryParams;
-        dataItem = await RestClient.getItemWithStatus(itemArgs);
+        viewProps.detailItem = await RestClient.getItemWithStatus(itemArgs);
     } else {
-        dataItem = await RestClient.getItem(itemArgs);
-    }
-
-    let detailViewModel: DetailViewModel;
-    const attributes: { [key: string]: string } = {};
-    if (model.Attributes) {
-        model.Attributes.forEach((pair) => {
-            attributes[pair.Key] = pair.Value;
-        });
-    }
-
-    detailViewModel = {
-        Attributes: attributes,
-        ViewName: model.ViewName,
-        DetailItem: dataItem,
-        Culture: props.viewModel.requestContext.culture
-    };
-
-    const templates = RenderWidgetService.widgetRegistry.widgets[props.viewModel.widgetName]?.templates;
-
-    if (templates && detailViewModel?.ViewName && templates[detailViewModel?.ViewName]) {
-        return (
-          <div {...detailViewModel?.Attributes}>
-            {templates[detailViewModel?.ViewName](detailViewModel)}
-          </div>
-        );
+      viewProps.detailItem = await RestClient.getItem(itemArgs);
     }
 
     return (
-      <div {...detailViewModel?.Attributes}>
-        {detailViewModel?.ViewName === 'Details.BlogPosts.Default' && BlogPostDetail(detailViewModel)}
-        {detailViewModel?.ViewName === 'Details.Dynamic.Default' && DynamicDetail(detailViewModel)}
-        {detailViewModel?.ViewName === 'Details.Events.Default' && EventDetail(detailViewModel)}
-        {detailViewModel?.ViewName === 'Details.ListItems.Default' && ListItemDetail(detailViewModel)}
-        {detailViewModel?.ViewName === 'Details.News.Default' && NewsItemDetail(detailViewModel)}
-      </div>
+      <RenderView
+        viewName={props.viewName}
+        widgetKey={props.widgetContext.model.Name}
+        viewProps={{ ...viewProps }}>
+        {props.viewName === 'Details.BlogPosts.Default' && <BlogPostDetailView {...viewProps} />}
+        {props.viewName === 'Details.Dynamic.Default' && <DynamicDetailView {...viewProps} />}
+        {props.viewName === 'Details.Events.Default' && <EventDetailView {...viewProps} />}
+        {props.viewName === 'Details.ListItems.Default' && <ListItemDetailView {...viewProps} />}
+        {props.viewName === 'Details.News.Default' && <NewsItemDetailView {...viewProps} />}
+      </RenderView>
     );
 }

@@ -6,34 +6,38 @@ import { StylingConfig } from '../../styling/styling-config';
 import { VisibilityStyle } from '../../styling/visibility-style';
 import { classNames } from '../../../editor/utils/classNames';
 import { FormContext } from '../../form/form-context';
+import { CheckboxesEntity } from './checkboxes.entity';
+import { getUniqueId } from '../../../editor/utils/getUniqueId';
+import { CheckboxesViewProps } from './interfaces/checkboxes-view-model';
 
-export interface CheckboxesClientViewModel {
-    Choices: ChoiceOption[];
-    Required: boolean;
-    RequiredErrorMessage: string;
-    InstructionalText: string;
-    Label: string;
-    CssClass: string;
-    HasAdditionalChoice: boolean;
-}
+export function CheckboxesClient(props: CheckboxesViewProps<CheckboxesEntity>) {
+    let layoutClass = '';
+    let innerColumnClass = '';
+    const parsed = parseInt(props.columnsNumber.toString(), 10);
+    switch (parsed) {
+        case 0:
+            layoutClass = 'd-flex flex-wrap';
+            innerColumnClass = 'me-2';
+            break;
+        case 2:
+            layoutClass = 'row m-0';
+            innerColumnClass = 'col-6';
+            break;
+        case 3:
+            layoutClass = 'row m-0';
+            innerColumnClass = 'col-4';
+            break;
+        default:
+            break;
+    }
 
-export interface CheckboxesClientProps {
-    viewModel: CheckboxesClientViewModel,
-    checkboxUniqueId: string;
-    inputCheckboxUniqueId: string;
-    otherChoiceOptionId: string;
-    innerColumnClass: string;
-    layoutClass: string;
-}
-
-export function CheckboxesClient(props: CheckboxesClientProps) {
-    const {viewModel, checkboxUniqueId,
-        inputCheckboxUniqueId,
-        otherChoiceOptionId, innerColumnClass, layoutClass} = props;
+    const checkboxUniqueId = props.sfFieldName;
+    const inputCheckboxUniqueId = getUniqueId(checkboxUniqueId, props.widgetContext.model.Id);
+    const otherChoiceOptionId = getUniqueId(`choiceOption-other-${checkboxUniqueId}`, props.widgetContext.model.Id);
     const otherChoiceInputRef = React.useRef<HTMLInputElement>(null);
-    const [inputValues, setInputValues] = React.useState(viewModel.Choices);
+    const [inputValues, setInputValues] = React.useState(props.choices);
     const {
-        formViewModel, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged, dispatchValidity,
         hiddenInputs, skippedInputs,
         formSubmitted
     } = useContext(FormContext);
@@ -44,10 +48,10 @@ export function CheckboxesClient(props: CheckboxesClientProps) {
     const [showOtherInput, setShowOtherInput] = useState(false);
     let delayTimer: ReturnType<typeof setTimeout>;
     function dispatchValueChanged() {
-       clearTimeout(delayTimer);
-       delayTimer = setTimeout(function () {
+        clearTimeout(delayTimer);
+        delayTimer = setTimeout(function () {
             sfFormValueChanged();
-       }, 300);
+        }, 300);
     }
 
     function clearErrorMessage() {
@@ -57,7 +61,7 @@ export function CheckboxesClient(props: CheckboxesClientProps) {
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         clearErrorMessage();
 
-        const newInputValues = [...inputValues].map((input:ChoiceOption)=>{
+        const newInputValues = [...inputValues].map((input: ChoiceOption) => {
             return {
                 ...input,
                 Selected: event.target.value.toString() === input.Value?.toString() ? event.target.checked : input.Selected
@@ -74,10 +78,10 @@ export function CheckboxesClient(props: CheckboxesClientProps) {
     }
 
     function handleOtherInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-        if (event.target.value){
+        if (event.target.value) {
             clearErrorMessage();
         } else {
-            setErrorMessageText(viewModel.RequiredErrorMessage.replace('{0}', viewModel.Label));
+            setErrorMessageText(props.requiredErrorMessage.replace('{0}', props.label));
         }
 
         dispatchValueChanged();
@@ -87,27 +91,27 @@ export function CheckboxesClient(props: CheckboxesClientProps) {
         setOtherInputText(event.target.value);
     }
 
-    const hasValueSelected = React.useMemo(()=>{
-        return inputValues.some((i: ChoiceOption)=>i.Selected);
+    const hasValueSelected = React.useMemo(() => {
+        return inputValues.some((i: ChoiceOption) => i.Selected);
     }, [inputValues]);
 
     const handleChoiceValidation = () => {
         const otherChoiceInput = otherChoiceInputRef.current;
 
-        if ((viewModel.Required && !hasValueSelected) && !(otherChoiceInput && otherChoiceInput.required)) {
-            setErrorMessageText(viewModel.RequiredErrorMessage.replace('{0}', viewModel.Label));
+        if ((props.required && !hasValueSelected) && !(otherChoiceInput && otherChoiceInput.required)) {
+            setErrorMessageText(props.requiredErrorMessage.replace('{0}', props.label));
             return false;
         }
 
         if (otherChoiceInput && otherChoiceInput.required && otherChoiceInput.validity.valueMissing) {
-            setErrorMessageText(viewModel.RequiredErrorMessage.replace('{0}', viewModel.Label));
+            setErrorMessageText(props.requiredErrorMessage.replace('{0}', props.label));
             return false;
         }
 
         return true;
     };
 
-    React.useEffect(()=>{
+    React.useEffect(() => {
         let isValid = false;
         if (formSubmitted) {
             isValid = handleChoiceValidation();
@@ -115,28 +119,29 @@ export function CheckboxesClient(props: CheckboxesClientProps) {
         dispatchValidity(checkboxUniqueId, isValid);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[formSubmitted]);
+    }, [formSubmitted]);
 
-    return (<fieldset data-sf-role="checkboxes-field-container"
+    return (<fieldset
+      data-sf-role="checkboxes-field-container"
       className={classNames(
-        'mb-3',
-        viewModel.CssClass,
-        isHidden
-            ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
-            : StylingConfig.VisibilityClasses[VisibilityStyle.Visible])}
+            'mb-3',
+            props.cssClass,
+            isHidden
+                ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
+                : StylingConfig.VisibilityClasses[VisibilityStyle.Visible])}
       aria-labelledby={`choice-field-label-${checkboxUniqueId} choice-field-description-${checkboxUniqueId}`}>
-      <input type="hidden" data-sf-role="required-validator" value={viewModel.Required.toString()} />
-      <legend className="h6" id={`choice-field-label-${checkboxUniqueId}`}>{viewModel.Label}</legend>
-      { viewModel.InstructionalText &&
-        <p className="text-muted small" id={`choice-field-description-${checkboxUniqueId}`}>{viewModel.InstructionalText}</p>
-      }
+      <input type="hidden" data-sf-role="required-validator" value={props.required.toString()} />
+      <legend className="h6" id={`choice-field-label-${checkboxUniqueId}`}>{props.label}</legend>
+      {props.instructionalText &&
+        <p className="text-muted small" id={`choice-field-description-${checkboxUniqueId}`}>{props.instructionalText}</p>
+        }
       <div className={layoutClass}>
-        { inputValues.map((choiceOption: ChoiceOption, idx: number)=>{
+        {inputValues.map((choiceOption: ChoiceOption, idx: number) => {
                 const choiceOptionId = `choiceOption-${idx}-${inputCheckboxUniqueId}`;
 
                 return (<div className={`form-check ${innerColumnClass}`} key={idx}>
                   <input className="form-check-input" type="checkbox" name={checkboxUniqueId} id={choiceOptionId}
-                    value={choiceOption.Value} data-sf-role="checkboxes-field-input" required={viewModel.Required && !hasValueSelected}
+                    value={choiceOption.Value || ''} data-sf-role="checkboxes-field-input" required={props.required && !hasValueSelected}
                     checked={!!choiceOption.Selected}
                     disabled={isHidden || isSkipped}
                     onChange={handleChange}
@@ -146,36 +151,36 @@ export function CheckboxesClient(props: CheckboxesClientProps) {
                   </label>
                 </div>);
             })
-        }
-        { viewModel.HasAdditionalChoice &&
+            }
+        {props.hasAdditionalChoice &&
         <div className={`form-check ${innerColumnClass}`}>
           <input className="form-check-input mt-1" type="checkbox" name={checkboxUniqueId} id={otherChoiceOptionId}
-            data-sf-role="checkboxes-field-input" required={viewModel.Required && !hasValueSelected}
+            data-sf-role="checkboxes-field-input" required={props.required && !hasValueSelected}
             checked={showOtherInput}
             value={otherInputText}
-            onChange={handleOtherChange}/>
+            onChange={handleOtherChange} />
           <label className="form-check-label" htmlFor={otherChoiceOptionId}>Other</label>
           {showOtherInput && <input type="text"
             ref={otherChoiceInputRef}
-            className={classNames('form-control',{
-                [formViewModel.InvalidClass!]: formViewModel.InvalidClass && viewModel.Required && !otherInputText && !hasValueSelected
-            })}
+            className={classNames('form-control', {
+                            [formViewProps.invalidClass!]: formViewProps.invalidClass && props.required && !otherInputText && !hasValueSelected
+                        })}
             data-sf-role="choice-other-input"
             value={otherInputText}
-            required={viewModel.Required}
+            required={props.required}
             disabled={isHidden || isSkipped}
             onChange={handleOtherInputChange}
             onInput={handleOtherInputInput}
-          />}
+                    />}
         </div>
-        }
+            }
       </div>
 
-      {viewModel.Required && errorMessageText && <div data-sf-role="error-message" role="alert" aria-live="assertive"
+      {props.required && errorMessageText && <div data-sf-role="error-message" role="alert" aria-live="assertive"
         className={classNames(
-        'invalid-feedback',{
-            [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: true
-        })}
+                'invalid-feedback', {
+                [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: true
+            })}
         >
         {errorMessageText}
         </div>

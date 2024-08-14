@@ -159,6 +159,7 @@ export class RendererContractImpl implements RendererContract {
                         title: y.editorMetadata?.Title,
                         thumbnailUrl: y.editorMetadata?.ThumbnailUrl,
                         iconName: y.editorMetadata?.IconName,
+                        iconUrl: y.editorMetadata?.IconUrl,
                         initialProperties: initialProperties
                     };
                 })
@@ -174,7 +175,7 @@ export class RendererContractImpl implements RendererContract {
     getCategories(args: GetCategoriesArgs): Promise<Array<string>> {
         // identify whether we are using the legacy widget registry
         let isLegacy = false;
-        if (RenderWidgetService.widgetRegistry.widgets['SitefinitySection'].editorMetadata?.Category === 'Layout & Presets') {
+        if (RenderWidgetService.widgetRegistry.widgets['SitefinitySection']?.editorMetadata?.Category === 'Layout & Presets') {
             isLegacy = true;
         }
 

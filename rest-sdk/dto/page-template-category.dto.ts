@@ -3,18 +3,18 @@ export interface PageTemplateCategoryDto {
     Subtitle: string;
     Visible: boolean;
     Type: PageTemplateCategoryType,
-    Templates: [{
+    Templates: {
         Id: string;
         Title: string;
         Name: string;
         ThumbnailUrl: string;
         UsedByNumberOfPages: number;
         Framework : number
-    }]
+    }[]
 }
 
-enum PageTemplateCategoryType {
-    None = 0,
-    CurrentlyUsed = 1
+export enum PageTemplateCategoryType {
+    None = 'None',
+    CurrentlyUsed = 'CurrentlyUsed'
 }
 

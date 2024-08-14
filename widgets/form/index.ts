@@ -2,7 +2,7 @@ export * from './form';
 export * from './form.csr';
 export * from './form-client';
 export * from './form.entity';
-export * from './form-view-model';
+export * from './form.view-props';
 export * from './interfaces/action';
 export * from './interfaces/field';
 export * from './interfaces/rule';

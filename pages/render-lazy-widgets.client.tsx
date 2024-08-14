@@ -5,75 +5,78 @@ import { RenderWidgetService } from '../services/render-widget-service';
 import { widgetRegistry } from '@widgetregistry';
 import { ServiceMetadataDefinition, ServiceMetadata } from '../rest-sdk/service-metadata';
 import { SdkItem } from '../rest-sdk/dto/sdk-item';
+import { useEffect } from 'react';
+import { EVENTS, PersonalizedWidgetsPayload, useSfEvents } from './useSfEvents';
 
-export function RenderLazyWidgetsClient({ metadata, taxonomies, url }: { metadata: ServiceMetadataDefinition, taxonomies: SdkItem[], url :string }) {
+export function RenderLazyWidgetsClient({ metadata, taxonomies, url }: { metadata: ServiceMetadataDefinition, taxonomies: SdkItem[], url: string }) {
     RenderWidgetService.widgetRegistry = widgetRegistry;
     ServiceMetadata.serviceMetadataCache = metadata;
     ServiceMetadata.taxonomies = taxonomies;
 
-    if (typeof window === 'undefined') {
-        return <></>;
-    }
+    const [_, setWidetsModels] = useSfEvents<PersonalizedWidgetsPayload>(EVENTS.PERSONALIZED_WIDGETS_LOADED, false);
 
-    const correlationId = Date.now().toString(36) + Math.random().toString(36).substring(2);
-    (window as any)['sfCorrelationId'] = correlationId;
+    useEffect(() => {
+        const correlationId = Date.now().toString(36) + Math.random().toString(36).substring(2);
 
-    if (typeof window !== 'undefined') {
-        const renderLazyWidgetsUrl = `/render-lazy?pageUrl=${encodeURIComponent(url)}&correlationId=${correlationId}&referer=${encodeURIComponent(document.referrer)}&`;
+        if (typeof window !== 'undefined') {
+            (window as any)['sfCorrelationId'] = correlationId;
+            const renderLazyWidgetsUrl = `/render-lazy?pageUrl=${encodeURIComponent(url)}&correlationId=${correlationId}&referer=${encodeURIComponent(document.referrer)}&`;
 
-        const sendRequest = function () {
-            fetch(renderLazyWidgetsUrl).then((response) => {
-                response.text().then((lazyWidgetsHtml: string) => {
-                    const fakeHtmlElement = document.createElement('html');
-                    fakeHtmlElement.innerHTML = lazyWidgetsHtml;
+            const sendRequest = function () {
+                fetch(renderLazyWidgetsUrl).then((response) => {
+                    response.text().then((lazyWidgetsHtml: string) => {
+                        const fakeHtmlElement = document.createElement('html');
+                        fakeHtmlElement.innerHTML = lazyWidgetsHtml;
 
-                    const wrappingElement = fakeHtmlElement.querySelector('div[id=\'widgetPlaceholder\']');
-                    if (!wrappingElement) {
-                        return;
-                    }
+                        const wrappingElement = fakeHtmlElement.querySelector('div[id=\'widgetPlaceholder\']');
+                        if (!wrappingElement) {
+                            return;
+                        }
 
-                    const childrenLazyWidgets = wrappingElement.querySelectorAll('div');
-                    if (childrenLazyWidgets && childrenLazyWidgets.length > 0) {
-                        childrenLazyWidgets.forEach((lazyWidgetContainer) => {
-                            const widgetId = lazyWidgetContainer.getAttribute('id');
-                            if (widgetId) {
-                                const element = document.getElementById(widgetId);
-                                if (element) {
-                                    const renderResult = lazyWidgetContainer.firstElementChild;
-                                    if (renderResult) {
-                                        element.parentElement?.insertBefore(renderResult, element);
-                                        if (element.parentNode) {
-                                            element.parentNode.removeChild(element);
-                                        }
-
-                                        const event = new CustomEvent('widgetLoaded', {
-                                            detail: {
-                                                element: renderResult,
-                                                model: undefined
-                                            }
-                                        });
-
-                                        document.dispatchEvent(event);
+                        const childrenLazyWidgets = wrappingElement.querySelectorAll('div');
+                        if (childrenLazyWidgets && childrenLazyWidgets.length > 0) {
+                            const models: PersonalizedWidgetsPayload = {};
+                            childrenLazyWidgets.forEach(lazyWidgetContainer => {
+                                const widgetId = lazyWidgetContainer.getAttribute('id');
+                                if (widgetId) {
+                                    const isCSR = lazyWidgetContainer.getAttribute('data-sfmodel');
+                                    if (isCSR) {
+                                        const model = JSON.parse(lazyWidgetContainer.innerHTML);
+                                        models[widgetId] = {
+                                            ssr: false,
+                                            data: model
+                                        };
+                                        return;
+                                    } else {
+                                        const renderResult = lazyWidgetContainer.innerHTML;
+                                        models[widgetId] = {
+                                            ssr: true,
+                                            data: renderResult
+                                        };
                                     }
                                 }
+                            });
+
+                            if (Object.keys(models).length) {
+                                setWidetsModels(models);
                             }
-                        });
-                    }
+                        }
+                    });
                 });
-            });
-        };
+            };
 
-        if ((window as any).InsightInitScript) {
-            if ((window as any).InsightInitScript.cookiesManaged) {
-                sendRequest();
+            if ((window as any).InsightInitScript) {
+                if ((window as any).InsightInitScript.cookiesManaged) {
+                    sendRequest();
+                } else {
+                    window.addEventListener('insCookiesMngmntDone', sendRequest);
+                }
             } else {
-                window.addEventListener('insCookiesMngmntDone', sendRequest);
+                sendRequest();
             }
-        } else {
-            sendRequest();
         }
-    }
+    }, [setWidetsModels, url]);
 
-    return <></>;
+    return null;
 }
 

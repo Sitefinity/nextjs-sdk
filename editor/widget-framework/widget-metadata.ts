@@ -9,7 +9,12 @@ export interface WidgetMetadataBase {
 export interface WidgetMetadata extends WidgetMetadataBase {
     componentType: any;
     entity?: any;
-    templates?: { [key: string]: Function }
+
+    /**
+     * @deprecated: Use 'views' property instead.
+     */
+    templates?: { [key: string]: Function | { Title: string, ViewFunction: Function } };
+    views?: { [key: string]: Function | { Title: string, ViewFunction: Function } };
 }
 
 export function getMinimumMetadata(metadata: WidgetMetadata): WidgetMetadataBase {

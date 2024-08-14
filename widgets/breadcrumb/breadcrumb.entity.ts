@@ -1,4 +1,4 @@
-import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, DataModel, DataType, DefaultValue, DisplayName, Group, KnownFieldTypes, TableView, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
+import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, DataModel, DataType, DefaultValue, DisplayName, Group, KnownFieldTypes, TableView, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { OffsetStyle } from '../styling/offset-style';
 import { BreadcrumbIncludeOption } from './breadcrumb';
@@ -52,6 +52,12 @@ export class BreadcrumbEntity {
     @ContentSection('Breadcrumb setup', 0)
     @Group('Display...')
     AllowVirtualNodes?: boolean;
+
+    @ContentSection('Display settings', 1)
+    @DisplayName('Breadcrumb template')
+    @DefaultValue('Default')
+    @ViewSelector([{Value: 'Default'}])
+    SfViewName?: string;
 
     @ContentSection('Display settings', 2)
     @DisplayName('Margins')

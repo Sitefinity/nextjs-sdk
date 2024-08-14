@@ -4,26 +4,21 @@ import React from 'react';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { invalidDataAttr, invalidateElement, serializeForm } from '../common/utils';
 import { classNames } from '../../editor/utils/classNames';
-import { RequestContext } from '../../editor/request-context';
-import { ResetPasswordFormViewModel } from './interfaces/reset-password-form-view-model';
+import { ResetPasswordViewProps } from './interfaces/reset-password.view-props';
+import { ResetPasswordEntity } from './reset-password.entity';
+import { getUniqueId } from '../../editor/utils/getUniqueId';
 
-export interface ResetPasswordFormContainerProps {
-    viewModel: ResetPasswordFormViewModel;
-    context: RequestContext;
-    securityQuestionInputId: string,
-    newPasswordInputId: string,
-    repeatPasswordInputId: string
-}
-
-export function ResetPasswordFormClient (props: ResetPasswordFormContainerProps) {
-    const { viewModel, context, securityQuestionInputId, newPasswordInputId, repeatPasswordInputId } = props;
+export function ResetPasswordFormClient (props: ResetPasswordViewProps<ResetPasswordEntity>) {
+    const securityQuestionInputId = getUniqueId('sf-security-question-', props.widgetContext.model.Id);
+    const newPasswordInputId = getUniqueId('sf-new-password-', props.widgetContext.model.Id);
+    const repeatPasswordInputId = getUniqueId('sf-repeat-password-', props.widgetContext.model.Id);
 
     const formRef = React.useRef<HTMLFormElement>(null);
     const newPasswordInputRef = React.useRef<HTMLInputElement>(null);
     const repeatPasswordInputRef = React.useRef<HTMLInputElement>(null);
     const securityQuestionInputRef = React.useRef<HTMLInputElement>(null);
-    const labels = viewModel.Labels;
-    const visibilityClassHidden = viewModel.VisibilityClasses[VisibilityStyle.Hidden];
+    const labels = props.labels;
+    const visibilityClassHidden = props.visibilityClasses[VisibilityStyle.Hidden];
     const [invalidInputs, setInvalidInputs] = React.useState<{[key: string]: boolean | undefined;}>({});
     const [showFormContainer, setShowFormContainer] = React.useState<boolean>(true);
     const [showSuccessContainer, setShowSuccessContainer] = React.useState<boolean>(false);
@@ -89,7 +84,7 @@ export function ResetPasswordFormClient (props: ResetPasswordFormContainerProps)
         });
 
         if (!isValid) {
-            setErrorMessage(labels.AllFieldsAreRequiredErrorMessage);
+            setErrorMessage(labels.allFieldsAreRequiredErrorMessage);
 
             return isValid;
         }
@@ -97,7 +92,7 @@ export function ResetPasswordFormClient (props: ResetPasswordFormContainerProps)
         if (newPasswordInputRef.current!.value !== repeatPasswordInputRef.current!.value) {
             invalidateElement(emptyInputs, repeatPasswordInputRef.current!);
             setInvalidInputs(emptyInputs);
-            setErrorMessage(labels.PasswordsMismatchErrorMessage);
+            setErrorMessage(labels.passwordsMismatchErrorMessage);
 
             return false;
         }
@@ -109,7 +104,7 @@ export function ResetPasswordFormClient (props: ResetPasswordFormContainerProps)
     const inputValidationAttrs = (name: string) => {
         return {
             className: classNames('form-control',{
-                [viewModel.InvalidClass]: invalidInputs[name]
+                [props.invalidClass]: invalidInputs[name]
                 }
             ),
             [invalidDataAttr]: invalidInputs[name],
@@ -143,7 +138,7 @@ export function ResetPasswordFormClient (props: ResetPasswordFormContainerProps)
         className={formContainerClass}
         style={formContainerStyle}
       >
-        <h2 className="mb-3">{labels.ResetPasswordHeader}</h2>
+        <h2 className="mb-3">{labels.resetPasswordHeader}</h2>
         {<div data-sf-role="error-message-container"
           className={errorMessageClass}
           style={errorMessageStyles}
@@ -151,11 +146,11 @@ export function ResetPasswordFormClient (props: ResetPasswordFormContainerProps)
           {errorMessage}
         </div>
         }
-        <form ref={formRef} onSubmit={handleSubmit} method="post" action={viewModel.ResetUserPasswordHandlerPath} role="form">
-          {viewModel.RequiresQuestionAndAnswer && viewModel.SecurityQuestion &&
+        <form ref={formRef} onSubmit={handleSubmit} method="post" action={props.resetUserPasswordHandlerPath} role="form">
+          {props.requiresQuestionAndAnswer && props.securityQuestion &&
           <div className="mb-3">
             <label htmlFor={securityQuestionInputId} className="form-label">
-              {!labels.SecurityQuestionLabel ? viewModel.SecurityQuestion : `${labels.SecurityQuestionLabel} ${viewModel.SecurityQuestion}`}
+              {!labels.securityQuestionLabel ? props.securityQuestion : `${labels.securityQuestionLabel} ${props.securityQuestion}`}
             </label>
             <input ref={securityQuestionInputRef} id={securityQuestionInputId} type="text"
               data-sf-role="required"
@@ -163,31 +158,32 @@ export function ResetPasswordFormClient (props: ResetPasswordFormContainerProps)
           </div>
                         }
           <div className="mb-3">
-            <label htmlFor={newPasswordInputId} className="form-label">{labels.NewPasswordLabel}</label>
+            <label htmlFor={newPasswordInputId} className="form-label">{labels.newPasswordLabel}</label>
             <input ref={newPasswordInputRef} id={newPasswordInputId} type="password"
               data-sf-role="required"
               {...inputValidationAttrs('NewPassword')}/>
           </div>
           <div className="mb-3">
-            <label htmlFor={repeatPasswordInputId} className="form-label">{labels.RepeatNewPasswordLabel}</label>
+            <label htmlFor={repeatPasswordInputId} className="form-label">{labels.repeatNewPasswordLabel}</label>
             <input ref={repeatPasswordInputRef} id={repeatPasswordInputId} type="password"
               data-sf-role="required"
               {...inputValidationAttrs('NewPassword')}/>
           </div>
 
-          <input type="hidden" name="SecurityToken" value={viewModel.SecurityToken} />
-          <input className="btn btn-primary w-100" type="submit" value={labels.SaveButtonLabel} />
+          <input type="hidden" name="SecurityToken" value={props.securityToken} />
+          <input type="hidden" name="MembershipProviderName" value={props.membershipProviderName  || ''} />
+          <input className="btn btn-primary w-100" type="submit" value={labels.saveButtonLabel} />
         </form>
-        <input type="hidden" name="ErrorMessage" value={labels.ErrorMessage} />
-        <input type="hidden" name="AllFieldsAreRequiredErrorMessage" value={labels.AllFieldsAreRequiredErrorMessage} />
-        <input type="hidden" name="PasswordsMismatchErrorMessage" value={labels.PasswordsMismatchErrorMessage} />
+        <input type="hidden" name="ErrorMessage" value={labels.errorMessage} />
+        <input type="hidden" name="AllFieldsAreRequiredErrorMessage" value={labels.allFieldsAreRequiredErrorMessage} />
+        <input type="hidden" name="PasswordsMismatchErrorMessage" value={labels.passwordsMismatchErrorMessage} />
       </div>
       <div data-sf-role="success-message-container"
         className={successContainerClass}
         style={successContainerStyle}>
-        <h2>{labels.SuccessMessage}</h2>
-        {viewModel.LoginPageUrl &&
-        <a href={viewModel.LoginPageUrl} className="text-decoration-none">{labels.BackLinkLabel}</a>
+        <h2>{labels.successMessage}</h2>
+        {props.loginPageUrl &&
+        <a href={props.loginPageUrl} className="text-decoration-none">{labels.backLinkLabel}</a>
         }
       </div>
     </>);

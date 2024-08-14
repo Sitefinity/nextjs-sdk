@@ -7,6 +7,7 @@ import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { PageItem } from '../rest-sdk/dto/page-item';
 import { setHostServerContext } from '../services/server-context';
+import { WidgetModel } from '../editor/widget-framework/widget-model';
 
 export async function RenderWidget({ searchParams }: { searchParams: { [key: string]: string } }) {
     const host = headers().get('host') || '';
@@ -51,13 +52,25 @@ export async function RenderWidget({ searchParams }: { searchParams: { [key: str
         }
     });
 
-    const widgetModel = await RestClient.getWidgetModel({
-        id: itemId,
-        type: itemType,
-        widgetId,
-        widgetSegmentId,
-        segmentId,
-        additionalHeaders: {'Cookie': cookies().toString()} });
+    let widgetModel: WidgetModel<any> | undefined;
+    // lazy widget should be rendered in another way because getting the model is only possible in a locked state
+    if (widgetSegmentId && widgetSegmentId !== 'undefined' && widgetSegmentId !== 'null') {
+        widgetModel = await RestClient.getLazyWidget({
+            id: itemId,
+            type: itemType,
+            widgetId,
+            widgetSegmentId,
+            segmentId,
+            additionalHeaders: {'Cookie': cookies().toString()} });
+    } else {
+        widgetModel = await RestClient.getWidgetModel({
+            id: itemId,
+            type: itemType,
+            widgetId,
+            widgetSegmentId,
+            segmentId,
+            additionalHeaders: {'Cookie': cookies().toString()} });
+    }
 
     if (!widgetModel) {
         notFound();

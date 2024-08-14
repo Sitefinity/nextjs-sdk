@@ -1,72 +1,35 @@
-import React from 'react';
-import { CheckboxesClient, CheckboxesClientViewModel } from './checkboxes-client';
-import { getUniqueId } from '../../../editor/utils/getUniqueId';
 import { htmlAttributes } from '../../../editor/widget-framework/attributes';
-import { WidgetContext } from '../../../editor/widget-framework/widget-context';
+import { WidgetContext, getMinimumWidgetContext } from '../../../editor/widget-framework/widget-context';
 import { CheckboxesEntity } from './checkboxes.entity';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { RenderView } from '../../common/render-view';
+import { CheckboxesDefaultView } from './checkboxes.view';
+import { CheckboxesViewProps } from './interfaces/checkboxes-view-model';
 
 export function Checkboxes(props: WidgetContext<CheckboxesEntity>) {
     const { span } = Tracer.traceWidget(props, false);
-    const dataAttributes = htmlAttributes(props);
+    const entity = props.model.Properties;
+    const viewProps: CheckboxesViewProps<CheckboxesEntity> = {
+      choices: entity.Choices || [],
+      cssClass: entity.CssClass || '',
+      hasAdditionalChoice: entity.HasAdditionalChoice,
+      instructionalText: entity.InstructionalText || '',
+      label: entity.Label || '',
+      required: entity.Required,
+      requiredErrorMessage: entity.RequiredErrorMessage,
+      sfFieldName: entity.SfFieldName!,
+      columnsNumber: entity.ColumnsNumber,
+      attributes: {...htmlAttributes(props)},
+      widgetContext: getMinimumWidgetContext(props)
+  };
 
-    const defaultRendering = (<CheckboxesDefaultRender entity={props.model.Properties} />);
     return (
-      <>
-        { props.requestContext.isEdit
-                ? <div {...dataAttributes}> {defaultRendering} </div>
-            :defaultRendering }
-        { Tracer.endSpan(span) }
-      </>
-    );
-}
-
-export function CheckboxesDefaultRender(props: { entity: CheckboxesEntity }) {
-    const checkboxUniqueId = props.entity.SfFieldName as string;
-    const entity = props.entity;
-
-    const viewModel: CheckboxesClientViewModel = {
-        Choices: entity.Choices || [],
-        CssClass: entity.CssClass || '',
-        HasAdditionalChoice: entity.HasAdditionalChoice,
-        InstructionalText: entity.InstructionalText || '',
-        Label: entity.Label || '',
-        Required: entity.Required,
-        RequiredErrorMessage: entity.RequiredErrorMessage
-    };
-
-    let layoutClass = '';
-    let innerColumnClass = '';
-    const parsed = parseInt(entity.ColumnsNumber.toString(), 10);
-    switch (parsed) {
-        case 0:
-            layoutClass = 'd-flex flex-wrap';
-            innerColumnClass = 'me-2';
-            break;
-        case 2:
-            layoutClass = 'row m-0';
-            innerColumnClass = 'col-6';
-            break;
-        case 3:
-            layoutClass = 'row m-0';
-            innerColumnClass = 'col-4';
-            break;
-        default:
-            break;
-    }
-    const inputCheckboxUniqueId = getUniqueId(checkboxUniqueId);
-    const otherChoiceOptionId = getUniqueId(`choiceOption-other-${checkboxUniqueId}`);
-
-    return (<>
-      <script data-sf-role={`start_field_${checkboxUniqueId}`} data-sf-role-field-name={`${checkboxUniqueId}`} />
-      <CheckboxesClient viewModel={viewModel}
-        checkboxUniqueId={checkboxUniqueId}
-        inputCheckboxUniqueId={inputCheckboxUniqueId}
-        otherChoiceOptionId={otherChoiceOptionId}
-        innerColumnClass={innerColumnClass}
-        layoutClass={layoutClass}
-        />
-      <script data-sf-role={`end_field_${checkboxUniqueId}`} />
-    </>
+      <RenderView
+        viewName={props.model.Properties.SfViewName || undefined}
+        widgetKey={props.model.Name}
+        traceSpan={span}
+        viewProps={viewProps}>
+        <CheckboxesDefaultView {...viewProps} />
+      </RenderView>
     );
 }

@@ -7,6 +7,7 @@ export interface EditorMetadata {
     /** @deprecated Not used with the new look for widget selector introduced with Sitefinity 15.1 */
     ThumbnailUrl?: string;
     IconName?: string;
+    IconUrl?: string;
     Category?: 'Content' | 'Layout' | 'Layout & Presets' | 'Navigation & Search' | 'Login & Users';
     Section?: string;
     Toolbox?: string;

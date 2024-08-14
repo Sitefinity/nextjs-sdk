@@ -6,7 +6,7 @@ import { VisibilityStyle } from '../styling/visibility-style';
 import { FormRulesExecutor } from './rules/form-rules-executor';
 import { classNames } from '../../editor/utils/classNames';
 import { FormContext } from './form-context';
-import { FormViewModel } from './form-view-model';
+import { FormViewProps } from './form.view-props';
 
 
 const generateHiddenFields = (fields: string[]) =>{
@@ -16,7 +16,7 @@ const generateHiddenFields = (fields: string[]) =>{
 };
 
 export function FormClient(props: FromContainerProps) {
-    const { children, viewModel, className, formDataAttributes } = props;
+    const { children, viewProps, className, formDataAttributes } = props;
     const fromElementRef = React.useRef<HTMLFormElement>(null);
     const formRef = React.useRef<HTMLDivElement>();
     const formRules = React.useRef<FormRulesExecutor>();
@@ -26,7 +26,7 @@ export function FormClient(props: FromContainerProps) {
     const [ errorMessage, setErrorMessage] = React.useState<string>();
     const [ successMessage, setSuccessMessage] = React.useState<string>();
     const [ formSubmitted, setFormSubmitted] = React.useState(false);
-    const splitHiddenFields = viewModel.HiddenFields?.split(',') || [];
+    const splitHiddenFields = viewProps.hiddenFields?.split(',') || [];
     const [ hiddenInputs, setHiddenInputs ] = React.useState<{[key: string]: boolean}>(generateHiddenFields(splitHiddenFields));
     const [ skippedInputs, setSkippedInputs ] = React.useState<{[key: string]: boolean}>({});
     const [ validatedInputs, setValidatedInputs ] = React.useState<{[key: string]: boolean}>({});
@@ -139,17 +139,18 @@ export function FormClient(props: FromContainerProps) {
                 document.location.replace(redirectUrl);
             }
         } else {
-            showSuccessMessage(successMessageVal || viewModel.SuccessMessage || '');
+            showSuccessMessage(successMessageVal || viewProps.successMessage || '');
         }
     };
 
     const validFormSubmit = () => {
         const form = fromElementRef.current!;
-        if (viewModel.SkipDataSubmission) {
-            handleResponse(viewModel.RedirectUrl);
+        if (viewProps.skipDataSubmission) {
+            handleResponse(viewProps.redirectUrl);
             return false;
         }
 
+        const genericFormError = 'Form could not be submitted';
         const headerName = 'X-SF-ANTIFORGERY-REQUEST';
         const headers: {[key: string]: string} = {};
         headers[headerName] = '';
@@ -165,13 +166,13 @@ export function FormClient(props: FromContainerProps) {
                 const hiddenInputsTrueKeys = Object.entries(hiddenInputs).filter(([key, value]) => value === true).map(([key, value]) => key);
                 formData.set('sf_FormHiddenFields', hiddenInputsTrueKeys.join(',') );
 
-                fetch(viewModel.SubmitUrl!, { method: 'POST', body: formData }).then(function (formSubmitResponse) {
+                fetch(viewProps.submitUrl!, { method: 'POST', body: formData }).then(function (formSubmitResponse) {
                     formSubmitResponse.json().then(function (jsonFormSubmitResponse) {
                         // Successfull request statuses
                         if (formSubmitResponse.status >= 200 && formSubmitResponse.status < 300) {
                             if (jsonFormSubmitResponse.success) {
-                                if (viewModel.CustomSubmitAction!.toString().toLowerCase() === 'true') {
-                                    handleResponse(viewModel.RedirectUrl);
+                                if (viewProps.customSubmitAction!.toString().toLowerCase() === 'true') {
+                                    handleResponse(viewProps.redirectUrl);
                                 } else {
                                     handleResponse(jsonFormSubmitResponse.redirectUrl, jsonFormSubmitResponse.message, jsonFormSubmitResponse.openInNewWindow);
                                 }
@@ -183,10 +184,20 @@ export function FormClient(props: FromContainerProps) {
                             showErrorMessage(jsonFormSubmitResponse.error);
                         }
                     }, function (error) {
-                        showErrorMessage('Form submit response was not in json format and could not be parsed');
+                        if (formSubmitResponse.status === 413) {
+                            showErrorMessage('Request was too large');
+                        } else {
+                            showErrorMessage(genericFormError);
+                        }
                     });
                 }, function (error) {
-                    showErrorMessage(JSON.stringify(error));
+                    const serializedError = JSON.stringify(error);
+
+                    if (serializedError === '{}') {
+                        showErrorMessage(genericFormError);
+                    } else {
+                        showErrorMessage(serializedError);
+                    }
                 });
             }
             if (csrfResponse.status === 200) {
@@ -231,14 +242,14 @@ export function FormClient(props: FromContainerProps) {
     },[formSubmitted, allInputsAreValid]);
 
     return (
-      <form ref={fromElementRef} action={viewModel.SubmitUrl} onSubmit={handleSubmit} method="post" {...formDataAttributes}  noValidate={true}>
+      <form ref={fromElementRef} action={viewProps.submitUrl} onSubmit={handleSubmit} method="post" {...formDataAttributes}  noValidate={true}>
         <div data-sf-role="success-message" className={classNames(
                 'valid-feedback',
                 successMessage
                     ? [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]
                     : [StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]]
             )}
-          role="alert" aria-live="assertive">{successMessage || viewModel.SuccessMessage}</div>
+          role="alert" aria-live="assertive">{successMessage || viewProps.successMessage}</div>
         <div data-sf-role="error-message"
           className={classNames(
                 'invalid-feedback',
@@ -262,7 +273,7 @@ export function FormClient(props: FromContainerProps) {
           </div>
         </div>
         <FormContext.Provider value={{
-            formViewModel: viewModel,
+            formViewProps: viewProps,
             sfFormValueChanged,
             hiddenInputs,
             skippedInputs,
@@ -279,10 +290,10 @@ export function FormClient(props: FromContainerProps) {
                     : [StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]]
                 )}
             data-sf-role="form-container"
-            data-sf-invalid={viewModel.InvalidClass}
-            data-sf-visibility-inline-visible={viewModel.VisibilityClasses[VisibilityStyle.InlineVisible]}
-            data-sf-visibility-hidden={viewModel.VisibilityClasses[VisibilityStyle.Hidden]}
-            data-sf-visibility-visible={viewModel.VisibilityClasses[VisibilityStyle.Visible]}>
+            data-sf-invalid={viewProps.invalidClass}
+            data-sf-visibility-inline-visible={viewProps.visibilityClasses[VisibilityStyle.InlineVisible]}
+            data-sf-visibility-hidden={viewProps.visibilityClasses[VisibilityStyle.Hidden]}
+            data-sf-visibility-visible={viewProps.visibilityClasses[VisibilityStyle.Visible]}>
             {children}
           </div>
         </FormContext.Provider>
@@ -293,6 +304,6 @@ export function FormClient(props: FromContainerProps) {
 export interface FromContainerProps {
     children: React.ReactNode;
     className: string | undefined;
-    viewModel: FormViewModel;
+    viewProps: FormViewProps;
     formDataAttributes: {[key: string]: string};
 }

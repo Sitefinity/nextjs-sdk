@@ -16,8 +16,8 @@ export class HideShowFieldFormRuleActionExecutor implements FormRuleActionExecut
 
     public applyState(context: ContextInterface, actionData: ActionData) {
         let fieldIndex = context.helper.fieldIndexOf(context.fields, actionData.target);
-        let fieldControlId = context.fields[fieldIndex].FieldControlId;
-        if (context.fields[fieldIndex].Visible) {
+        let fieldControlId = context.fields[fieldIndex].fieldControlId;
+        if (context.fields[fieldIndex].visible) {
             context.helper.showField(context, fieldControlId);
         } else {
             context.helper.hideField(context, fieldControlId);
@@ -27,11 +27,11 @@ export class HideShowFieldFormRuleActionExecutor implements FormRuleActionExecut
     public updateState(context: ContextInterface, actionData: ActionData) : boolean {
         let updated = false;
         let fieldIndex = context.helper.fieldIndexOf(context.fields, actionData.target);
-        if (this.actionName === FormRuleConstants.Actions.Show && !context.fields[fieldIndex].Visible) {
-            context.fields[fieldIndex].Visible = true;
+        if (this.actionName === FormRuleConstants.Actions.Show && !context.fields[fieldIndex].visible) {
+            context.fields[fieldIndex].visible = true;
             updated = true;
-        } else if (this.actionName === FormRuleConstants.Actions.Hide && context.fields[fieldIndex].Visible) {
-            context.fields[fieldIndex].Visible = false;
+        } else if (this.actionName === FormRuleConstants.Actions.Hide && context.fields[fieldIndex].visible) {
+            context.fields[fieldIndex].visible = false;
             updated = true;
         }
 
@@ -41,9 +41,9 @@ export class HideShowFieldFormRuleActionExecutor implements FormRuleActionExecut
     public undoUpdateState(context: ContextInterface, actionData: ActionData) {
         let fieldIndex = context.helper.fieldIndexOf(context.fields, actionData.target);
         if (this.actionName === FormRuleConstants.Actions.Show) {
-            context.fields[fieldIndex].Visible = false;
+            context.fields[fieldIndex].visible = false;
         } else {
-            context.fields[fieldIndex].Visible = true;
+            context.fields[fieldIndex].visible = true;
         }
     };
 

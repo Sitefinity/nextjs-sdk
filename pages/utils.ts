@@ -21,7 +21,7 @@ export async function pageLayout({ params, searchParams, relatedFields, traceCon
         };
 
         // adding X-SF-Access-Key header so the layout service can return responce in edit
-        if (!args.cookie && process.env['SF_ACCESS_KEY']) {
+        if ((!args.cookie || process.env.NODE_ENV === 'test') && process.env['SF_ACCESS_KEY']) {
             args.additionalHeaders = {'X-SF-Access-Key': process.env['SF_ACCESS_KEY']};
         }
 

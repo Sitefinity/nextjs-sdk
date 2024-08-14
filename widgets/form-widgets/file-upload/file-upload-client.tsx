@@ -5,36 +5,13 @@ import { StylingConfig } from '../../styling/styling-config';
 import { VisibilityStyle } from '../../styling/visibility-style';
 import { classNames } from '../../../editor/utils/classNames';
 import { getUniqueId } from '../../../editor/utils/getUniqueId';
-import { RequestContext } from '../../../editor/request-context';
 import { FormContext } from '../../form/form-context';
+import { FileUploadEntity } from './file-upload.entity';
+import { FileUploadViewProps } from './interface/file-upload.view-props';
 
-export interface FileUploadViewModel {
-    Required: boolean;
-    InstructionalText: string;
-    ViolationRestrictionsJson: any;
-    Label: string;
-    ValidationAttributes: {[key: string]: string};
-    FieldName: string;
-    AllowMultipleFiles: boolean;
-    MinFileSizeInMb: number;
-    MaxFileSizeInMb: number;
-    FileSizeViolationMessage: string;
-    AllowedFileTypes: string[];
-    CssClass: string;
-    FileTypeViolationMessage: string;
-    RequiredErrorMessage: string;
-}
-
-export function FileUploadClient(props: {
-    viewModel: FileUploadViewModel,
-    fileFieldUniqueId: string,
-    fileFieldErrorMessageId: string,
-    fileFieldInfoMessageId: string,
-    context: RequestContext
-}) {
-    const {viewModel, fileFieldUniqueId, fileFieldErrorMessageId, fileFieldInfoMessageId, context} = props;
+export function FileUploadClient(props: FileUploadViewProps<FileUploadEntity>) {
     const {
-        formViewModel, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged, dispatchValidity,
         hiddenInputs, skippedInputs,
         formSubmitted
     } = React.useContext(FormContext);
@@ -44,7 +21,7 @@ export function FileUploadClient(props: {
         fileSizeMessage?: boolean;
         fileTypeMessage?: boolean;
     }}>({
-        [fileFieldUniqueId]: {}
+        [props.fieldName]: {}
     });
     let delayTimer: ReturnType<typeof setTimeout>;
     function dispatchValueChanged() {
@@ -55,15 +32,17 @@ export function FileUploadClient(props: {
      }
 
     const someInputHasValue = React.useMemo(()=>{
-        return initialLoad || viewModel.Required && Object.values(fileInputs).some(i=>i.value);
-    },[fileInputs, viewModel.Required, initialLoad]);
+        return initialLoad || props.required && Object.values(fileInputs).some(i=>i.value);
+    },[fileInputs, props.required, initialLoad]);
 
 
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const isHidden = hiddenInputs[fileFieldUniqueId];
-    const isSkipped = skippedInputs[fileFieldUniqueId];
-    const labelAdditionalClassList = viewModel.InstructionalText ? 'mb-1' : null;
-    const ariaDescribedByAttribute = viewModel.InstructionalText ? `${fileFieldUniqueId} ${fileFieldErrorMessageId}` : fileFieldErrorMessageId;
+    const isHidden = hiddenInputs[props.fieldName];
+    const isSkipped = skippedInputs[props.fieldName];
+    const labelAdditionalClassList = props.instructionalText ? 'mb-1' : null;
+    const fileFieldErrorMessageId = getUniqueId('FileFieldErrorMessage', props.widgetContext.model.Id);
+    const fileFieldInfoMessageId = getUniqueId('FileFieldInfo', props.widgetContext.model.Id);
+    const ariaDescribedByAttribute = props.instructionalText ? `${props.fieldName} ${fileFieldErrorMessageId}` : fileFieldErrorMessageId;
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         handleFileValidation();
@@ -72,7 +51,7 @@ export function FileUploadClient(props: {
 
     const handleAddInput = () =>{
         const newInputs = {...fileInputs};
-        newInputs[getUniqueId(fileFieldUniqueId)] = {};
+        newInputs[getUniqueId(props.fieldName)] = {};
         setFileInputs(newInputs);
     };
 
@@ -91,7 +70,7 @@ export function FileUploadClient(props: {
             const fileInput = fileInputElements[i] as HTMLInputElement;
             const hasFiles = fileInput.files && fileInput.files.length;
 
-            const validationRestrictions = viewModel.ViolationRestrictionsJson;
+            const validationRestrictions = props.violationRestrictionsJson;
             setInitialLoad(false);
             if (!fileInput.value) {
                 newInputs[fileInput.id] = {};
@@ -163,7 +142,7 @@ export function FileUploadClient(props: {
         }
 
         setFileInputs(newInputs);
-        const isRequiredFilled = viewModel.Required && Object.values(newInputs).some(i=>i.value) || !viewModel.Required;
+        const isRequiredFilled = props.required && Object.values(newInputs).some(i=>i.value) || !props.required;
         return isRequiredFilled && isValid;
     };
 
@@ -172,7 +151,7 @@ export function FileUploadClient(props: {
         if (formSubmitted) {
             isValid = handleFileValidation();
         }
-        dispatchValidity(fileFieldUniqueId, isValid);
+        dispatchValidity(props.fieldName, isValid);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     },[formSubmitted]);
@@ -181,32 +160,32 @@ export function FileUploadClient(props: {
        ref={containerRef}
        className={classNames(
         'mb-3',
-        viewModel.CssClass,
+        props.cssClass,
         isHidden
             ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
             : StylingConfig.VisibilityClasses[VisibilityStyle.Visible]
         )} data-sf-role="file-field-container">
-       <label className={classNames('h6', 'd-block', labelAdditionalClassList)} htmlFor={fileFieldUniqueId}>{viewModel.Label}</label>
-       { viewModel.InstructionalText &&
-       <div id={fileFieldInfoMessageId} className="form-text mt-1 mb-2">{viewModel.InstructionalText}</div>
+       <label className={classNames('h6', 'd-block', labelAdditionalClassList)} htmlFor={props.fieldName}>{props.label}</label>
+       { props.instructionalText &&
+       <div id={fileFieldInfoMessageId} className="form-text mt-1 mb-2">{props.instructionalText}</div>
         }
-       <input data-sf-role="violation-restrictions" type="hidden" value={viewModel.ViolationRestrictionsJson} />
+       <input data-sf-role="violation-restrictions" type="hidden" value={props.violationRestrictionsJson} />
        <div data-sf-role="file-field-inputs">
-         { context.isEdit ?
+         { props.widgetContext.requestContext.isEdit ?
            <div data-sf-role="single-file-input">
              <input
                className="form-control"
-               id={fileFieldUniqueId}
-               title={viewModel.Label}
-               name={fileFieldUniqueId}
+               id={props.fieldName}
+               title={props.label}
+               name={props.fieldName}
                type="file"
                disabled={isHidden || isSkipped}
                aria-describedby={ariaDescribedByAttribute}
-               {...viewModel.ValidationAttributes} />
+               {...props.validationAttributes} />
            </div> :
             (
                 Object.entries(fileInputs).map(([inputKey, inputValue]) =>{
-                    const isInvalid = (inputValue.fileSizeMessage || inputValue.fileTypeMessage || (viewModel.Required && !someInputHasValue));
+                    const isInvalid = (inputValue.fileSizeMessage || inputValue.fileTypeMessage || (props.required && !someInputHasValue));
                     return (<div data-sf-role="single-file-input-wrapper" key={inputKey}>
                       <div
                         className={classNames('d-flex', 'mb-2')}
@@ -214,38 +193,38 @@ export function FileUploadClient(props: {
                         <input
                           className={classNames('form-control',
                                 {
-                                    [formViewModel.InvalidClass!]: formViewModel.InvalidClass
+                                    [formViewProps.invalidClass!]: formViewProps.invalidClass
                                         && isInvalid
                             })}
                           id={inputKey}
-                          title={viewModel.Label}
-                          name={viewModel.FieldName}
+                          title={props.label}
+                          name={props.fieldName}
                           type="file"
                           onChange={handleFileChange}
                           onInvalid={handleFileChange}
                           aria-describedby={ariaDescribedByAttribute}
-                          {...viewModel.ValidationAttributes} />
+                          {...props.validationAttributes} />
 
-                        { viewModel.AllowMultipleFiles && Object.entries(fileInputs).length > 1 &&
+                        { props.allowMultipleFiles && Object.entries(fileInputs).length > 1 &&
                         <button type="button" title="Remove" data-sf-role="remove-input" id={'remove-' + inputKey} onClick={handleRemoveInput} className="btn btn-light ms-1">X</button>
                        }
                       </div>
-                      { (viewModel.MinFileSizeInMb > 0 || viewModel.MaxFileSizeInMb > 0) && inputValue.fileSizeMessage &&
+                      { (props.minFileSizeInMb > 0 || props.maxFileSizeInMb > 0) && inputValue.fileSizeMessage &&
                       <div data-sf-role="filesize-violation-message" className={classNames('invalid-feedback my-2',
                       {
                         [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: isInvalid
                         }
                       )} role="alert" aria-live="assertive">
-                        {viewModel.FileSizeViolationMessage}
+                        {props.fileSizeViolationMessage}
                       </div>
                    }
-                      { (viewModel.AllowedFileTypes !== null) && inputValue.fileTypeMessage &&
+                      { (props.allowedFileTypes !== null) && inputValue.fileTypeMessage &&
                       <div data-sf-role="filetype-violation-message" className={classNames('invalid-feedback my-2',
                       {
                         [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: isInvalid
                         }
                       )} role="alert" aria-live="assertive">
-                        {viewModel.FileTypeViolationMessage}
+                        {props.fileTypeViolationMessage}
                       </div>
                      }
                     </div>);
@@ -254,17 +233,17 @@ export function FileUploadClient(props: {
             )
         }
        </div>
-       { viewModel.AllowMultipleFiles &&
+       { props.allowMultipleFiles &&
        <button type="button" data-sf-role="add-input" onClick={handleAddInput} className="btn btn-secondary my-2">+</button>
         }
 
-       { viewModel.Required && !someInputHasValue &&
+       { props.required && !someInputHasValue &&
        <div data-sf-role="required-violation-message" className={classNames(
         'invalid-feedback',{
             [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: !someInputHasValue
         }
           )} role="alert" aria-live="assertive">
-         {viewModel.RequiredErrorMessage.replace('{0}', viewModel.Label)}
+         {props.requiredErrorMessage.replace('{0}', props.label)}
        </div>
         }
      </div>);

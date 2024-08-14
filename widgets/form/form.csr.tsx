@@ -16,19 +16,19 @@ import { FormEntity } from './form.entity';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { useEffect, useState } from 'react';
-import { FormViewModel, getFormRulesViewModel, getFormHiddenFields } from './form-view-model';
+import { FormViewProps, getFormRulesViewProps, getFormHiddenFields } from './form.view-props';
 
 export function FormCSR(props: WidgetContext<FormEntity>) {
     const entity = props.model.Properties;
     const context = props.requestContext;
     const searchParams = context.searchParams;
 
-    const [viewModel, setViewModel] = useState<FormViewModel>({
-        CustomSubmitAction: false,
-        VisibilityClasses: StylingConfig.VisibilityClasses,
-        InvalidClass: StylingConfig.InvalidClass,
-        SkipDataSubmission: !context.isLive || (searchParams && !!searchParams['sf-content-action']),
-        Attributes: entity.Attributes
+    const [viewProps, setViewProps] = useState<FormViewProps>({
+        customSubmitAction: false,
+        visibilityClasses: StylingConfig.VisibilityClasses,
+        invalidClass: StylingConfig.InvalidClass,
+        skipDataSubmission: !context.isLive || (searchParams && !!searchParams['sf-content-action']),
+        attributes: entity.Attributes
     });
     const [error, setError] = useState<string>('');
 
@@ -44,7 +44,9 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
         }).catch(err => {
             if (context.isEdit) {
                 return RestClient.getFormLayout({ id: formDto.Id, queryParams: Object.assign({}, currentQueryParams, {[QueryParamNames.Action]: 'edit'})}).then(formModel => {
-                    setViewModel(Object.assign({}, viewModel, {Warning: 'This form is a Draft and will not be displayed on the site until you publish the form.'}));
+                    setViewProps(currentProps => Object.assign<any, FormViewProps, Partial<FormViewProps>>({}, currentProps, {
+                        warning: 'This form is a Draft and will not be displayed on the site until you publish the form.'
+                    }));
                     return formModel;
                 });
             } else {
@@ -56,33 +58,34 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
     useEffect(() => {
         if (entity.SelectedItems && entity.SelectedItems.ItemIdsOrdered && entity.SelectedItems.ItemIdsOrdered.length > 0) {
             RestClientForContext.getItem<FormDto>(entity.SelectedItems!, { type: RestSdkTypes.Form }).then(formDto => {
-                getFormModel(formDto).then(formModel => {
-                    setViewModel(Object.assign({}, viewModel, {
-                        FormModel: formModel,
-                        Rules: getFormRulesViewModel(formDto),
-                        SubmitUrl: `/forms/submit/${formDto.Name}/${context.culture}?${QueryParamNames.Site}=${context.layout?.SiteId}&${QueryParamNames.SiteTempFlag}=true`,
-                        HiddenFields: getFormHiddenFields(formModel).join(',')
+                return getFormModel(formDto).then(formModel => {
+                    setViewProps(currentProps => Object.assign<any, FormViewProps, Partial<FormViewProps>>({}, currentProps, {
+                        formModel: formModel,
+                        rules: getFormRulesViewProps(formDto),
+                        submitUrl: `/forms/submit/${formDto.Name}/${context.culture}?${QueryParamNames.Site}=${context.layout?.SiteId}&${QueryParamNames.SiteTempFlag}=true`,
+                        hiddenFields: getFormHiddenFields(formModel).join(',')
                     }));
+
+                    if (entity.FormSubmitAction === FormSubmitAction.Redirect && entity.RedirectPage) {
+                        return RestClientForContext.getItem<PageItem>(entity.RedirectPage, { type: RestSdkTypes.Pages }).then(redirectPage => {
+                            if (redirectPage) {
+                                setViewProps(currentProps => Object.assign<any, FormViewProps, Partial<FormViewProps>>({}, currentProps, {
+                                    customSubmitAction: true,
+                                    redirectUrl: redirectPage.ViewUrl
+                                }));
+                            }
+                        });
+                    } else if (entity.FormSubmitAction === FormSubmitAction.Message) {
+                        setViewProps(currentProps => Object.assign<any, FormViewProps, Partial<FormViewProps>>({}, currentProps, {
+                            customSubmitAction: true,
+                            successMessage: entity.SuccessMessage as string
+                        }));
+                    }
+
                 });
             }).catch(error => {
                 setError(error);
             });
-
-            if (entity.FormSubmitAction === FormSubmitAction.Redirect && entity.RedirectPage) {
-                RestClientForContext.getItem<PageItem>(entity.RedirectPage, { type: RestSdkTypes.Pages }).then(redirectPage => {
-                    if (redirectPage) {
-                        setViewModel(Object.assign({}, viewModel, {
-                            CustomSubmitAction: true,
-                            RedirectUrl: redirectPage.ViewUrl
-                        }));
-                    }
-                });
-            } else if (entity.FormSubmitAction === FormSubmitAction.Message) {
-                setViewModel(Object.assign({}, viewModel, {
-                    CustomSubmitAction: true,
-                    SuccessMessage:entity.SuccessMessage as string
-                }));
-            }
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -99,16 +102,16 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
       <>{
             error && <div {...htmlAttributes(props, error as string)} />
         }
-        {viewModel.FormModel &&
+        {viewProps.formModel &&
         <>
           {<FormClient
-            viewModel={viewModel}
+            viewProps={viewProps}
             className={containerClass}
             formDataAttributes={formDataAttributes}>
-            {(viewModel.Rules) &&
+            {(viewProps.rules) &&
             <>
-              <input type="hidden" data-sf-role="form-rules" value={viewModel.Rules} />
-              <input type="hidden" data-sf-role="form-rules-hidden-fields" name="sf_FormHiddenFields" value={viewModel.HiddenFields} autoComplete="off" />
+              <input type="hidden" data-sf-role="form-rules" value={viewProps.rules} />
+              <input type="hidden" data-sf-role="form-rules-hidden-fields" name="sf_FormHiddenFields" value={viewProps.hiddenFields} autoComplete="off" />
               <input type="hidden" data-sf-role="form-rules-skip-fields" name="sf_FormSkipFields" autoComplete="off" />
               <input type="hidden" data-sf-role="form-rules-notification-emails" name="sf_FormNotificationEmails" autoComplete="off" />
               <input type="hidden" data-sf-role="form-rules-message" name="sf_FormMessage" autoComplete="off" />
@@ -116,11 +119,11 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
             </>
         }
 
-            <input type="hidden" data-sf-role="redirect-url" value={viewModel.RedirectUrl} />
-            <input type="hidden" data-sf-role="custom-submit-action" value={viewModel.CustomSubmitAction!.toString()} />
-            {viewModel.SkipDataSubmission && <span data-sf-role="skip-data-submission" />}
+            <input type="hidden" data-sf-role="redirect-url" value={viewProps.redirectUrl} />
+            <input type="hidden" data-sf-role="custom-submit-action" value={viewProps.customSubmitAction!.toString()} />
+            {viewProps.skipDataSubmission && <span data-sf-role="skip-data-submission" />}
             <div data-sf-role="fields-container" >
-              {viewModel.FormModel && viewModel.FormModel.ComponentContext.Components.map((widgetModel: WidgetModel<any>, idx: number) => {
+              {viewProps.formModel && viewProps.formModel.ComponentContext.Components.map((widgetModel: WidgetModel<any>, idx: number) => {
                 return RenderWidgetService.createComponent(widgetModel, context);
             })
             }
@@ -128,7 +131,7 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
           </FormClient>}
         </>
             }
-        {!viewModel.FormModel && context.isEdit &&
+        {!viewProps.formModel && context.isEdit &&
         <>
           <div {...formDataAttributes} />
         </>}

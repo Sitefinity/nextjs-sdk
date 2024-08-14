@@ -1,6 +1,6 @@
 export class RootUrlService {
     public static getClientCmsUrl() {
-        let publicUrl = `${process.env['NEXT_PUBLIC_SF_CMS_URL'] || ''}`;
+        let publicUrl =`${process.env['NEXT_PUBLIC_SF_CMS_URL'] || ''}`;
         if (publicUrl.endsWith('/')) {
             publicUrl = publicUrl.substring(0, publicUrl.length - 1);
         }

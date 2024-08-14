@@ -5,8 +5,7 @@ import { WidgetModel } from '../editor/widget-framework/widget-model';
 
 
 export const EVENTS = {
-    PERSONALIZED_WIDGETS_LOADED: 'widgetPersnalizationLoaded',
-    FACETS: 'widgetFacetSelected'
+    PERSONALIZED_WIDGETS_LOADED: 'widgetPersnalizationLoaded'
 };
 
 export interface PersonalizedWidgetsPayload {

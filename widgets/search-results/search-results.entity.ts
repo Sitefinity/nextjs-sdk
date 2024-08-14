@@ -60,6 +60,11 @@ export class SearchResultsEntity {
     SearchFields: string | null = null;
 
     @Category('Advanced')
+    @DisplayName('Additional results fields')
+    @Description('List of additional fields to be used in the search results, besides the default ones. These fields must be included in the search index. Use asterisk (*) to include all fields from the index.')
+    AdditionalResultFields: string  = '';
+
+    @Category('Advanced')
     @DisplayName('Highlighted fields')
     @Description('List of fields to be highlighted in the search results. These fields must be included in the search index. If left empty, all search fields will be highlighted.')
     HighlightedFields: string | null = null;

@@ -8,7 +8,7 @@ import { WidgetSettingsFacetFieldMapper } from './facet-field-mapper';
 import { SearchFacetModel, SearchFacetModelExtensions } from './search-facets-class';
 
 export class SearchFacetsModelBuilder {
-    static buildFacetsViewModel(facetsWidgetDefinition: FacetField[], facets: { [key: string]: FacetResponseDto[] }, facetableFieldsKeysFromIndex: string[], sortType: string): SearchFacetModel[] {
+    static buildFacetsViewProps(facetsWidgetDefinition: FacetField[], facets: { [key: string]: FacetResponseDto[] }, facetableFieldsKeysFromIndex: string[], sortType: string): SearchFacetModel[] {
         let searchFacets: SearchFacetModel[] = [];
         if (facetableFieldsKeysFromIndex.length) {
             const filteredFacetsWidgetDEfinition = facetsWidgetDefinition.filter((f) =>
@@ -45,8 +45,8 @@ export class SearchFacetsModelBuilder {
                     widgetFacetableFields
                 );
                 const facetField: FacetField = widgetFacetableFields[facetKey] as FacetField;
-                let searchFacetViewModel = SearchFacetModelExtensions.getModel(facetField, facetElementValues);
-                searchFacets.push(searchFacetViewModel);
+                let searchFacetViewProps = SearchFacetModelExtensions.getModel(facetField, facetElementValues);
+                searchFacets.push(searchFacetViewProps);
             }
 
             searchFacets = this.sortFacetsModel(widgetFacetableFields, searchFacets, sortType);
@@ -88,21 +88,21 @@ export class SearchFacetsModelBuilder {
         facetName: string,
         widgetFacetableFields: { [key: string]: FacetField }
     ): FacetElement[] {
-        const facetElementsViewModel: FacetElement[] = [];
+        const facetElementsViewProps: FacetElement[] = [];
 
         facetResponses.forEach((facet: FacetResponseDto) => {
-            const facetViewModel: FacetElement = {};
+            const facetViewProps: FacetElement = {};
             const facetElementLabel: string = this.getFacetLabel(facet, widgetFacetableFields[facetName]);
             if (facetElementLabel) {
-                facetViewModel.FacetLabel = facetElementLabel;
-                facetViewModel.FacetCount = facet.Count;
-                facetViewModel.FacetValue = this.computeFacetValue(facet);
+                facetViewProps.FacetLabel = facetElementLabel;
+                facetViewProps.FacetCount = facet.Count;
+                facetViewProps.FacetValue = this.computeFacetValue(facet);
 
-                facetElementsViewModel.push(facetViewModel);
+                facetElementsViewProps.push(facetViewProps);
             }
         });
 
-        return facetElementsViewModel;
+        return facetElementsViewProps;
     }
 
     static getFacetLabel(facetResponse: FacetResponseDto, facetField: FacetField): string {

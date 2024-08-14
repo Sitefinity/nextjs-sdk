@@ -1,19 +1,16 @@
-import { PageViewModel } from './interfaces/page-view-model';
 import { getClass } from './utils';
-import { NavigationItem } from '../../rest-sdk/dto/navigation-item';
 import { classNames } from '../../editor/utils/classNames';
+import { NavigationViewProps } from './navigation.view-props';
+import { NavigationEntity } from './navigation.entity';
+import { NavigationItem } from '../../rest-sdk/dto/navigation-item';
 
-export function Tabs(props: {
-    items: NavigationItem[];
-    className?: string;
- }) {
-    const {items, ...customAttrs } = props;
-    const renderSubLevelsRecursive: any = (nodes: PageViewModel[]) => {
+export function Tabs({ navCustomAttributes, items, attributes }: NavigationViewProps<NavigationEntity>) {
+    const renderSubLevelsRecursive: any = (nodes: NavigationItem[]) => {
         const selectedNode = nodes.find(node => node.IsCurrentlyOpened || node.HasChildOpen);
 
         if (selectedNode) {
           <ul className="nav">
-            {selectedNode.ChildNodes.map((node:PageViewModel, idx: number)=> {
+            {selectedNode.ChildNodes.map((node: NavigationItem, idx: number)=> {
                    return (<li key={idx} className="nav-item">
                      <a className={classNames('nav-link', getClass(node))} href={node.Url} target={node.LinkTarget}>{node.Title}</a>
                    </li>);
@@ -24,12 +21,13 @@ export function Tabs(props: {
         }
     };
     return (
-      <nav
-        {...customAttrs}
+      <div {...attributes}>
+        <nav
+          {...navCustomAttributes}
         >
-        <ul className="nav nav-tabs">
-          {
-                items.map((node: PageViewModel, idx: number) => {
+          <ul className="nav nav-tabs">
+            {
+                items.map((node: NavigationItem, idx: number) => {
                     return (<li key={idx} className="nav-item">
                       <a className={classNames('nav-link', getClass(node))} href={node.Url} target={node.LinkTarget}>
                         {node.Title}
@@ -37,10 +35,11 @@ export function Tabs(props: {
                     </li>);
                 })
             }
-        </ul>
-        {
+          </ul>
+          {
                 renderSubLevelsRecursive(items)
             }
-      </nav>
+        </nav>
+      </div>
     );
 }

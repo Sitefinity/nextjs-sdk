@@ -7,4 +7,5 @@ export type SearchResultDocumentDto = {
     ContentType: string;
     Id: string;
     ThumbnailUrl: string;
+    IndexedFields: Map<string, any>;
 }

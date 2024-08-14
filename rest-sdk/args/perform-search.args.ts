@@ -12,4 +12,5 @@ export interface SearchArgs {
     resultsForAllSites: boolean | null;
     filter: string;
     traceContext?: any;
+    indexFields: string;
 }

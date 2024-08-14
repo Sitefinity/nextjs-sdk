@@ -18,7 +18,8 @@ export function htmlAttributes(widgetContext: WidgetContext<any>, error: string 
         'data-sftitle': SanitizerService.getInstance().sanitizeHtml(model.Caption || editorMetadata?.Title || model.Name),
         'data-sfid' : model.Id,
         'data-sfisorphaned': false,
-        'data-sficonname': editorMetadata?.IconName
+        'data-sficonname': editorMetadata?.IconName,
+        'data-sficonurl': editorMetadata?.IconUrl
     };
 
     attributes['data-sfisemptyvisualhidden'] = false;
