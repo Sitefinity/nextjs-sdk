@@ -1,3 +1,4 @@
+import { WidgetBehavior } from './widget-framework/widget-editor-metadata';
 import { WidgetModel } from './widget-framework/widget-model';
 
 export interface RendererContract {
@@ -33,6 +34,7 @@ export interface WidgetItem {
     iconName?: string;
     iconUrl?: string;
     initialProperties?: Array<{ name: string, value: string}>
+    widgetBehavior?: WidgetBehavior;
 }
 
 export interface WidgetSection {

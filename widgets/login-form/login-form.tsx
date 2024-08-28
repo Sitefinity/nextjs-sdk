@@ -20,7 +20,7 @@ export async function LoginForm(props: WidgetContext<LoginFormEntity>) {
     const viewProps: LoginFormViewProps<LoginFormEntity> = populateviewProps(entity, props);
 
     if (entity.ExternalProviders && entity.ExternalProviders.length) {
-        const externalProviders = await RestClient.getExternalProviders(ctx);
+        const externalProviders = await RestClient.getExternalProviders({ traceContext: ctx });
         viewProps.externalProviders = externalProviders.filter((p: ExternalProvider) => entity.ExternalProviders?.indexOf(p.Name) !== -1);
     }
 

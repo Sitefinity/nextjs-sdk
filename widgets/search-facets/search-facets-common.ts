@@ -46,7 +46,7 @@ export function getFacets(selectedFacetsToBeUsed: FacetField[], newSearchParams:
 }
 
 export async function updateFacetsViewProps(newSearchParams: { [key: string]: string }, facetResponse: {[k: string]: FacetResponseDto[]}, selectedFacetsToBeUsed: FacetField[]) {
-    const facetableFieldsFromIndex: FacetsViewModelDto[] = await RestClient.getFacatebleFields(newSearchParams.indexCatalogue);
+    const facetableFieldsFromIndex: FacetsViewModelDto[] = await RestClient.getFacatebleFields({ indexCatalogue: newSearchParams.indexCatalogue });
     const facetableFieldsKeys: string[] = facetableFieldsFromIndex.map((x: FacetsViewModelDto) => x.FacetableFieldNames.length ? x.FacetableFieldNames[0]: '' );
     const searchFacets = SearchFacetsModelBuilder.buildFacetsViewProps(selectedFacetsToBeUsed, facetResponse, facetableFieldsKeys, '');
     return {
@@ -66,7 +66,7 @@ export async function getInitialFacetsWithModels(searchParams: {[key: string]: a
     };
 
     if (searchQuery && entity.IndexCatalogue) {
-        const facetableFieldsFromIndex: FacetsViewModelDto[] = await RestClient.getFacatebleFields(entity.IndexCatalogue);
+        const facetableFieldsFromIndex: FacetsViewModelDto[] = await RestClient.getFacatebleFields({ indexCatalogue: entity.IndexCatalogue });
         const facetableFieldsKeys: string[] = facetableFieldsFromIndex.map((x: FacetsViewModelDto) => x.FacetableFieldNames.length ? x.FacetableFieldNames[0]: '' );
         const sourceGroups: {[key: string]: FacetField[] } = entity.SelectedFacets!.reduce((group: {[key: string]: FacetField [] }, contentVariation: FacetField) => {
             const { FacetableFieldNames } = contentVariation;

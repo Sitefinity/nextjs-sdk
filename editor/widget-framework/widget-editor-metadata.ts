@@ -16,4 +16,9 @@ export interface EditorMetadata {
     HasQuickEditOperation?: boolean;
     Order?: number;
     InitialProperties?: { [key: string]: string };
+    WidgetBehavior?: WidgetBehavior;
+}
+
+export interface WidgetBehavior {
+    NotPersonalizable?: boolean;
 }

@@ -16,7 +16,7 @@ export async function ContentBlock(props: WidgetContext<ContentBlockEntity>) {
     let content = props.model.Properties.Content;
     if (props.model.Properties?.SharedContentID && props.model.Properties.SharedContentID !== '00000000-0000-0000-0000-000000000000') {
         try {
-            const contentItem = await RestClient.getSharedContent(props.model.Properties.SharedContentID, props.requestContext.culture, ctx);
+            const contentItem = await RestClient.getSharedContent({ id: props.model.Properties.SharedContentID, cultureName: props.requestContext.culture, traceContext: ctx });
             content = contentItem.Content;
         } catch (error) {
             const errorMessage = error instanceof ErrorCodeException ? error.message : error as string;

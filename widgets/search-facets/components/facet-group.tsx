@@ -116,12 +116,13 @@ export function FacetGroup(props: { facet: SearchFacetModel, viewProps: SearchFa
                         data-facet-value={encodedValue}
                         checked={checkboxChecked(selectedFacet)} />
                       <label htmlFor={checkboxId}
-                        id={`facet-${encodedName}-${encodedValue}`}>
+                        id={`facet-${encodedName}-${encodedValue}`}
+                        className="ps-1">
                         {facetElement.FacetLabel}
                       </label>
                       {
-                            viewProps.displayItemCount && <span className="small text-muted">({facetElement.FacetCount})</span>
-                        }
+                        viewProps.displayItemCount && <span className="small text-muted ps-1">({facetElement.FacetCount})</span>
+                      }
                     </li>);
                 })
                 }

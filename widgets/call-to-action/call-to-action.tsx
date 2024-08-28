@@ -36,6 +36,7 @@ export async function CallToAction(props: WidgetContext<CallToActionEntity>) {
             props.model.Properties.PrimaryActionLabel &&
               <a {...primaryAnchorAttributes}
                 className={classNames('me-3', primaryButtonClass)}
+                data-call-to-action={true}
                 sfdi-trigger="click"
                 sfdi-predicate="Call to action"
                 sfdi-object={props.model.Properties.PrimaryActionLabel}
@@ -47,6 +48,7 @@ export async function CallToAction(props: WidgetContext<CallToActionEntity>) {
             props.model.Properties.SecondaryActionLabel &&
               <a {...secondaryAnchorAttributes}
                 className={secondaryButtonClass}
+                data-call-to-action={true}
                 sfdi-trigger="click"
                 sfdi-predicate="Call to action"
                 sfdi-object={props.model.Properties.SecondaryActionLabel}

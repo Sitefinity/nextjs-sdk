@@ -160,7 +160,8 @@ export class RendererContractImpl implements RendererContract {
                         thumbnailUrl: y.editorMetadata?.ThumbnailUrl,
                         iconName: y.editorMetadata?.IconName,
                         iconUrl: y.editorMetadata?.IconUrl,
-                        initialProperties: initialProperties
+                        initialProperties: initialProperties,
+                        widgetBehavior: y.editorMetadata?.WidgetBehavior
                     };
                 })
             };

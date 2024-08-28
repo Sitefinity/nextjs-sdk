@@ -16,7 +16,8 @@ export async function ContentListDetail(props: ContentListDetailProps<ContentLis
         id: props.detailItem.Id,
         provider: props.detailItem.ProviderName,
         traceContext: props.widgetContext.traceContext,
-        culture: props.widgetContext.requestContext.culture
+        culture: props.widgetContext.requestContext.culture,
+        fields: extractFieldsFromExpression(props.widgetContext.model.Properties.DetailItemSelectExpression)
     };
 
     const viewProps: ContentListDetailViewProps<ContentListEntity> = {
@@ -48,4 +49,15 @@ export async function ContentListDetail(props: ContentListDetailProps<ContentLis
         {props.viewName === 'Details.News.Default' && <NewsItemDetailView {...viewProps} />}
       </RenderView>
     );
+}
+
+function extractFieldsFromExpression(selectExpression: string): string[] {
+    const fields: string[] =[];
+    if (selectExpression) {
+        selectExpression.split(';').filter(x => x).forEach(x => {
+            fields.push(x.trim());
+        });
+    }
+
+    return fields.length > 0 ? fields : ['*'];
 }

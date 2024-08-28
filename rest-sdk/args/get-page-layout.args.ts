@@ -8,4 +8,5 @@ export interface GetPageLayoutArgs {
     additionalHeaders?: {[key: string]: string};
     followRedirects: boolean;
     traceContext?: any;
+    additionalFetchData?: any;
 }

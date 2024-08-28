@@ -16,7 +16,7 @@ export function getSearchBoxParams(searchModel: SearchBoxViewProps<SearchBoxEnti
         resultsUrl: searchModel.searchResultsPageUrl,
         catalogue: searchModel.searchIndex,
         scoringSetting: serializeScoringProfile(searchModel.scoringProfile),
-        minSuggestionLength: searchModel.suggestionsTriggerCharCount,
+        minSuggestionLength: +searchModel.suggestionsTriggerCharCount,
         siteId: searchModel.siteId,
         culture: searchModel.culture,
         suggestionFields: searchModel.suggestionFields,

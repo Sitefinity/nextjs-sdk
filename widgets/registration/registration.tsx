@@ -37,7 +37,7 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
     const viewProps: RegistrationViewProps<RegistrationEntity> = populateViewProps(entity, props);
 
     if (entity.ExternalProviders && entity.ExternalProviders.length){
-        const externalProviders = await RestClient.getExternalProviders(ctx);
+        const externalProviders = await RestClient.getExternalProviders({ traceContext: ctx });
         viewProps.externalProviders = externalProviders.filter((p: ExternalProvider) => entity.ExternalProviders?.indexOf(p.Name) !== -1);
     }
 
@@ -69,7 +69,7 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
             } catch (error) { /* empty */ }
         }
 
-        const regSettings: RegistrationSettingsDto = await RestClient.getRegistrationSettings(ctx);
+        const regSettings: RegistrationSettingsDto = await RestClient.getRegistrationSettings({ traceContext: ctx });
         if (regSettings.ActivationMethod === ActivationMethod.AfterConfirmation && !regSettings.SmtpConfigured) {
             viewProps.warning = 'Confirmation email cannot be sent because the system has not been configured to send emails. Configure SMTP settings or contact your administrator for assistance.';
         }

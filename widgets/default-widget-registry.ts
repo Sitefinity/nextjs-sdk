@@ -560,7 +560,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Category: 'Content',
                 Section: 'Navigation and search',
                 HasQuickEditOperation: true,
-                IconName: 'search'
+                IconName: 'search',
+                WidgetBehavior: {
+                    NotPersonalizable: true
+                }
             },
             ssr: true
         },
@@ -574,7 +577,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Category: 'Content',
                 Section: 'Navigation and search',
                 HasQuickEditOperation: true,
-                IconName: 'search'
+                IconName: 'search',
+                WidgetBehavior: {
+                    NotPersonalizable: true
+                }
             },
             ssr: true
         },
@@ -587,7 +593,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Section: 'Navigation and search',
                 EmptyIconText: 'Select classification',
                 HasQuickEditOperation: true,
-                IconName: 'classification'
+                IconName: 'classification',
+                WidgetBehavior: {
+                    NotPersonalizable: true
+                }
             },
             ssr: true
         },
@@ -600,7 +609,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Section: 'Navigation and search',
                 HasQuickEditOperation: true,
                 HideEmptyVisual: true,
-                IconName: 'language'
+                IconName: 'language',
+                WidgetBehavior: {
+                    NotPersonalizable: true
+                }
             },
             ssr: true
         },
@@ -613,7 +625,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Category: 'Content',
                 EmptyIconAction: 'Edit',
                 HasQuickEditOperation: true,
-                IconName: 'login'
+                IconName: 'login',
+                WidgetBehavior: {
+                    NotPersonalizable: true
+                }
             },
             ssr: true
         },
@@ -626,7 +641,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Category: 'Content',
                 EmptyIconAction: 'Edit',
                 HasQuickEditOperation: true,
-                IconName: 'registration'
+                IconName: 'registration',
+                WidgetBehavior: {
+                    NotPersonalizable: true
+                }
             },
             ssr: true
         },
@@ -639,7 +657,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Category: 'Content',
                 EmptyIconAction: 'Edit',
                 HasQuickEditOperation: true,
-                IconName: 'password'
+                IconName: 'password',
+                WidgetBehavior: {
+                    NotPersonalizable: true
+                }
             },
             ssr: true
         },
@@ -652,7 +673,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Category: 'Content',
                 EmptyIconAction: 'Edit',
                 HasQuickEditOperation: true,
-                IconName: 'password'
+                IconName: 'password',
+                WidgetBehavior: {
+                    NotPersonalizable: true
+                }
             },
             ssr: true
         },
@@ -663,7 +687,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Title: 'Section',
                 Category: 'Layout',
                 Section: 'Empty section',
-                IconName: 'section'
+                IconName: 'section',
+                WidgetBehavior: {
+                    NotPersonalizable: true
+                }
             },
             ssr: true
         },

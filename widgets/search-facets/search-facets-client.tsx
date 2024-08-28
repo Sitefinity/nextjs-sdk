@@ -221,8 +221,11 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
         const currentFilterObject: AppliedFilterObject = {
             appliedFilters: Object.keys(groupedFilters).map((el) => {
                 return {
-                    fieldName: el,
-                    filterValues: groupedFilters[el]
+                    fieldName: encodeURIComponent(el),
+                    filterValues: groupedFilters[el].map((filter) => ({
+                        ...filter,
+                        filterValue: encodeURIComponent(filter.filterValue)
+                    }))
                 } as { fieldName: string; filterValues: { filterValue: string; isCustom: boolean; }[]; };
             }),
             lastSelectedFilterGropName: lastSelectedElementKey,
@@ -314,7 +317,7 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
           </>
             }
         </>)}
-        {sf && <div id="facetContent" className="mb-3">
+        {sf && <div id="facetContainer" className="mb-3">
             {sf.map((facet: SearchFacetModel, sfIdx: number) => {
                 return <FacetGroup key={sfIdx} viewProps={viewProps} facet={facet} facetValueChanged={facetValueChanged} deselectFacetGroup={deselectFacetGroup} selectedFacets={selectedFacets} />;
             })

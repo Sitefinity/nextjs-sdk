@@ -20,6 +20,7 @@ import { ContentListsCommonRestService } from '../widgets/content-lists-common/c
 import { initServerSideRestSdk } from '../rest-sdk/init';
 import { setHostServerContext } from '../services/server-context';
 import { TemplateRegistry } from '..';
+import { RootUrlService } from '../rest-sdk/root-url.service';
 
 export async function RenderPage({ params, searchParams, relatedFields, templates }: { params: { slug: string[] }, searchParams: Dictionary, relatedFields?: string[], templates?: TemplateRegistry }) {
     const host = headers().get('host') || '';
@@ -106,7 +107,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         notFound();
     }
 
-    const liveUrl = params.slug.join('/') + '?' + new URLSearchParams(searchParams).toString();
+    const liveUrl = `${RootUrlService.getClientCmsUrl()}/${params.slug.join('/') + '?' + new URLSearchParams(searchParams).toString()}`;
 
     let pageTemplate;
     if (layout.TemplateName && templates && templates[layout.TemplateName]) {

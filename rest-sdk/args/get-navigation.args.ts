@@ -1,4 +1,6 @@
-export interface GetNavigationArgs {
+import { RequestArgs } from './request.args';
+
+export interface GetNavigationArgs extends RequestArgs {
     selectionMode?: string;
     showParentPage?: boolean;
     currentPage?: string;
@@ -6,5 +8,4 @@ export interface GetNavigationArgs {
     levelsToInclude?: number;
     selectedPageId?: string;
     culture?: string;
-    traceContext?: any;
 }

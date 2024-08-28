@@ -1,4 +1,6 @@
-export interface SearchArgs {
+import { RequestArgs } from './request.args';
+
+export interface SearchArgs extends RequestArgs {
     indexCatalogue: string;
     searchQuery: string;
     wordsMode: string;
@@ -11,6 +13,5 @@ export interface SearchArgs {
     scoringInfo: string;
     resultsForAllSites: boolean | null;
     filter: string;
-    traceContext?: any;
     indexFields: string;
 }

@@ -1,6 +1,7 @@
 import { DetailItem } from '../../editor/detail-item';
+import { RequestArgs } from './request.args';
 
-export interface GetBreadcrumbArgs {
+export interface GetBreadcrumbArgs extends RequestArgs {
     addStartingPageAtEnd?: boolean;
     addHomePageAtBeginning?: boolean;
     includeGroupPages?: boolean;
@@ -9,5 +10,4 @@ export interface GetBreadcrumbArgs {
     startingPageId?: string;
     currentPageUrl: string;
     culture?: string;
-    traceContext?: any;
 }

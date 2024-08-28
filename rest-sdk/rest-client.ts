@@ -49,6 +49,9 @@ import { getAdditionalFetchDataServerContext, getHostServerContext, getQueryPara
 import { getServerSideCookie } from '../server-side-cookie';
 import { ProviderDto } from './dto/provider.dto';
 import { ChangeLocationPriorityArgs, MovingDirection } from './args/change-location-priority.args';
+import { RequestArgs } from './args/request.args';
+import { GetFacatebleFieldsArgs } from './args/get-facateble-fields.args';
+import { getSharedContentArgs } from './args/get-shared-content.args';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
@@ -60,7 +63,7 @@ export class RestClient {
         };
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.GetItemWithFallback()${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
-        return this.sendRequest<T>({ url: wholeUrl, traceContext: args.traceContext }, true);
+        return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }, true);
     }
 
     public static getTaxons(args: GetTaxonArgs): Promise<TaxonDto[]> {
@@ -78,7 +81,7 @@ export class RestClient {
         const action = `Default.GetTaxons(taxonomyId=${args.taxonomyId},selectedTaxaIds=@param,selectionMode='${args.selectionMode}',contentType='${args.contentType}')`;
         const wholeUrl = `${RestClient.buildItemBaseUrl(taxonomy['TaxaUrl'])}/${action}${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
 
-        return this.sendRequest<{ value: SdkItem[] }>({ url: wholeUrl, traceContext: args.traceContext }).then(x => x.value as TaxonDto[]);
+        return this.sendRequest<{ value: SdkItem[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then(x => x.value as TaxonDto[]);
     }
 
     public static getItemWithStatus<T extends SdkItem>(args: ItemArgs): Promise<T> {
@@ -88,7 +91,7 @@ export class RestClient {
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.GetItemWithStatus()${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
 
-        return this.sendRequest<T>({ url: wholeUrl, traceContext: args.traceContext });
+        return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
     }
 
     public static getItem<T extends SdkItem>(args: ItemArgs): Promise<T> {
@@ -101,20 +104,20 @@ export class RestClient {
         };
 
         const wholeUrl = `${this.buildItemBaseUrl(args.type)}(${args.id})${this.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
-        return this.sendRequest<T>({ url: wholeUrl, traceContext: args.traceContext });
+        return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
     }
 
-    public static getSharedContent(id: string, cultureName: string, traceContext?: any): Promise<GenericContentItem> {
+    public static getSharedContent(args: getSharedContentArgs): Promise<GenericContentItem> {
         let queryParams: {[key: string]: string} = {
             sf_fallback_prop_names: 'Content'
         };
 
-        if (cultureName) {
-            queryParams['sf_culture'] = cultureName;
+        if (args.cultureName) {
+            queryParams['sf_culture'] = args.cultureName;
         }
 
-        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.GenericContent)}/Default.GetItemById(itemId=${id})${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
-        return this.sendRequest<GenericContentItem>({ url: wholeUrl, traceContext }, true);
+        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.GenericContent)}/Default.GetItemById(itemId=${args.id})${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
+        return this.sendRequest<GenericContentItem>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }, true);
     }
 
     public static getItems<T extends SdkItem>(args: GetAllArgs): Promise<CollectionResponse<T>> {
@@ -315,6 +318,17 @@ export class RestClient {
         });
     }
 
+    public static updateWidget(page: SdkItem , propertyValues: any) {
+        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Pages)}(${page.Id})/Default.SetProperties()${RestClient.buildQueryParams(RestClient.getQueryParams(propertyValues, undefined))}`;
+
+        return RestClient.sendRequest({
+            url: wholeUrl,
+            data: propertyValues,
+            method: 'POST',
+            headers: propertyValues.additionalHeaders
+        });
+    }
+
     public static uploadItem(args: UploadMediaArgs): Promise<SdkItem> {
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}${RestClient.buildQueryParams(RestClient.getQueryParams(args, undefined))}`;
         const headers = args.additionalHeaders || {};
@@ -366,13 +380,13 @@ export class RestClient {
         const wholeUrl = `${serviceUrl}/Default.PerformSearch()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, query))}`;
         const searchResultsDocumentsDefaultKeys = ['HighLighterResult', 'Language', 'Provider', 'Link', 'Title', 'ContentType', 'Id', 'ThumbnailUrl'];
 
-        return RestClient.sendRequest<{ TotalCount: number, SearchResults: SearchResultDocumentDto[] | any[] }>({ url: wholeUrl, traceContext: args.traceContext }).then(x => {
+        return RestClient.sendRequest<{ TotalCount: number, SearchResults: SearchResultDocumentDto[] | any[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then(x => {
             const mappedSearchResults : SearchResultDocumentDto[] = x.SearchResults.map(searchResult => {
-                const document = {
+                const document: SearchResultDocumentDto = {
                     HighLighterResult: searchResult.HighLighterResult,
                     Language: searchResult.Language,
                     Provider: searchResult.Provider,
-                    Link: searchResult.Language,
+                    Link: searchResult.Link,
                     Title: searchResult.Title,
                     ContentType: searchResult.ContentType,
                     Id: searchResult.Id,
@@ -399,11 +413,11 @@ export class RestClient {
         });
     }
 
-    public static getFacatebleFields(indexCatalogue: string, traceContext?: any): Promise<FacetsViewModelDto[]> {
+    public static getFacatebleFields(args: GetFacatebleFieldsArgs): Promise<FacetsViewModelDto[]> {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
-        const wholeUrl = `${serviceUrl}/Default.GetFacetableFields(indexCatalogName='${indexCatalogue}')`;
+        const wholeUrl = `${serviceUrl}/Default.GetFacetableFields(indexCatalogName='${args.indexCatalogue}')`;
 
-        return RestClient.sendRequest<{ value: FacetsViewModelDto[] }>({ url: wholeUrl, traceContext }).then(x => x.value);
+        return RestClient.sendRequest<{ value: FacetsViewModelDto[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then(x => x.value);
     }
 
     public static async getFacets(args: GetFacetsArgs): Promise<FacetFlatResponseDto[]> {
@@ -421,7 +435,7 @@ export class RestClient {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.GetFacets()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, additionalQueryParams))}`;
 
-        return RestClient.sendRequest<{ value: FacetFlatResponseDto[] }>({ url: wholeUrl, traceContext: args.traceContext }).then(x => x.value);
+        return RestClient.sendRequest<{ value: FacetFlatResponseDto[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then(x => x.value);
     }
 
     public static getResetPasswordModel(token: string, traceContext?: any): Promise<RegistrationSettingsDto> {
@@ -431,11 +445,11 @@ export class RestClient {
         return RestClient.sendRequest<RegistrationSettingsDto>({ url: wholeUrl, data: { securityToken: token }, method: 'POST', traceContext });
     }
 
-    public static getRegistrationSettings(traceContext?: any): Promise<RegistrationSettingsDto> {
+    public static getRegistrationSettings(args: RequestArgs): Promise<RegistrationSettingsDto> {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.RegistrationSettings()`;
 
-        return RestClient.sendRequest<RegistrationSettingsDto>({ url: wholeUrl, traceContext });
+        return RestClient.sendRequest<RegistrationSettingsDto>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
     }
 
     public static activateAccount(encryptedParam: string, traceContext?: any): Promise<void> {
@@ -445,32 +459,34 @@ export class RestClient {
         return RestClient.sendRequest({ url: wholeUrl, traceContext });
     }
 
-    public static getExternalProviders(traceContext?: any): Promise<ExternalProvider[]> {
+    public static getExternalProviders(args: RequestArgs): Promise<ExternalProvider[]> {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.GetExternalProviders()`;
 
-        return RestClient.sendRequest<{ value: ExternalProvider[] }>({ url: wholeUrl, traceContext }).then((x) => x.value);
+        return RestClient.sendRequest<{ value: ExternalProvider[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then((x) => x.value);
     }
 
-    public static getCurrentUser(traceContext?: any): Promise<UserDto> {
+    public static getCurrentUser(args?: RequestArgs): Promise<UserDto> {
         const wholeUrl = `${RestClient.buildItemBaseUrl('users')}/current`;
 
         return RestClient.sendRequest<{ value: UserDto }>({
             url: wholeUrl,
             method: 'GET',
-            traceContext
+            additionalFetchData: args?.additionalFetchData,
+            traceContext: args?.traceContext
         }).then((x) => {
             return x.value;
         });
     }
 
-    public static getCurrentSite(traceContext?: any): Promise<SiteDto> {
+    public static getCurrentSite(args?: RequestArgs): Promise<SiteDto> {
         const wholeUrl = `${RestClient.buildItemBaseUrl('sites')}/current`;
 
         return RestClient.sendRequest<{ value: SiteDto }>({
             url: wholeUrl,
             method: 'GET',
-            traceContext
+            additionalFetchData: args?.additionalFetchData,
+            traceContext: args?.traceContext
         }).then((x) => {
             return x.value;
         });
@@ -488,7 +504,7 @@ export class RestClient {
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Pages)}/Default.HierarhicalByLevelsResponse()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryMap))}`;
 
-        return this.sendRequest<{ value: NavigationItem[], '@odata.count': number }>({ url: wholeUrl, traceContext: args.traceContext }).then((x) => {
+        return this.sendRequest<{ value: NavigationItem[], '@odata.count': number }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then((x) => {
             return x.value;
         });
     }
@@ -504,7 +520,7 @@ export class RestClient {
         });
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Pages)}/Default.GetBreadcrumb()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryMap))}`;
-        return this.sendRequest<{ value: BreadcrumbItem[], '@odata.count'?: number }>({ url: wholeUrl, traceContext: args.traceContext }).then((x) => {
+        return this.sendRequest<{ value: BreadcrumbItem[], '@odata.count'?: number }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then((x) => {
             return x.value;
         });
     }
@@ -538,7 +554,8 @@ export class RestClient {
         return this.sendRequest({
             url: wholeUrl,
             method: 'GET',
-            headers: args.additionalHeaders
+            headers: args.additionalHeaders,
+            additionalFetchData: args.additionalFetchData
         });
     }
 
@@ -547,7 +564,8 @@ export class RestClient {
         return this.sendRequest({
             url: wholeUrl,
             method: 'GET',
-            headers: args.additionalHeaders
+            headers: args.additionalHeaders,
+            additionalFetchData: args.additionalFetchData
         });
     }
 
@@ -556,7 +574,8 @@ export class RestClient {
         return this.sendRequest<{ value: ProviderDto[] } >({
             url: wholeUrl,
             method: 'GET',
-            headers: args.additionalHeaders
+            headers: args.additionalHeaders,
+            additionalFetchData: args.additionalFetchData
         }).then((x) => {
             return x.value;
         });
@@ -575,7 +594,7 @@ export class RestClient {
 
     public static async getFormLayout(args: GetFormLayoutArgs): Promise<LayoutServiceResponse> {
         const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Form)}(${args.id})/Default.Model()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
-        return RestClient.sendRequest({ url: wholeUrl, headers: args.additionalHeaders, traceContext: args.traceContext });
+        return RestClient.sendRequest({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
     }
 
     public static async getWidgetModel(args: GetHierarchicalWidgetModelArgs): Promise<WidgetModel<any>> {
@@ -584,7 +603,7 @@ export class RestClient {
         args.additionalQueryParams.segment = args.segmentId || '';
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.HierarchicalWidgetModel(componentId='${args.widgetId}')${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
-        return RestClient.sendRequest({ url: wholeUrl, headers: args.additionalHeaders, traceContext: args.traceContext });
+        return RestClient.sendRequest({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
     }
 
     public static async getLazyWidget(args: GetHierarchicalWidgetModelArgs): Promise<WidgetModel<any> | undefined> {
@@ -594,7 +613,7 @@ export class RestClient {
 
         let lazyComponentsUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.LazyComponents()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
 
-        return RestClient.sendRequest<{ Components: Array<WidgetModel<any>> }>({ url: lazyComponentsUrl, headers: args.additionalHeaders }).then(x => x.Components.find(y => y.Id === args.widgetId));
+        return RestClient.sendRequest<{ Components: Array<WidgetModel<any>> }>({ url: lazyComponentsUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData }).then(x => x.Components.find(y => y.Id === args.widgetId));
     }
 
     public static async getLazyWidgets(args: GetLazyWidgetsArgs): Promise<Array<WidgetModel<any>>> {
@@ -614,7 +633,7 @@ export class RestClient {
             headers['SF_NO_URL_REFERER'] = 'true';
         }
 
-        return RestClient.sendRequest<{ Components: Array<WidgetModel<any>> }>({ url: lazyComponentsUrl, headers }).then(x => x.Components);
+        return RestClient.sendRequest<{ Components: Array<WidgetModel<any>> }>({ url: lazyComponentsUrl, headers, additionalFetchData: args.additionalFetchData }).then(x => x.Components);
     }
 
     public static async getPageLayout(args: GetPageLayoutArgs): Promise<LayoutResponse> {
@@ -650,6 +669,10 @@ export class RestClient {
         const additionalFetchData = getAdditionalFetchDataServerContext();
         if (additionalFetchData) {
             requestInit = Object.assign(requestInit, additionalFetchData);
+        }
+
+        if (args.additionalFetchData) {
+            requestInit = Object.assign(requestInit, args.additionalFetchData);
         }
 
         let httpLayoutResponse: Response | null = null;
@@ -707,7 +730,7 @@ export class RestClient {
 
     public static async getTemplates(args: GetTemplatesArgs): Promise<PageTemplateCategoryDto[]> {
         const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/${args.type}/Default.GetPageTemplates(selectedPages=[${args.selectedPages.map(x => `'${x}'`).join(',')}])${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
-        return RestClient.sendRequest<{ value: PageTemplateCategoryDto[] } >({ url: wholeUrl, headers: args.additionalHeaders }).then(x => x.value);
+        return RestClient.sendRequest<{ value: PageTemplateCategoryDto[] } >({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData }).then(x => x.value);
     }
 
     private static getSimpleFields(type: string, fields: string[]): string[] {
@@ -919,6 +942,20 @@ export class RestClient {
 
         if (headers['Content-Encoding'] === 'base64') {
             args.body = request.data;
+        }
+
+        if (process.env.SF_SDK_CACHE_REVALIDATE) {
+            const duration = parseInt(process.env.SF_SDK_CACHE_REVALIDATE, 10);
+            if (Number.isInteger(duration)) {
+                const revalidateFetchData = { next: { revalidate: duration } };
+                args = Object.assign(args, revalidateFetchData);
+            } else if (process.env.SF_SDK_CACHE_REVALIDATE.toLowerCase() === 'false') {
+                const revalidateFetchData = { next: { revalidate: false } };
+                args = Object.assign(args, revalidateFetchData);
+            }
+        } else if (process.env.SF_SDK_CACHE) {
+            const cacheFetchData = { cache: process.env.SF_SDK_CACHE };
+            args = Object.assign(args, cacheFetchData);
         }
 
         const additionalFetchData = getAdditionalFetchDataServerContext();
