@@ -4,7 +4,6 @@ import { RestSdkTypes, RestClient } from '../../rest-sdk/rest-client';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
 import { ResetPasswordEntity } from './reset-password.entity';
 import { ResetPasswordViewProps } from './interfaces/reset-password.view-props';
-import { RequestContext } from '../../editor/request-context';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
@@ -14,18 +13,6 @@ import { ResetPasswordDefaultTemplate } from './reset-password.view';
 import { getCustomAttributes, htmlAttributes } from '../../editor/widget-framework/attributes';
 import { StyleGenerator } from '../styling/style-generator.service';
 import { classNames } from '../../editor/utils/classNames';
-
-const PasswordRecoveryQueryStringKey = 'vk';
-
-const isResetPasswordRequest = (context: RequestContext) => {
-    if (context.isLive) {
-        if (context.searchParams[PasswordRecoveryQueryStringKey]) {
-            return true;
-        }
-    }
-
-    return false;
-};
 
 export async function ResetPassword(props: WidgetContext<ResetPasswordEntity>) {
   const {span, ctx} = Tracer.traceWidget(props, true);
@@ -44,23 +31,6 @@ export async function ResetPassword(props: WidgetContext<ResetPasswordEntity>) {
   if (context.isLive) {
       const host = getHostServerContext() || RootUrlService.getServerCmsUrl();
       viewProps.resetPasswordUrl = host + '/' + context.url;
-  }
-
-  const queryList = new URLSearchParams(context.searchParams);
-  const queryString = '?' + queryList.toString();
-  viewProps.securityToken = queryString;
-
-  if (isResetPasswordRequest(context)) {
-      viewProps.isResetPasswordRequest = true;
-
-      try {
-          const resetPasswordModel: any = await RestClient.getResetPasswordModel(queryString, ctx);
-          viewProps.requiresQuestionAndAnswer = resetPasswordModel.RequiresQuestionAndAnswer;
-          viewProps.securityQuestion = resetPasswordModel.SecurityQuestion;
-      } catch (Exception) {
-          // In terms of security, if there is some error with the user get, we display common error message to the user.
-          viewProps.error = true;
-      }
   }
 
   return (

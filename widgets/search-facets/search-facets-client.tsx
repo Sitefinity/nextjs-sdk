@@ -6,11 +6,10 @@ import { SearchFacetsViewProps } from './search-facets.view-props';
 import { FacetGroup } from './components/facet-group';
 import { SelectedFacetsState } from './interfaces/selected-facet-state';
 import { RANGE_SEPARATOR, computeFacetRangeLabelForType, getCheckboxId, getFacetKeyFromCheckboxId } from './components/utils';
-import { EVENTS, useSfEvents } from '../../pages/useSfEvents';
 import { getFacets, getInitialFacetsWithModels, getSearchFacets, getSelectedFacetsToBeUsed, updateFacetsViewProps } from './search-facets-common';
 import { SearchFacetsEntity } from './search-facets.entity';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getQueryParams } from '../search-results/search-results-common';
+import { getQueryParams } from '../common/query-params';
 
 const FILTER_QUERY_PARAM = 'filter';
 

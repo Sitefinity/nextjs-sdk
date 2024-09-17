@@ -4,6 +4,8 @@ import React, { useEffect } from 'react';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { invalidDataAttr, isValidEmail, serializeForm } from '../common/utils';
 import { classNames } from '../../editor/utils/classNames';
+import { getQueryParams } from '../common/query-params';
+import { useSearchParams } from 'next/navigation';
 import { RegistrationViewProps } from './interfaces/registration.view-props';
 import { SecurityService } from '../../services/security-service';
 import { ExternalLoginBase, ExternalProviderData } from '../external-login-base';
@@ -13,12 +15,11 @@ import { getUniqueId } from '../../editor/utils/getUniqueId';
 export interface RegistrationFormProps {
     action: string;
     viewProps: RegistrationViewProps<RegistrationEntity>;
-    formContainerServer: JSX.Element;
-    confirmServer: JSX.Element;
 }
 
 export function RegistrationFormClient(props: RegistrationFormProps) {
-    const { viewProps, formContainerServer, confirmServer } = props;
+    const searchParams = useSearchParams();
+    const { viewProps } = props;
 
     const context = viewProps.widgetContext.requestContext;
 
@@ -47,7 +48,7 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
     useEffect(() => {
         const externalProviderData: ExternalProviderData[] = viewProps.externalProviders?.map(provider => {
           const providerClass = ExternalLoginBase.GetExternalLoginButtonCssClass(provider.Name);
-          const externalLoginPath = ExternalLoginBase.GetExternalLoginPath(context, provider.Name);
+          const externalLoginPath = ExternalLoginBase.GetExternalLoginPath(getQueryParams(searchParams), provider.Name);
 
           return {
             cssClass: providerClass,
@@ -57,7 +58,8 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
         }) ?? [];
 
         setExternalProvidersData(externalProviderData);
-      },[context, viewProps.externalProviders]);
+      }, []);
+
 
     const postRegistrationAction = () => {
         let action = viewProps.postRegistrationAction;
@@ -329,7 +331,14 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
             }
         </>)
         }
-        {formContainerServer}
+        <>
+          <input type="hidden" name="RedirectUrl" defaultValue={viewProps.redirectUrl} />
+          <input type="hidden" name="PostRegistrationAction" defaultValue={viewProps.postRegistrationAction} />
+          <input type="hidden" name="ActivationMethod" defaultValue={viewProps.activationMethod} />
+          <input type="hidden" name="ValidationRequiredMessage" value={labels.validationRequiredMessage} />
+          <input type="hidden" name="ValidationMismatchMessage" value={labels.validationMismatchMessage} />
+          <input type="hidden" name="ValidationInvalidEmailMessage" value={labels.validationInvalidEmailMessage} />
+        </>
       </div>
       <div data-sf-role="success-registration-message-container"
         className={successRegistrationContainerClass}
@@ -349,7 +358,12 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
         <a data-sf-role="sendAgainLink" onClick={handleSendAgain} className="btn btn-primary">
           {labels.sendAgainLink}
         </a>
-        {confirmServer}
+        <>
+          <input type="hidden" name="ResendConfirmationEmailUrl" value={viewProps.resendConfirmationEmailHandlerPath} />
+          <input type="hidden" name="ActivationLinkLabel" value={labels.activationLinkLabel} />
+          <input type="hidden" name="SendAgainLink" value={labels.sendAgainLink} />
+          <input type="hidden" name="SendAgainLabel" value={labels.sendAgainLabel} />
+        </>
       </div>
     </>);
 };

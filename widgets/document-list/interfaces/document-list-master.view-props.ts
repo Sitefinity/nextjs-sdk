@@ -6,7 +6,6 @@ import { PagerProps } from '../../pager/pager';
 import { DocumentListEntity } from '../document-list-entity';
 
 export interface DocumentListMasterViewProps<T extends DocumentListEntity> extends ViewPropsBase<T> {
-    openDetails: boolean;
     items: CollectionResponse<SdkItem>;
     sizeColumnLabel?: string;
     titleColumnLabel?: string;

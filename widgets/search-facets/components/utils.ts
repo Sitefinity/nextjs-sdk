@@ -25,7 +25,7 @@ export const computeFacetRangeValueForType = (fieldType: string, fromValue: stri
 export const computeFacetRangeLabelForType = (fieldType: string, fromValue: string, toValue: string) => {
     if (fieldType === DATE_AND_TIME) {
         let fromDateTime = new Date(fromValue);
-        let dateOptions: Intl.DateTimeFormatOptions = { month: 'short', day: '2-digit' };
+        let dateOptions: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
         let fromString = fromDateTime.toLocaleString(undefined, dateOptions) + ' ' + fromDateTime.getFullYear();
 
         let toDateTime = new Date(toValue);

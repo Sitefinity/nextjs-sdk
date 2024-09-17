@@ -94,7 +94,7 @@ export function ForgottenPasswordFormClient (props: ResetPasswordViewProps<Reset
     };
 
     if (props.widgetContext.requestContext.isLive && !props.resetPasswordUrl?.toUpperCase().startsWith('HTTP')) {
-        props.resetPasswordUrl = typeof window !== 'undefined' ? window.location.protocol + '//' + props.resetPasswordUrl : '';
+        props = { ...props, resetPasswordUrl: typeof window !== 'undefined' ? window.location.protocol + '//' + props.resetPasswordUrl : '' };
     }
 
     return (<>

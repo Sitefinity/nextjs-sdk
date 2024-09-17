@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { Suspense, useEffect, useState } from 'react';
 import { LoadingIndicator } from './loading-indicator';
 import { SearchResultsViewProps } from './interfaces/search-results.view-props';
@@ -13,10 +12,11 @@ import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode
 import { SearchResultsEntity } from './search-results.entity';
 import { Pager } from '../pager/pager';
 import { PagerMode } from '../common/page-mode';
-import { getQueryParams, performSearch } from './search-results-common';
+import { performSearch } from './search-results-common';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getPageNumber } from '../pager/pager-view-model';
 import { getUniqueId } from '../../editor/utils/getUniqueId';
+import { getQueryParams } from '../common/query-params';
 
 export function SearchResultsClient(props: SearchResultsViewProps<SearchResultsEntity>) {
     const searchParamsNext = useSearchParams();
@@ -100,7 +100,7 @@ export function SearchResultsClient(props: SearchResultsViewProps<SearchResultsE
                   {item.ThumbnailUrl &&
                   <div className="flex-shrink-0 me-3">
                     <a href={item.Link}>
-                      <Image src={item.ThumbnailUrl} alt={item.Title} width="120" />
+                      <img src={item.ThumbnailUrl} alt={item.Title} width="120" />
                     </a>
                   </div>
                     }

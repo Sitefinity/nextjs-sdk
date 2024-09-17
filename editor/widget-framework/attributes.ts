@@ -47,6 +47,10 @@ export function htmlAttributes(widgetContext: WidgetContext<any>, error: string 
             attributes['data-sfhasquickeditoperation'] = true;
         }
 
+        if (editorMetadata.IsEmptyEntity) {
+            attributes['data-sfisemptyentity'] = true;
+        }
+
         attributes['data-sfiscontentwidget'] = editorMetadata.Category !== 'Layout & Presets' && editorMetadata.Category !== 'Layout';
     }
 

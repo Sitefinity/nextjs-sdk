@@ -15,6 +15,7 @@ export interface EditorMetadata {
     HideEmptyVisual?: boolean;
     HasQuickEditOperation?: boolean;
     Order?: number;
+    IsEmptyEntity?: boolean;
     InitialProperties?: { [key: string]: string };
     WidgetBehavior?: WidgetBehavior;
 }

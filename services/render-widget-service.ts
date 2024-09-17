@@ -1,6 +1,6 @@
 import React from 'react';
-import { RequestContext } from '../editor/request-context';
-import { WidgetContext, getMinimumWidgetContext } from '../editor/widget-framework/widget-context';
+import { TransferableRequestContext } from '../editor/request-context';
+import { WidgetContext, getMinimumRequestContext, getMinimumWidgetContext } from '../editor/widget-framework/widget-context';
 import { WidgetModel } from '../editor/widget-framework/widget-model';
 import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { LazyComponent } from '../widgets/lazy/lazy-component';
@@ -14,14 +14,14 @@ export class RenderWidgetService {
     public static widgetRegistry: WidgetRegistry;
     public static errorComponentType: any;
 
-    public static createComponent(widgetModel: WidgetModel, requestContext: RequestContext, traceContext?: any) {
+    public static createComponent(widgetModel: WidgetModel, requestContext: TransferableRequestContext, traceContext?: any) {
         Tracer.logEvent(`render widget start: ${widgetModel.Caption || widgetModel.Name}`);
         const registeredType = RenderWidgetService.widgetRegistry.widgets[widgetModel.Name];
 
         const propsForWidget: WidgetContext = {
-            metadata: getMinimumMetadata(registeredType), // modify props to remove functions in order to pass them to client component
+            metadata: getMinimumMetadata(registeredType, requestContext.isEdit), // modify props to remove functions in order to pass them to client component
             model: deepCopy(widgetModel),
-            requestContext: deepCopy(requestContext),
+            requestContext: getMinimumRequestContext(deepCopy(requestContext)),
             traceContext: registeredType?.ssr ? traceContext : null
         };
 

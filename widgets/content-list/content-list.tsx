@@ -10,7 +10,7 @@ import { Pager } from '../pager/pager';
 import { htmlAttributes, setHideEmptyVisual } from '../../editor/widget-framework/attributes';
 import { DetailItem } from '../../editor/detail-item';
 import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
-import { RequestContext } from '../../editor/request-context';
+import { TransferableRequestContext } from '../../editor/request-context';
 import { ContentViewDisplayMode } from '../content-lists-common/content-view-display-mode';
 import { DetailPageSelectionMode } from '../content-lists-common/detail-page-selection-mode';
 import { getPageNumber } from '../pager/pager-view-model';
@@ -21,6 +21,7 @@ import { FilterOperators } from '../../rest-sdk/filters/filter-clause';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { ContentLisMasterProps, ContentListDetailProps } from '../content-lists-common/content-list.view-props';
 import { Dictionary } from '../../typings/dictionary';
+import { RestClientForContext } from '../..';
 
 export async function ContentList(props: WidgetContext<ContentListEntity>) {
     const {span, ctx} = Tracer.traceWidget(props, true);
@@ -183,7 +184,7 @@ function handleDetailView(detailItem: DetailItem, props: WidgetContext<ContentLi
     return detailProps;
 }
 
-async function handleListView(props: WidgetContext<ContentListEntity>, requestContext: RequestContext, currentPage: number, ctx: any) {
+async function handleListView(props: WidgetContext<ContentListEntity>, requestContext: TransferableRequestContext, currentPage: number, ctx: any) {
     const listFieldMapping: {[key: string]: string} = {};
     props.model.Properties.ListFieldMapping?.forEach((entry) => {
         listFieldMapping[entry.FriendlyName!] = entry.Name!;
@@ -201,14 +202,16 @@ async function handleListView(props: WidgetContext<ContentListEntity>, requestCo
         && items.Items.length > 0) {
         detailPageUrl = props.requestContext.pageNode.ViewUrl;
         if (props.model.Properties.DetailPageMode === DetailPageSelectionMode.ExistingPage && props.model.Properties.DetailPage) {
-            const detailPage: PageItem = await RestClient.getItem({
+            const detailPages = await RestClientForContext.getItems<PageItem>(props.model.Properties.DetailPage, {
                 type: RestSdkTypes.Pages,
-                id: props.model.Properties.DetailPage.ItemIdsOrdered![0],
-                provider: props.model.Properties.DetailPage.Content[0].Variations![0].Source,
                 culture: props.requestContext.culture
             });
 
-            detailPageUrl = detailPage.ViewUrl;
+            if (detailPages.Items.length === 1) {
+                detailPageUrl = detailPages.Items[0].ViewUrl;
+            } else {
+                detailPageUrl = undefined;
+            }
         }
     }
 

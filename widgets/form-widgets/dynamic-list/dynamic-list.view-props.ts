@@ -6,7 +6,7 @@ import { RestClientForContext } from '../../../services/rest-client-for-context'
 import { ViewPropsBase } from '../../common/view-props-base';
 import { ChoiceOption } from '../common/choice-option';
 import { DynamicListEntity } from './dynamic-list.entity';
-import { SelectionMode } from './selection-modes';
+import { SelectionMode, TaxonSelectionMode } from './selection-modes';
 
 export interface DynamicListViewProps<T extends DynamicListEntity> extends ViewPropsBase<T> {
     label: string | null;
@@ -108,16 +108,33 @@ function transformItemsToChoices(items: SdkItem[], defaultFieldName: string, ent
         return [];
     }
 
-    const returnVal = items.map(x =>{
-        const option: ChoiceOption = {
-            Name: x[defaultFieldName],
-            Value: entity.ValueFieldName && x[entity.ValueFieldName] ? x[entity.ValueFieldName] : x[defaultFieldName],
-            Selected: false
-        };
-
-
-        return option;
-    });
+    let returnVal: ChoiceOption[] = [];
+    const taxa = items as TaxonDto[];
+    if (entity.ListType === SelectionMode.Classification && entity.ClassificationSettings?.selectionMode === TaxonSelectionMode.All && taxa != null) {
+        getAllTaxa(taxa, defaultFieldName, entity, returnVal);
+    } else {
+        returnVal = items.map(x => {
+            return getOption(x, defaultFieldName, entity);
+        });
+    }
 
     return returnVal;
+}
+
+function getAllTaxa(taxa: TaxonDto[], defaultFieldName: string, entity: DynamicListEntity, taxaChoices: ChoiceOption[]) {
+    taxa.forEach(item => {
+        const option = getOption(item, defaultFieldName, entity);
+        taxaChoices.push(option);
+        getAllTaxa(item.SubTaxa, defaultFieldName, entity, taxaChoices);
+    });
+}
+
+function getOption(item: SdkItem, defaultFieldName: string, entity: DynamicListEntity) {
+    const option: ChoiceOption = {
+        Name: item[defaultFieldName],
+        Value: entity.ValueFieldName && item[entity.ValueFieldName] ? item[entity.ValueFieldName] : item[defaultFieldName],
+        Selected: false
+    };
+
+    return option;
 }

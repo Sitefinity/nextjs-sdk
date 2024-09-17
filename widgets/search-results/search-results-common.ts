@@ -4,7 +4,6 @@ import { SearchResultsSorting } from './interfaces/search-results-sorting';
 import { ContentListSettings } from './content-list-settings';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
-import { ReadonlyURLSearchParams } from 'next/navigation';
 
 export async function performSearch(entity: SearchResultsEntity, searchParams: SearchParams, traceContext?: any) {
     if (searchParams.searchQuery) {
@@ -54,13 +53,4 @@ export async function performSearch(entity: SearchResultsEntity, searchParams: S
             return null;
         }
     }
-}
-
-export function getQueryParams(currentQueryParams: ReadonlyURLSearchParams) {
-    const queryParams: {[key: string]: any} = {};
-    currentQueryParams.forEach((v, k) => {
-      queryParams[k] = v;
-    });
-
-    return queryParams;
 }

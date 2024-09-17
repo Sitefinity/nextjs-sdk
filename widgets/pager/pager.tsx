@@ -1,13 +1,12 @@
 import { PagerViewModel } from './pager-view-model';
 import { classNames } from '../../editor/utils/classNames';
-import { RequestContext } from '../../editor/request-context';
+import { TransferableRequestContext } from '../../editor/request-context';
 import { PagerMode } from '../common/page-mode';
-import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { pagerLinkAttributes } from './pager-link-attributes';
 
 export interface PagerProps {
   itemsTotalCount: number;
-  context: RequestContext;
+  context: TransferableRequestContext;
   currentPage: number;
   pagerQueryTemplate?: string;
   pagerTemplate?: string;

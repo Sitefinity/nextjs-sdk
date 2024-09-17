@@ -1,9 +1,8 @@
 import { StylingConfig } from '../styling/styling-config';
 import { PostRegistrationAction } from './interfaces/post-registration-action';
-import { RequestContext } from '../../editor/request-context';
 import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
 import { ExternalProvider } from '../../rest-sdk/dto/external-provider';
-import { RegistrationSettingsDto, ActivationMethod } from '../../rest-sdk/dto/registration-settings';
+import { ActivationMethod } from '../../rest-sdk/dto/registration-settings';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
 import { RegistrationEntity } from './registration.entity';
@@ -19,16 +18,6 @@ import { classNames } from '../../editor/utils/classNames';
 import { StyleGenerator } from '../styling/style-generator.service';
 import { Dictionary } from '../../typings/dictionary';
 import { VisibilityStyle } from '../styling/visibility-style';
-
-const EncryptedParam = 'qs';
-
-const isAccountActivationRequest = (context: RequestContext) => {
-    if (context && context.isLive && context.searchParams && context.searchParams[EncryptedParam]) {
-        return true;
-    }
-
-    return false;
-};
 
 export async function Registration(props: WidgetContext<RegistrationEntity>) {
     const {span, ctx} = Tracer.traceWidget(props, true);
@@ -48,39 +37,26 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
         }
     } catch (error) { /* empty */ }
 
-    if (isAccountActivationRequest(context)) {
-        viewProps.isAccountActivationRequest = true;
-        viewProps.labels.activationMessage = entity.ActivationMessage;
-
-        try {
-            await RestClient.activateAccount(context.searchParams[EncryptedParam], ctx);
-        } catch (ErrorCodeException) {
-            viewProps.labels.activationMessage = entity.ActivationFailMessage;
-        }
-    } else {
-        if (entity.PostRegistrationAction === PostRegistrationAction.RedirectToPage) {
-            try {
-                const postRegistrationRedirectPage = await RestClientForContext.getItem<PageItem>(entity.PostRegistrationRedirectPage!, { type: RestSdkTypes.Pages, culture: props.requestContext.culture, traceContext: ctx });
-                if (postRegistrationRedirectPage) {
-                    viewProps.redirectUrl = postRegistrationRedirectPage.ViewUrl;
-                }
-
-                viewProps.postRegistrationAction = PostRegistrationAction.RedirectToPage;
-            } catch (error) { /* empty */ }
-        }
-
-        const regSettings: RegistrationSettingsDto = await RestClient.getRegistrationSettings({ traceContext: ctx });
-        if (regSettings.ActivationMethod === ActivationMethod.AfterConfirmation && !regSettings.SmtpConfigured) {
-            viewProps.warning = 'Confirmation email cannot be sent because the system has not been configured to send emails. Configure SMTP settings or contact your administrator for assistance.';
-        }
-        viewProps.requiresQuestionAndAnswer = regSettings.RequiresQuestionAndAnswer;
-        viewProps.activationMethod = regSettings.ActivationMethod;
-    }
-
     if (context.isLive) {
       const host = getHostServerContext() || RootUrlService.getServerCmsUrl();
       viewProps.activationPageUrl = host + '/' + context.url;
     }
+
+    if (entity.PostRegistrationAction === PostRegistrationAction.RedirectToPage) {
+        try {
+            const postRegistrationRedirectPage = await RestClientForContext.getItem<PageItem>(entity.PostRegistrationRedirectPage!, { type: RestSdkTypes.Pages, culture: context.culture });
+            if (postRegistrationRedirectPage) {
+                viewProps.redirectUrl = postRegistrationRedirectPage.ViewUrl;
+            }
+        } catch (error) { /* empty */ }
+    }
+
+    const regSettings = await RestClient.getRegistrationSettings({ traceContext: ctx });
+    if (regSettings.ActivationMethod === ActivationMethod.AfterConfirmation && !regSettings.SmtpConfigured) {
+        viewProps.warning = 'Confirmation email cannot be sent because the system has not been configured to send emails. Configure SMTP settings or contact your administrator for assistance.';
+    }
+    viewProps.requiresQuestionAndAnswer = regSettings.RequiresQuestionAndAnswer;
+    viewProps.activationMethod = regSettings.ActivationMethod;
 
     return (
       <RenderView

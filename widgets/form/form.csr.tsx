@@ -15,29 +15,39 @@ import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { FormEntity } from './form.entity';
 import { RestClientForContext } from '../../services/rest-client-for-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { getQueryParams } from '../common/query-params';
+import { TransferableRequestContext } from '../../editor/request-context';
 import { FormViewProps, getFormRulesViewProps, getFormHiddenFields } from './form.view-props';
 
 export function FormCSR(props: WidgetContext<FormEntity>) {
     const entity = props.model.Properties;
-    const context = props.requestContext;
-    const searchParams = context.searchParams;
+    const searchParams = useSearchParams();
+    const queryParams = useMemo(() => {
+        return getQueryParams(searchParams);
+    }, [searchParams]);
+
+    const context: TransferableRequestContext = useMemo(() => {
+        return {
+            ...props.requestContext,
+            searchParams: queryParams
+        };
+    }, [props.requestContext, queryParams]);
 
     const [viewProps, setViewProps] = useState<FormViewProps>({
         customSubmitAction: false,
         visibilityClasses: StylingConfig.VisibilityClasses,
         invalidClass: StylingConfig.InvalidClass,
-        skipDataSubmission: !context.isLive || (searchParams && !!searchParams['sf-content-action']),
+        skipDataSubmission: !context.isLive || (queryParams && !!queryParams['sf-content-action']),
         attributes: entity.Attributes
     });
     const [error, setError] = useState<string>('');
 
-    const queryParams = { ...searchParams };
-
     const getFormModel = (formDto: FormDto) => {
         const currentQueryParams: {[key: string]: string} = {...queryParams};
-        if (searchParams && searchParams['sf-content-action']) {
-            currentQueryParams['sf-content-action'] = encodeURIComponent(searchParams['sf-content-action']);
+        if (queryParams && queryParams['sf-content-action']) {
+            currentQueryParams['sf-content-action'] = encodeURIComponent(queryParams['sf-content-action']);
         }
         return RestClient.getFormLayout({ id: formDto.Id, queryParams: currentQueryParams }).then(formModel => {
             return formModel;

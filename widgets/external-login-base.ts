@@ -11,30 +11,22 @@ export class ExternalLoginBase {
     public static ShowSuccessMessageQueryKey = 'showSuccessMessage';
     public static ExternalLoginHandlerPath?: string = '/sitefinity/external-login-handler';
     public static ShowSuccessMessageQueryParameter?: boolean = false;
-    public static isError = (context: any) => {
-        if (context && context.searchParams[this.ErrorQueryKey]) {
-            return context.searchParams[this.ErrorQueryKey].toLowerCase() === 'true';
+    public static isError = (queryParams: {[key: string]: string}) => {
+        if (queryParams && queryParams[this.ErrorQueryKey]) {
+            return queryParams[this.ErrorQueryKey].toLowerCase() === 'true';
         }
 
         return false;
     };
 
-    public static ShowSuccessMessage = (context: any) => {
-        if (context && context.searchParams[this.ShowSuccessMessageQueryKey]) {
-            return context.searchParams[this.ShowSuccessMessageQueryKey].toLowerCase() === 'true';
-        }
-
-        return false;
-    };
-
-    public static GetDefaultReturnUrl(context: any, args: {
+    public static GetDefaultReturnUrl(queryParams: {[key: string]: string}, args: {
         isError?: boolean,
         redirectUrl?: string,
         shouldEncode?: boolean
     } = { isError: false, shouldEncode: false}) {
 
         const searchParams = {
-            ...context.searchParams
+            ...queryParams
         };
 
         delete searchParams[this.ErrorQueryKey];
@@ -77,10 +69,10 @@ export class ExternalLoginBase {
         return '';
     }
 
-    public static GetExternalLoginPath(context: any, provider: any, externalLoginHandlerPath?: string) {
+    public static GetExternalLoginPath(queryParams: {[key: string]: string}, provider: any, externalLoginHandlerPath?: string) {
         const expandPath = externalLoginHandlerPath || this.ExternalLoginHandlerPath;
-        const returnUrl = this.GetDefaultReturnUrl(context, { isError: false, shouldEncode: true });
-        const errorUrl = this.GetDefaultReturnUrl(context, { isError: true, shouldEncode: true });
+        const returnUrl = this.GetDefaultReturnUrl(queryParams, { isError: false, shouldEncode: true });
+        const errorUrl = this.GetDefaultReturnUrl(queryParams, { isError: true, shouldEncode: true });
 
         return `${expandPath}?provider=${provider}&returnUrl=${returnUrl}&errorUrl=${errorUrl}`;
     }

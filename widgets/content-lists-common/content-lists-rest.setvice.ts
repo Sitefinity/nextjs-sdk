@@ -13,7 +13,7 @@ import { RestClient } from '../../rest-sdk/rest-client';
 import { ServiceMetadata } from '../../rest-sdk/service-metadata';
 import { GetAllArgs } from '../../rest-sdk/args/get-all.args';
 import { ContentListEntityBase } from './content-lists-base.entity';
-import { RequestContext } from '../../editor/request-context';
+import { TransferableRequestContext } from '../../editor/request-context';
 import { EMTPY_GUID } from '../../editor/utils/guid';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
 import { ContentListEntity } from '../content-list/content-list-entity';
@@ -21,7 +21,7 @@ import { ContentListEntity } from '../content-list/content-list-entity';
 export class ContentListsCommonRestService {
     private static ClassificationSegmentRegex = /(^-in-((?:\w|-){1,}),(.+?);?$)+/;
 
-    static async getItems(entity: ContentListEntityBase, detailItem: DetailItem | undefined, requestContext?: RequestContext, currentPage: number = 1, traceContext?: any, showListViewOnChildDetailsView = true): Promise<CollectionResponse<SdkItem>> {
+    static async getItems(entity: ContentListEntityBase, detailItem: DetailItem | undefined, requestContext?: TransferableRequestContext, currentPage: number = 1, traceContext?: any, showListViewOnChildDetailsView = true): Promise<CollectionResponse<SdkItem>> {
         if (entity.SelectedItems && entity.SelectedItems.Content && entity.SelectedItems.Content.length > 0
             && entity.SelectedItems.Content[0].Type && entity.SelectedItems.Content[0].Variations) {
             const selectedContent = entity.SelectedItems.Content[0];
@@ -61,7 +61,7 @@ export class ContentListsCommonRestService {
                 type: selectedContent.Type,
                 provider: variation?.Source,
                 culture: requestContext?.culture,
-                orderBy: <OrderBy[]>[this.getOrderByExpression(entity)].filter(x => x),
+                orderBy: this.getOrderByExpression(entity),
                 fields: this.getSelectExpression(entity),
                 filter: bigFilter,
                 traceContext
@@ -134,9 +134,9 @@ export class ContentListsCommonRestService {
         return retVal;
     }
 
-    private static getOrderByExpression(entity: ContentListEntityBase): OrderBy | null {
+    private static getOrderByExpression(entity: ContentListEntityBase): OrderBy[] | undefined {
         if (entity.OrderBy === 'Manually') {
-            return null;
+            return;
         }
 
         const sortExpression = entity.OrderBy === 'Custom' ?
@@ -144,22 +144,27 @@ export class ContentListsCommonRestService {
             entity.OrderBy;
 
         if (!sortExpression) {
-            return null;
+            return;
         }
 
-        let sortExpressionParts = sortExpression.split(' ');
-        if (sortExpressionParts.length !== 2) {
-            return null;
-        }
+        const orderByCollection: OrderBy[] = [];
+        const sortExpressions = sortExpression.split(',');
+        sortExpressions.forEach(expression => {
+            const sortExpressionParts = expression.trim().split(' ');
+            if (sortExpressionParts.length !== 2) {
+                return;
+            }
 
-        let sortOrder = sortExpressionParts[1].toUpperCase();
+            const sortOrder = sortExpressionParts[1].trim().toUpperCase();
+            const orderBy: OrderBy = {
+                Name: sortExpressionParts[0],
+                Type: sortOrder
+            };
 
-        let orderBy: OrderBy = {
-            Name: sortExpressionParts[0],
-            Type: sortOrder
-        };
+            orderByCollection.push(orderBy);
+        });
 
-        return orderBy;
+        return orderByCollection;
     }
 
     private static getSelectExpression(entity: ContentListEntityBase): string[] {
@@ -194,7 +199,7 @@ export class ContentListsCommonRestService {
         return filter;
     }
 
-    public static getClassificationSegment(requestContext: RequestContext) {
+    public static getClassificationSegment(requestContext: TransferableRequestContext) {
         const url = requestContext.url;
         const segments = url ? url.split('/') : [];
         const matchedSegments = segments.map(x => decodeURIComponent(x)).map(x => x.match(ContentListsCommonRestService.ClassificationSegmentRegex)).filter(x => !!x);
@@ -211,7 +216,7 @@ export class ContentListsCommonRestService {
         return null;
     }
 
-    private static async getClassificationFilter(entity: ContentListEntityBase, requestContext: RequestContext, traceContext?: any) {
+    private static async getClassificationFilter(entity: ContentListEntityBase, requestContext: TransferableRequestContext, traceContext?: any) {
         const classificationSegment = this.getClassificationSegment(requestContext);
         if (classificationSegment) {
             const emptyClause = { FieldValue: EMTPY_GUID, FieldName: 'Id', Operator: FilterOperators.Equal };

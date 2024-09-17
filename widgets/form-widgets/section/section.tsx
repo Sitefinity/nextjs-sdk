@@ -45,7 +45,7 @@ function populateColumns(context: WidgetContext<FormSectionEntity>): FormSection
             children = context.model.Children.filter(x => x.PlaceHolder === currentName).map((x => {
                 const ret: WidgetContext<any> = {
                     model: x,
-                    metadata: getMinimumMetadata(RenderWidgetService.widgetRegistry.widgets[x.Name]),
+                    metadata: getMinimumMetadata(RenderWidgetService.widgetRegistry.widgets[x.Name], context.requestContext.isEdit),
                     requestContext: context.requestContext
                 };
 

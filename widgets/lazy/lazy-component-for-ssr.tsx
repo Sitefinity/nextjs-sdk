@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { RequestContext } from '../../editor/request-context';
+import { TransferableRequestContext } from '../../editor/request-context';
 import { EVENTS, PersonalizedWidgetsPayload, useSfEvents } from '../../pages/useSfEvents';
 import React from 'react';
 
@@ -11,7 +11,7 @@ interface RenderNodeValues {
     attributes: {[key: string]: any};
 };
 
-export function RenderLazyForSSR(props: {id: string, requestContext: RequestContext}) {
+export function RenderLazyForSSR(props: {id: string, requestContext: TransferableRequestContext}) {
     const [ htmls ] = useSfEvents<PersonalizedWidgetsPayload>(EVENTS.PERSONALIZED_WIDGETS_LOADED, true);
     const [renderValues, setRenderValues] = useState<RenderNodeValues[] | null>(null);
 

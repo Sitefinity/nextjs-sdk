@@ -1,6 +1,6 @@
 import { RequestArgs } from './request.args';
 
-export interface getSharedContentArgs extends RequestArgs {
+export interface GetSharedContentArgs extends RequestArgs {
     id: string;
     cultureName: string;
 }

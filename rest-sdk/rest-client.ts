@@ -51,7 +51,7 @@ import { ProviderDto } from './dto/provider.dto';
 import { ChangeLocationPriorityArgs, MovingDirection } from './args/change-location-priority.args';
 import { RequestArgs } from './args/request.args';
 import { GetFacatebleFieldsArgs } from './args/get-facateble-fields.args';
-import { getSharedContentArgs } from './args/get-shared-content.args';
+import { GetSharedContentArgs } from './args/get-shared-content.args';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
@@ -107,7 +107,7 @@ export class RestClient {
         return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
     }
 
-    public static getSharedContent(args: getSharedContentArgs): Promise<GenericContentItem> {
+    public static getSharedContent(args: GetSharedContentArgs): Promise<GenericContentItem> {
         let queryParams: {[key: string]: string} = {
             sf_fallback_prop_names: 'Content'
         };
@@ -821,13 +821,13 @@ export class RestClient {
 
             if (character === ',') {
                 if (openingBraceCounter > 0 && openingBraceCounter === closingBraceCounter) {
-                    let relatedField = input.substring(fieldStartIndex, charIterator - fieldStartIndex - 1).trim();
+                    let relatedField = input.substring(fieldStartIndex, fieldStartIndex + charIterator - fieldStartIndex - 1).trim();
                     allFields.push(relatedField);
                     fieldStartIndex = charIterator + 1;
                     openingBraceCounter = 0;
                     closingBraceCounter = 0;
                 } else if (openingBraceCounter === 0 && closingBraceCounter === 0) {
-                    let basicField = input.substring(fieldStartIndex, charIterator - fieldStartIndex - 1).trim();
+                    let basicField = input.substring(fieldStartIndex, fieldStartIndex + charIterator - fieldStartIndex - 1).trim();
                     allFields.push(basicField);
                     fieldStartIndex = charIterator + 1;
                 }
@@ -835,7 +835,7 @@ export class RestClient {
         }
 
         if (fieldStartIndex < charIterator) {
-            let lastField = input.substring(fieldStartIndex, charIterator - fieldStartIndex).trim();
+            let lastField = input.substring(fieldStartIndex, fieldStartIndex +  charIterator - fieldStartIndex).trim();
             allFields.push(lastField);
         }
 

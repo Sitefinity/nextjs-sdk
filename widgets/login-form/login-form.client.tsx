@@ -7,6 +7,8 @@ import { classNames } from '../../editor/utils/classNames';
 import { LoginFormViewProps } from './interfaces/login-form.view-props';
 import { SecurityService } from '../../services/security-service';
 import { LoginFormEntity } from './login-form.entity';
+import { useSearchParams } from 'next/navigation';
+import { getQueryParams } from '../common/query-params';
 import { getUniqueId } from '../../editor/utils/getUniqueId';
 
 const invalidDataAttr = 'data-sf-invalid';
@@ -15,15 +17,14 @@ const isValidEmail = function (email: string) {
 };
 
 export function LoginFormClient(props: LoginFormViewProps<LoginFormEntity>) {
+    const searchParams = useSearchParams();
     const usernameInputId = getUniqueId('sf-username-', props.widgetContext.model.Id);
     const passwordInputId = getUniqueId('sf-password-', props.widgetContext.model.Id);
     const rememberInputId = getUniqueId('sf-remember-', props.widgetContext.model.Id);
-    const context = props.widgetContext.requestContext;
-
     const labels = props.labels;
     const visibilityClassHidden = props.visibilityClasses[VisibilityStyle.Hidden];
-    const returnUrl = ExternalLoginBase.GetDefaultReturnUrl(context, { redirectUrl: props.redirectUrl });
-    const returnErrorUrl = ExternalLoginBase.GetDefaultReturnUrl(context, { isError: true, shouldEncode: false });
+    const returnUrl = ExternalLoginBase.GetDefaultReturnUrl(getQueryParams(searchParams), { redirectUrl: props.redirectUrl });
+    const returnErrorUrl = ExternalLoginBase.GetDefaultReturnUrl(getQueryParams(searchParams), { isError: true, shouldEncode: false });
     const passResetColumnSize = props.rememberMe ? 'col-md-6 text-end' : 'col-12';
 
     const formRef = React.useRef<HTMLFormElement>(null);
@@ -50,7 +51,7 @@ export function LoginFormClient(props: LoginFormViewProps<LoginFormEntity>) {
     useEffect(() => {
       const externalProviderData: ExternalProviderData[] = props.externalProviders?.map(provider => {
         const providerClass = ExternalLoginBase.GetExternalLoginButtonCssClass(provider.Name);
-        const externalLoginPath = ExternalLoginBase.GetExternalLoginPath(context, provider.Name);
+        const externalLoginPath = ExternalLoginBase.GetExternalLoginPath(getQueryParams(searchParams), provider.Name);
 
         return {
           cssClass: providerClass,
@@ -60,7 +61,7 @@ export function LoginFormClient(props: LoginFormViewProps<LoginFormEntity>) {
       }) ?? [];
 
       setExternalProvidersData(externalProviderData);
-    },[context, props.externalProviders]);
+    }, []);
 
     const validateForm = (form: HTMLFormElement) => {
         let isValid = true;
@@ -123,8 +124,8 @@ export function LoginFormClient(props: LoginFormViewProps<LoginFormEntity>) {
         <h2 className="mb-3">{labels.header}</h2>
         <div id="errorContainer"
           className={classNames('alert alert-danger my-3',{
-                    ['d-block']: ExternalLoginBase.isError(context) || showErrorMessage,
-                    [visibilityClassHidden]: !(ExternalLoginBase.isError(context) || showErrorMessage)
+                    ['d-block']: ExternalLoginBase.isError(getQueryParams(searchParams)) || showErrorMessage,
+                    [visibilityClassHidden]: !(ExternalLoginBase.isError(getQueryParams(searchParams)) || showErrorMessage)
                 })}
           role="alert" aria-live="assertive" data-sf-role="error-message-container">
           {errorMessage}

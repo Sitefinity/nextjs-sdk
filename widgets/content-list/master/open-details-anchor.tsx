@@ -1,6 +1,6 @@
 import { SdkItem } from '../../../rest-sdk/dto/sdk-item';
 import { DetailPageSelectionMode } from '../../content-lists-common/detail-page-selection-mode';
-import { RequestContext } from '../../../editor/request-context';
+import { TransferableRequestContext } from '../../../editor/request-context';
 
 export function OpenDetailsAnchor(props: {
     item: { Original: SdkItem, Title?: {Value?: string} };
@@ -8,7 +8,7 @@ export function OpenDetailsAnchor(props: {
     className?: string;
     text?: string;
     detailPageUrl?: string;
-    requestContext?: RequestContext
+    requestContext?: TransferableRequestContext
  }) {
     const item = props.item;
     let url: string | undefined = undefined;

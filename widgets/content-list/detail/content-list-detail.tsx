@@ -8,6 +8,8 @@ import { RestClient } from '../../../rest-sdk/rest-client';
 import { RenderView } from '../../common/render-view';
 import { ItemArgs } from '../../../rest-sdk/args/item.args';
 import { ContentListEntity } from '../content-list-entity';
+import { GetAllArgs } from '../../../rest-sdk/args/get-all.args';
+import { ContentListsCommonRestService } from '../../content-lists-common/content-lists-rest.setvice';
 
 export async function ContentListDetail(props: ContentListDetailProps<ContentListEntity>) {
     const queryParams: { [key: string]: string } = props.widgetContext.requestContext.searchParams || {};
@@ -21,20 +23,26 @@ export async function ContentListDetail(props: ContentListDetailProps<ContentLis
     };
 
     const viewProps: ContentListDetailViewProps<ContentListEntity> = {
-      widgetContext: props.widgetContext,
-      attributes: props.attributes,
-      detailItem: {} as any
+		widgetContext: props.widgetContext,
+		attributes: props.attributes,
+		detailItem: {} as any
     };
 
     if (queryParams.hasOwnProperty('sf-content-action')) {
-        if (queryParams['sf-auth']) {
-          queryParams['sf-auth'] = encodeURIComponent(queryParams['sf-auth']);
-        }
+		if (queryParams['sf-auth']) {
+			queryParams['sf-auth'] = encodeURIComponent(queryParams['sf-auth']);
+		}
 
-        itemArgs.additionalQueryParams = queryParams;
-        viewProps.detailItem = await RestClient.getItemWithStatus(itemArgs);
+		itemArgs.additionalQueryParams = queryParams;
+		viewProps.detailItem = await RestClient.getItemWithStatus(itemArgs);
+	} else if (!props.detailItem.Id) {
+		const items = await ContentListsCommonRestService.getItems(props.widgetContext.model.Properties, undefined, props.widgetContext.requestContext, 1, props.widgetContext.traceContext, props.widgetContext.model.Properties.ShowListViewOnChildDetailsView);
+
+		if (items.Items.length > 0) {
+			viewProps.detailItem = items.Items[0];
+		}
     } else {
-      viewProps.detailItem = await RestClient.getItem(itemArgs);
+      	viewProps.detailItem = await RestClient.getItem(itemArgs);
     }
 
     return (

@@ -17,7 +17,13 @@ export interface WidgetMetadata extends WidgetMetadataBase {
     views?: { [key: string]: Function | { Title: string, ViewFunction: Function } };
 }
 
-export function getMinimumMetadata(metadata: WidgetMetadata): WidgetMetadataBase {
+export function getMinimumMetadata(metadata: WidgetMetadata, isEdit: boolean): WidgetMetadataBase {
+    if (!isEdit) {
+        return {
+            ssr: metadata?.ssr
+        };
+    }
+
     return deepCopy({
         designerMetadata: metadata?.designerMetadata,
         editorMetadata: metadata?.editorMetadata,

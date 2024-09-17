@@ -107,7 +107,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         notFound();
     }
 
-    const liveUrl = `${RootUrlService.getClientCmsUrl()}/${params.slug.join('/') + '?' + new URLSearchParams(searchParams).toString()}`;
+    const liveUrl = '/' + params.slug.join('/') + '?' + new URLSearchParams(searchParams).toString();
 
     let pageTemplate;
     if (layout.TemplateName && templates && templates[layout.TemplateName]) {

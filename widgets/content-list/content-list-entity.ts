@@ -1,4 +1,4 @@
-import { Attributes, Category, Choice,ConditionalVisibility, Content, ContentSection, ContentSectionTitles, CssFieldMappings, DataModel, DataType, DefaultValue, Description, DisplayName, FallbackToDefaultValueWhenEmpty, FieldMapping, FieldMappings, KnownFieldTypes, MaxLength, Model, SectionsOrder, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
+import { Attributes, Category, Choice,ConditionalVisibility, Content, ContentSection, ContentSectionTitles, CssFieldMappings, DataModel, DataType, DefaultValue, Description, DisplayName, FallbackToDefaultValueWhenEmpty, FieldMapping, FieldMappings, KnownFieldTypes, MaxLength, Model, Required, SectionsOrder, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { ContentListEntityBase } from '../content-lists-common/content-lists-base.entity';
 import { ContentListSettings } from '../../editor/widget-framework/content-list-settings';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
@@ -103,6 +103,7 @@ export class ContentListEntity implements ContentListEntityBase {
         AllowMultipleItemsSelection: false
     })
     @ConditionalVisibility('{\u0022conditions\u0022:[{\u0022fieldName\u0022:\u0022DetailPageMode\u0022,\u0022operator\u0022:\u0022Equals\u0022,\u0022value\u0022:\u0022ExistingPage\u0022}],\u0022inline\u0022:\u0022true\u0022}')
+    @Required('Please select a details page.')
     DetailPage: MixedContentContext | null = null;
 
     // Advanced

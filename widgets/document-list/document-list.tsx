@@ -11,7 +11,7 @@ import { DocumentDetailItemView } from './document-list-detail-item.view';
 import { ContentListsCommonRestService } from '../content-lists-common/content-lists-rest.setvice';
 import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
 import { DetailItem } from '../../editor/detail-item';
-import { RequestContext } from '../../editor/request-context';
+import { TransferableRequestContext } from '../../editor/request-context';
 import { classNames } from '../../editor/utils/classNames';
 import { htmlAttributes, getCustomAttributes, setHideEmptyVisual } from '../../editor/widget-framework/attributes';
 import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
@@ -20,6 +20,7 @@ import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { getPageNumber } from '../pager/pager-view-model';
 import { RenderView } from '../common/render-view';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { RestClientForContext } from '../../services/rest-client-for-context';
 
 export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
     const {span, ctx} = Tracer.traceWidget(props, true);
@@ -112,7 +113,7 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
  const handleDetailView = async (
     detailItem: DetailItem,
     entity: DocumentListEntity,
-    context: RequestContext,
+    context: TransferableRequestContext,
     traceContext: any
  ) => {
     let item;
@@ -141,31 +142,9 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
     return detailViewProps;
 };
 
- const handleListView = async (entity: DocumentListEntity, context: RequestContext, currentPage: number, traceContext: any) => {
-    let url: string = '';
-    const whitelistedQueryParams = ['sf_site','sfaction','sf_provider','sf_culture'];
-    const queryList = new URLSearchParams(getWhiteListSearchParams(context.searchParams || {}, whitelistedQueryParams));
-    let queryString = '?' + queryList.toString();
-
-    if (!context.isEdit) {
-        if (entity && entity.DetailPageMode === DetailPageSelectionMode.SamePage) {
-            url = context.layout.Fields ? context.layout.Fields.ViewUrl : context.layout.MetaInfo.CanonicalUrl;
-        } else if (entity && entity.DetailPage) {
-            const page = await RestClient.getItem({
-                 type: RestSdkTypes.Pages,
-                 id: entity.DetailPage.ItemIdsOrdered![0],
-                 provider: entity.DetailPage.Content[0].Variations![0].Source,
-                 traceContext
-            });
-
-            url = page.RelativeUrlPath;
-            queryString = getPageQueryString(page as PageItem);
-        }
-    }
-
+ const handleListView = async (entity: DocumentListEntity, context: TransferableRequestContext, currentPage: number, traceContext: any) => {
     const items = await ContentListsCommonRestService.getItems(entity, context.detailItem, context, currentPage, traceContext);
     const viewProps: DocumentListMasterViewProps<DocumentListEntity> = {
-        openDetails: !(entity.ContentViewDisplayMode === ContentViewDisplayMode.Master && entity.DetailPageMode === 'SamePage'),
         items: items,
         pagerMode: entity.ListSettings?.DisplayMode || ListDisplayMode.All,
         renderLinks: !(entity.ContentViewDisplayMode === ContentViewDisplayMode.Master && entity.DetailPageMode === DetailPageSelectionMode.SamePage),
@@ -182,11 +161,31 @@ export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
             pagerQueryTemplate: entity.PagerQueryTemplate,
             pagerTemplate: entity.PagerTemplate
         },
-        url,
-        queryString,
         attributes: {},
         widgetContext: {} as any
     };
 
-     return viewProps;
- };
+    const whitelistedQueryParams = ['sf_site','sfaction','sf_provider','sf_culture'];
+    const queryList = new URLSearchParams(getWhiteListSearchParams(context.searchParams || {}, whitelistedQueryParams));
+    viewProps.queryString = '?' + queryList.toString();
+
+    if (!context.isEdit) {
+        if (entity && entity.DetailPageMode === DetailPageSelectionMode.SamePage) {
+            viewProps.url = context.layout.Fields ? context.layout.Fields.ViewUrl : context.layout.MetaInfo.CanonicalUrl;
+        } else if (entity && entity.DetailPage) {
+            const detailPages = await RestClientForContext.getItems<PageItem>(entity.DetailPage, {
+                type: RestSdkTypes.Pages,
+                culture: context.culture
+            });
+
+            if (detailPages.Items.length === 1) {
+                viewProps.url = detailPages.Items[0].RelativeUrlPath;
+                viewProps.queryString = getPageQueryString(detailPages.Items[0] as PageItem);
+            } else {
+                viewProps.renderLinks = false;
+            }
+        }
+    }
+
+    return viewProps;
+};

@@ -29,11 +29,9 @@ export interface RegistrationViewProps<T extends RegistrationEntity> extends Vie
         validationRequiredMessage: string;
         validationMismatchMessage: string;
         validationInvalidEmailMessage: string;
-        activationMessage?: string;
     };
     externalProviders?: ExternalProvider[];
     loginPageUrl?: string;
-    isAccountActivationRequest?: boolean;
     redirectUrl?: string;
     postRegistrationAction?: PostRegistrationAction;
     activationPageUrl?: string;

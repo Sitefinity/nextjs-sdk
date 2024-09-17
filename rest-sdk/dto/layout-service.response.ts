@@ -3,11 +3,10 @@ import { WidgetModel } from '../../editor/widget-framework/widget-model';
 import { RedirectResponse } from './redirect.response';
 import { PageScript } from './scripts';
 
-export interface LayoutServiceResponse {
+export interface PartialLayoutServiceResponse {
     Culture: string;
     SiteId: string;
     Id: string;
-    ComponentContext: ComponentContext;
     MetaInfo: {
         Title: string,
         Description: string,
@@ -20,12 +19,16 @@ export interface LayoutServiceResponse {
         OpenGraphSite: string,
         CanonicalUrl: string,
     },
-    TemplateName?: string,
-    DetailItem?: DetailItem,
     UrlParameters: string[],
-    Scripts: PageScript[],
     Fields: { [key: string]: any },
-    Site: any,
+    Site: any
+}
+
+export interface LayoutServiceResponse extends PartialLayoutServiceResponse {
+    ComponentContext: ComponentContext,
+    DetailItem?: DetailItem,
+    Scripts: PageScript[],
+    TemplateName?: string,
     MetadataHash: string
 }
 

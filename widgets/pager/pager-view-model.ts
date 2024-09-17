@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { RequestContext } from '../../editor/request-context';
+import { TransferableRequestContext } from '../../editor/request-context';
 import { PagerMode } from '../common/page-mode';
 
 export class PagerViewModel {
@@ -71,7 +71,7 @@ export class PagerViewModel {
         return pageNumber >= 1 && pageNumber <= this.EndPageIndex;
     }
 
-    public getPagerUrl(pageNumber: number, context: RequestContext): string {
+    public getPagerUrl(pageNumber: number, context: TransferableRequestContext): string {
         let path: string = context?.url || context?.layout.Fields.ViewUrl;
         if (path[0] !== '/') {
             path = `/${path}`;
@@ -123,7 +123,7 @@ export class PagerViewModel {
     }
 }
 
-export function getPageNumber(pagerMode: PagerMode, requestContext: RequestContext, pagerQueryTemplate: string = PagerViewModel.PageNumberDefaultQueryTemplate, pagerTemplate: string = PagerViewModel.PageNumberDefaultTemplate) {
+export function getPageNumber(pagerMode: PagerMode, requestContext: TransferableRequestContext, pagerQueryTemplate: string = PagerViewModel.PageNumberDefaultQueryTemplate, pagerTemplate: string = PagerViewModel.PageNumberDefaultTemplate) {
     if (pagerMode === PagerMode.QueryParameter) {
         const template = pagerQueryTemplate !== '' ? pagerQueryTemplate : PagerViewModel.PageNumberDefaultQueryTemplate;
         const queryParams = requestContext.searchParams;
