@@ -8,7 +8,7 @@ import { RenderWidgetService } from '../../services/render-widget-service';
 import { QueryParamNames } from '../../rest-sdk/query-params-names';
 import { FormClient } from './form-client';
 import { classNames } from '../../editor/utils/classNames';
-import { htmlAttributes } from '../../editor/widget-framework/attributes';
+import { htmlAttributes, setWarning } from '../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { WidgetModel } from '../../editor/widget-framework/widget-model';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
@@ -20,6 +20,7 @@ import { useSearchParams } from 'next/navigation';
 import { getQueryParams } from '../common/query-params';
 import { TransferableRequestContext } from '../../editor/request-context';
 import { FormViewProps, getFormRulesViewProps, getFormHiddenFields } from './form.view-props';
+import { ErrorCodeException } from '../../rest-sdk/errors/error-code.exception';
 
 export function FormCSR(props: WidgetContext<FormEntity>) {
     const entity = props.model.Properties;
@@ -94,13 +95,22 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
 
                 });
             }).catch(error => {
-                setError(error);
+                let errorMessage = JSON.stringify(error);
+                if (error instanceof ErrorCodeException) {
+                    errorMessage = error.message;
+                }
+
+                setError(errorMessage);
             });
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const formDataAttributes = htmlAttributes(props);
+    if (viewProps.warning) {
+        setWarning(formDataAttributes, viewProps.warning);
+    }
+
     const defaultClass = entity.CssClass;
     const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
     const containerClass = classNames(

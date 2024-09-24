@@ -3,20 +3,23 @@ import { SdkItem } from '../../rest-sdk/dto/sdk-item';
 import { ViewPropsBase } from '../common/view-props-base';
 import { ContentListEntityBase } from './content-lists-base.entity';
 
-export interface ContentLisMasterProps<T extends ContentListEntityBase> extends ViewPropsBase<T> {
+export interface ContentListMasterProps<T extends ContentListEntityBase> extends ViewPropsBase<T> {
     detailPageUrl?: string;
-    items: CollectionResponse<SdkItem>,
+    items: CollectionResponse<SdkItem>;
     fieldCssClassMap: { [key: string]: string };
     fieldMap: { [key: string]: string };
     viewName: 'CardsList' | 'ListWithImage' | 'ListWithSummary';
+    pageNumber: number;
 }
 
 export interface ContentListMasterViewProps<T extends ContentListEntityBase> extends ViewPropsBase<T> {
-    detailPageUrl?: string,
+    detailPageUrl?: string;
     items: {
         Original: SdkItem,
         [key: string]: any
-    }[]
+    }[];
+    totalCount: number;
+    pageNumber: number;
 }
 
 export interface ContentListDetailProps<T extends ContentListEntityBase> extends ViewPropsBase<T> {

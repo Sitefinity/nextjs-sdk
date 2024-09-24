@@ -1,12 +1,9 @@
 'use server';
 
-import { Fragment } from 'react';
 import { ContentListEntity } from './content-list-entity';
 import { ContentListDetail } from './detail/content-list-detail';
 import { ContentListMaster } from './master/content-list-master';
 import { ContentListsCommonRestService } from '../content-lists-common/content-lists-rest.setvice';
-import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
-import { Pager } from '../pager/pager';
 import { htmlAttributes, setHideEmptyVisual } from '../../editor/widget-framework/attributes';
 import { DetailItem } from '../../editor/detail-item';
 import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
@@ -19,7 +16,7 @@ import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { FilterOperators } from '../../rest-sdk/filters/filter-clause';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
-import { ContentLisMasterProps, ContentListDetailProps } from '../content-lists-common/content-list.view-props';
+import { ContentListMasterProps, ContentListDetailProps } from '../content-lists-common/content-list.view-props';
 import { Dictionary } from '../../typings/dictionary';
 import { RestClientForContext } from '../..';
 
@@ -35,7 +32,7 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
     const context = props.requestContext;
     const pageNumber = getPageNumber(properties.PagerMode, props.requestContext, properties.PagerQueryTemplate, properties.PagerTemplate);
     let detailViewProps: ContentListDetailProps<ContentListEntity> = {} as any;
-    let masterViewProps: ContentLisMasterProps<ContentListEntity> = {} as any;
+    let masterViewProps: ContentListMasterProps<ContentListEntity> = {} as any;
     let isDetailView = false;
 
     if (properties.ContentViewDisplayMode === ContentViewDisplayMode.Automatic) {
@@ -67,26 +64,31 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
         masterViewProps = await handleListView(props, context, pageNumber, ctx);
     }
 
+    const attributes = htmlAttributes(props);
+    if (props.requestContext.isEdit && props.model.Properties.SelectedItems?.Content?.length &&
+        props.model.Properties.SelectedItems?.Content[0].Variations &&
+        props.model.Properties.SelectedItems.Content[0].Type) {
+        setHideEmptyVisual(attributes, true);
+    }
+
     const result = (
-      <Fragment>
+      <>
         { isDetailView && <ContentListDetail {...detailViewProps} /> }
         { !isDetailView && <ContentListMaster {...masterViewProps} /> }
-        { !isDetailView && properties.ListSettings?.DisplayMode === ListDisplayMode.Paging &&
-        <Pager
-          currentPage={pageNumber}
-          itemsTotalCount={masterViewProps.items.TotalCount}
-          pagerMode={properties.PagerMode}
-          itemsPerPage={properties.ListSettings.ItemsPerPage}
-          pagerQueryTemplate={properties.PagerQueryTemplate}
-          pagerTemplate={properties.PagerTemplate}
-          context={context}
-                />
-            }
         { Tracer.endSpan(span) }
-      </Fragment>
+      </>
     );
 
-    return result;
+    // wrap everything in a single element so it will appear as a whole widget in the editor
+    if (props.requestContext.isEdit) {
+        return (
+          <div {...attributes}>
+            { result }
+          </div>
+        );
+    } else {
+        return result;
+    }
 }
 
 async function handleShowDetailsViewOnChildDetailsView(props: WidgetContext<ContentListEntity>) {
@@ -161,11 +163,7 @@ function getAttributes(props: WidgetContext<ContentListEntity>, fieldName: strin
 
     classAttribute.Value = classAttribute.Value.trim();
 
-    const attributes = htmlAttributes(props);
-    if (props.requestContext.isEdit && props.model.Properties.SelectedItems?.Content?.length && props.model.Properties.SelectedItems?.Content[0].Variations && props.model.Properties.SelectedItems.Content[0].Type) {
-        setHideEmptyVisual(attributes, true);
-    }
-
+    const attributes: Dictionary = {};
     contentListAttributes.forEach((pair) => {
         attributes[pair.Key] = pair.Value;
     });
@@ -215,14 +213,15 @@ async function handleListView(props: WidgetContext<ContentListEntity>, requestCo
         }
     }
 
-    let contentListMasterModel: ContentLisMasterProps<ContentListEntity> = {
+    let contentListMasterModel: ContentListMasterProps<ContentListEntity> = {
         detailPageUrl: detailPageUrl,
         fieldCssClassMap: fieldCssClassMap,
         fieldMap: listFieldMapping,
         items: items,
         viewName: props.model.Properties.SfViewName as any,
         attributes: getAttributes(props, 'Content list'),
-        widgetContext: getMinimumWidgetContext(props)
+        widgetContext: getMinimumWidgetContext(props),
+        pageNumber: currentPage
     };
 
     return contentListMasterModel;

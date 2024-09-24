@@ -40,7 +40,7 @@ export function SearchResultsClient(props: SearchResultsViewProps<SearchResultsE
     }
 
     if (entity.NoResultsHeader) {
-      initialHeader = entity.NoResultsHeader.replace('\"{0}\"', searchParams.searchQuery || '\"\"');
+      initialHeader = entity.NoResultsHeader.replace('{0}', searchParams.searchQuery || '');
     }
 
     const [resultsHeader, setResultsHeader] = useState<string>(initialHeader);

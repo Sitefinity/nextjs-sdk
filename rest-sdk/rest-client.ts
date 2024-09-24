@@ -1048,6 +1048,7 @@ export class RestSdkTypes {
     public static readonly Event: string = 'Telerik.Sitefinity.Events.Model.Event';
     public static readonly Calendar: string = 'Telerik.Sitefinity.Events.Model.Calendar';
     public static readonly BlogPost: string = 'Telerik.Sitefinity.Blogs.Model.BlogPost';
+    public static readonly Author: string = 'Telerik.Sitefinity.DynamicTypes.Model.Authors.Author';
 }
 
 interface RequestData {

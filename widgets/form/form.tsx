@@ -6,7 +6,7 @@ import { RenderWidgetService } from '../../services/render-widget-service';
 import { QueryParamNames } from '../../rest-sdk/query-params-names';
 import { FormClient } from './form-client';
 import { classNames } from '../../editor/utils/classNames';
-import { htmlAttributes } from '../../editor/widget-framework/attributes';
+import { htmlAttributes, setWarning } from '../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { WidgetModel } from '../../editor/widget-framework/widget-model';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
@@ -90,6 +90,10 @@ export async function Form(props: WidgetContext<FormEntity>) {
     }
 
     const formDataAttributes = htmlAttributes(props);
+    if (viewProps.warning) {
+        setWarning(formDataAttributes, viewProps.warning);
+    }
+
     const defaultClass = entity.CssClass;
     const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
     const containerClass = classNames(

@@ -9,9 +9,9 @@ import { ImageItem } from '../../../rest-sdk/dto/image-item';
 import { SdkItem } from '../../../rest-sdk/dto/sdk-item';
 import { RenderView } from '../../common/render-view';
 import { ContentListEntity } from '../content-list-entity';
-import { ContentLisMasterProps, ContentListMasterViewProps } from '../../content-lists-common/content-list.view-props';
+import { ContentListMasterProps, ContentListMasterViewProps } from '../../content-lists-common/content-list.view-props';
 
-export function ContentListMaster(props: ContentLisMasterProps<ContentListEntity>) {
+export function ContentListMaster(props: ContentListMasterProps<ContentListEntity>) {
     let data: { viewName: string, model: ContentListMasterViewProps<ContentListEntity>} = {} as any;
     const dataItems = props.items;
 
@@ -51,7 +51,9 @@ export function ContentListMaster(props: ContentLisMasterProps<ContentListEntity
                     },
                     Original: x
                 };
-            })
+            }),
+            totalCount: props.items.TotalCount,
+            pageNumber: props.pageNumber
         };
 
         data = { viewName: props.viewName, model: viewProps };
@@ -83,7 +85,9 @@ export function ContentListMaster(props: ContentLisMasterProps<ContentListEntity
                 }
 
                 return itemModel;
-            })
+            }),
+            totalCount: props.items.TotalCount,
+            pageNumber: props.pageNumber
         };
 
         data = { viewName: props.viewName, model: viewProps };
@@ -106,7 +110,9 @@ export function ContentListMaster(props: ContentLisMasterProps<ContentListEntity
                         };
                     });
                     return item;
-                })
+                }),
+                totalCount: props.items.TotalCount,
+                pageNumber: props.pageNumber
             }
         };
     }
