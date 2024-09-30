@@ -61,11 +61,10 @@ export class RestClientForContext {
         }
 
         const itemsForContext = await RestClient.getItems<T>(args);
-        let items = itemsForContext.Items;
 
-        if (!externalArgs?.orderBy && Array.isArray(contentContext.ItemIdsOrdered)
+        if (!externalArgs?.orderBy?.length && Array.isArray(contentContext.ItemIdsOrdered)
             && contentContext.ItemIdsOrdered.length > 0 && contentContext.ItemIdsOrdered.length === itemsForContext.Items.length) {
-            items = RestClientForContext.orderItemsManually<T>(contentContext.ItemIdsOrdered, items);
+            itemsForContext.Items = RestClientForContext.orderItemsManually<T>(contentContext.ItemIdsOrdered, itemsForContext.Items);
         }
 
         return itemsForContext;

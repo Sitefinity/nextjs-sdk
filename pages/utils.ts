@@ -78,7 +78,8 @@ export async function pageMetadata({ params, searchParams }: PageParams): Promis
             },
             alternates: {
                 canonical: layout.MetaInfo.CanonicalUrl
-            }
+            },
+            robots: layout?.Fields && layout.Fields.Crawlable === false ? { index: false } : undefined
         };
     }
 

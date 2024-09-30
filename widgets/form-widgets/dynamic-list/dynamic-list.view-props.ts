@@ -7,6 +7,7 @@ import { ViewPropsBase } from '../../common/view-props-base';
 import { ChoiceOption } from '../common/choice-option';
 import { DynamicListEntity } from './dynamic-list.entity';
 import { SelectionMode, TaxonSelectionMode } from './selection-modes';
+import { ServiceMetadata } from '../../../rest-sdk/service-metadata';
 
 export interface DynamicListViewProps<T extends DynamicListEntity> extends ViewPropsBase<T> {
     label: string | null;
@@ -20,22 +21,26 @@ export interface DynamicListViewProps<T extends DynamicListEntity> extends ViewP
 
 export async function getChoiceItems(entity: DynamicListEntity, traceContext?: any): Promise<ChoiceOption[]> {
     let items: SdkItem[] = [];
-    const defaultFieldName: string = 'Title';
+    let defaultFieldName: string = 'Title';
+
     if (entity.ListType === SelectionMode.Classification) {
         items = await getClassifications(entity, traceContext);
     } else if (entity.ListType === SelectionMode.Content) {
-        items = await getContent(entity, traceContext);
+        const [itemsFromContent, defaultFieldNameFromContent] = await getContent(entity, traceContext);
+        items = itemsFromContent;
+        defaultFieldName = defaultFieldNameFromContent ?? defaultFieldName;
     }
 
     return transformItemsToChoices(items, defaultFieldName, entity);
 }
 
 
-async function getContent(entity: DynamicListEntity, traceContext?: any): Promise<SdkItem[]> {
+async function getContent(entity: DynamicListEntity, traceContext?: any): Promise<[SdkItem[], string | null]> {
     if (entity.SelectedContent?.Content &&
         entity.SelectedContent.Content.length > 0 &&
         entity.SelectedContent.Content[0].Type != null) {
         const itemType = entity.SelectedContent.Content[0].Type;
+        const defaultFieldName = await ServiceMetadata.getDefaultFieldName(itemType);
 
         const getAllArgs: GetAllArgs = {
             orderBy: [],
@@ -49,10 +54,10 @@ async function getContent(entity: DynamicListEntity, traceContext?: any): Promis
         }
 
         const itemsResponse = await RestClientForContext.getItems(entity.SelectedContent, getAllArgs);
-        return itemsResponse.Items;
+        return [itemsResponse.Items, defaultFieldName];
     }
 
-    return [];
+    return [[], null];
 }
 
 function getOrderByExpressionForContent(entity: DynamicListEntity) {

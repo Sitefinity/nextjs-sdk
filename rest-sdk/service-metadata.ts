@@ -28,7 +28,30 @@ export class ServiceMetadata {
         return ServiceMetadata.serviceMetadataCache;
     }
 
-    public static getSetNameFromType(itemType: string) {
+    public static getDefaultFieldName(typeFullName: string)  {
+        const entitySet = this.getSetNameFromType(typeFullName);
+
+        if (!entitySet) {
+            throw new Error('Entity set is undefined');
+        }
+
+        const entityTypeDef = this.getEntityDefinition(entitySet);
+        const defaultFieldPropName = 'Telerik.Sitefinity.V1.DefaultField';
+        const propertiesPropName = 'properties';
+
+        if (entityTypeDef.hasOwnProperty(defaultFieldPropName)) {
+            return entityTypeDef[defaultFieldPropName];
+        } else if (entityTypeDef.hasOwnProperty(propertiesPropName)) {
+            const defaultFieldName = entityTypeDef[propertiesPropName][defaultFieldPropName];
+            if (defaultFieldName) {
+                return defaultFieldName;
+            }
+        }
+
+        return 'Title';
+    }
+
+    public static getSetNameFromType(itemType: string)  {
         const definition = ServiceMetadata.serviceMetadataCache.definitions[itemType];
         if (definition != null) {
             const sets = ServiceMetadata.serviceMetadataCache.entityContainer.entitySets;
@@ -149,6 +172,20 @@ export class ServiceMetadata {
         }
 
         return null;
+    }
+
+    private static getEntityDefinition(itemType : string) {
+        const mainEntitySet = ServiceMetadata.serviceMetadataCache.entityContainer.entitySets[itemType];
+
+        if (!mainEntitySet) {
+            throw new Error(`Could not find metadata for type ${itemType}`);
+        }
+
+        const entityTypeRef = mainEntitySet.entityType['$ref'];
+        const entityTypeName = entityTypeRef.replace('#/definitions/', '');
+        const entityTypeDef = ServiceMetadata.serviceMetadataCache.definitions[entityTypeName];
+
+        return entityTypeDef;
     }
 
     private static isRelatedProperty(type: string, propName: string) {

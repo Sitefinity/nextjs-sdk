@@ -13,11 +13,10 @@ export function getProxyHeaders(host: string) {
     }
 
     let headersCollection: { [key: string]: string }  = {};
-    if (process.env.SF_CLOUD_KEY) {
+    if (process.env.SF_LOCAL_VALIDATION_KEY) {
         // for Sitefinity cloud
         headersCollection['X-SF-BYPASS-HOST'] = resolvedHost;
-
-        headersCollection['X-SF-BYPASS-HOST-VALIDATION-KEY'] = process.env.SF_CLOUD_KEY;
+        headersCollection['X-SF-BYPASS-HOST-VALIDATION-KEY'] = process.env.SF_LOCAL_VALIDATION_KEY;
     } else {
         headersCollection['X-ORIGINAL-HOST'] = resolvedHost;
     }
