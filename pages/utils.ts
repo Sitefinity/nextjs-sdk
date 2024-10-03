@@ -55,7 +55,7 @@ export async function pageMetadata({ params, searchParams }: PageParams): Promis
 
     const layout = layoutResponse.layout;
     if (layout?.MetaInfo) {
-        return {
+        const result: Metadata = {
             title: layout.MetaInfo.Title,
             description: layout.MetaInfo.Description,
             openGraph: {
@@ -73,14 +73,19 @@ export async function pageMetadata({ params, searchParams }: PageParams): Promis
                 ],
                 siteName: layout.MetaInfo.OpenGraphSite
             },
-            other: {
-                'og:type': layout.MetaInfo.OpenGraphType
-            },
             alternates: {
                 canonical: layout.MetaInfo.CanonicalUrl
             },
             robots: layout?.Fields && layout.Fields.Crawlable === false ? { index: false } : undefined
         };
+
+        // hack to check ogTypes. Otherwise and error is thrown and the whole page does not render
+        const ogTypes = ['article', 'book', 'music.song', 'music.album', 'music.playlist', 'music.radio_station', 'profile', 'website', 'video.tv_show', 'video.other', 'video.movie', 'video.episode'];
+        if (layout.MetaInfo.OpenGraphType && ogTypes.indexOf(layout.MetaInfo.OpenGraphType) > -1) {
+            (result.openGraph as any).type = layout.MetaInfo.OpenGraphType;
+        }
+
+        return result;
     }
 
     return {};

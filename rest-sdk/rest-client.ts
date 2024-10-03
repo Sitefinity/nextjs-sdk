@@ -660,7 +660,11 @@ export class RestClient {
         let sysParamsQueryString = RestClient.buildQueryParams(queryParams);
         let url = `${pagePath}${sysParamsQueryString}`;
         if (!pagePath.includes('http') && !pagePath.includes('https')) {
-            url = RootUrlService.getServerCmsUrl() + '/' + url;
+            if (!url.startsWith('/')) {
+                url = '/' + url;
+            }
+
+            url = RootUrlService.getServerCmsUrl() + url;
         }
 
         let requestData: RequestData = { url: url, headers: headers, method: 'GET' };
@@ -908,7 +912,7 @@ export class RestClient {
         }
 
         if (typeof window === 'undefined') {
-            const host = getHostServerContext();
+            const host = getHostServerContext() || requestData.headers?.host;
             const proxyHeaders = getProxyHeaders(host!);
             Object.keys(proxyHeaders).forEach((headerKey) => {
                 headers[headerKey] = proxyHeaders[headerKey];

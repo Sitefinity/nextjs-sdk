@@ -68,7 +68,7 @@ export function DynamicListCSR(props: WidgetContext<DynamicListEntity>) {
                 setRender(<DropdownDefaultView {...viewProps} />);
             } else {
                 const viewProps: CheckboxesViewProps<CheckboxesEntity> = {
-                    choices: baseEntity.Choices || [],
+                    choices: choices || [],
                     cssClass: entity.CssClass || '',
                     hasAdditionalChoice: false,
                     instructionalText: entity.InstructionalText || '',
