@@ -18,6 +18,7 @@ import { classNames } from '../../../editor/utils/classNames';
 export function DynamicListCSR(props: WidgetContext<DynamicListEntity>) {
     const entity = props.model.Properties;
     const hasContent = entity.SelectedContent != null && entity.SelectedContent.Content != null && entity.SelectedContent.Content[0].Type;
+    const requestContext = props.requestContext;
     const dataAttributes = htmlAttributes(props);
 
     const [defaultRender, setRender] = useState<JSX.Element | null>(null);
@@ -39,7 +40,7 @@ export function DynamicListCSR(props: WidgetContext<DynamicListEntity>) {
             Label: entity.Label || ''
         };
 
-        getChoiceItems(entity).then(choices => {
+        getChoiceItems(entity, requestContext).then(choices => {
             if (entity.SfViewName === 'Dropdown') {
                 if (choices.length > 0) {
                     choices.unshift({ Name: 'Select', Value: '', Selected: true });

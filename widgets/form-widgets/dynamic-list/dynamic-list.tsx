@@ -17,7 +17,8 @@ import { StylingConfig } from '../../styling/styling-config';
 export async function DynamicList(props: WidgetContext<DynamicListEntity>) {
     const { span, ctx } = Tracer.traceWidget(props, true);
     const entity = props.model.Properties;
-    const choices = await getChoiceItems(entity, ctx);
+    const requestContext = props.requestContext;
+    const choices = await getChoiceItems(entity, requestContext, ctx);
     let defaultRender: JSX.Element;
 
     const baseEntity: ChoiceEntityBase = {

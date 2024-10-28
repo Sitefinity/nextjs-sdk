@@ -43,6 +43,12 @@ export async function pageLayout({ params, searchParams, relatedFields, traceCon
 export async function pageMetadata({ params, searchParams }: PageParams): Promise<Metadata> {
     let layoutResponse: LayoutResponse | null = null;
 
+    if (params && params.slug && params.slug.length > 0) {
+        if (params.slug.some(x => x === '_next') || params.slug[params.slug.length - 1].indexOf('.') !== -1) {
+            return {};
+        }
+    }
+
     try {
         layoutResponse = await pageLayout({ params, searchParams });
     } catch (error) {

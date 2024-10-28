@@ -31,12 +31,14 @@ import { FacetsViewModelDto } from './dto/facets/facets-viewmodel-dto';
 import { GetFacetsArgs } from './args/get-facets.args';
 import { FacetFlatResponseDto } from './dto/facets/facet-flat-dto';
 import { SearchArgs } from './args/perform-search.args';
+import { SuggestionsArgs } from './args/get-search-suggestions.args';
 import { SearchResultDocumentDto } from './dto/search-results-document-dto';
 import { GetTaxonArgs } from './args/get-taxon.args';
 import { TaxonDto } from './dto/taxon-dto';
 import { GetTemplatesArgs } from './args/get-templates-args';
 import { PageTemplateCategoryDto } from './dto/page-template-category.dto';
-import { getProxyHeaders } from '../proxy/headers';
+import { PageTemplateStatisticsDto } from './dto/page-template-statistics.dto';
+import { RENDERER_NAME, getProxyHeaders } from '../proxy/headers';
 import { WidgetModel } from '../editor/widget-framework/widget-model';
 import { GetHierarchicalWidgetModelArgs } from './args/get-hierarchical-widget-model.args';
 import { CommonArgs } from './args/common.args';
@@ -52,6 +54,8 @@ import { ChangeLocationPriorityArgs, MovingDirection } from './args/change-locat
 import { RequestArgs } from './args/request.args';
 import { GetFacatebleFieldsArgs } from './args/get-facateble-fields.args';
 import { GetSharedContentArgs } from './args/get-shared-content.args';
+import { GetTemplatesStatisticsArgs } from './args/get-templates-statistics-args';
+import { SearchMetadataDto } from './dto/search-metadata-dto';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
@@ -82,6 +86,13 @@ export class RestClient {
         const wholeUrl = `${RestClient.buildItemBaseUrl(taxonomy['TaxaUrl'])}/${action}${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
 
         return this.sendRequest<{ value: SdkItem[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then(x => x.value as TaxonDto[]);
+    }
+
+    public static getSearchMetadata() {
+        const serviceUrl = RootUrlService.getServerCmsServiceUrl();
+        const wholeUrl = `${serviceUrl}/Default.GetSearchMetadata()`;
+
+        return this.sendRequest<SearchMetadataDto>({url: wholeUrl});
     }
 
     public static getItemWithStatus<T extends SdkItem>(args: ItemArgs): Promise<T> {
@@ -413,6 +424,30 @@ export class RestClient {
         });
     }
 
+    public static getSearchSuggestions(args: SuggestionsArgs) {
+        const query = {
+            ['indexName']: args.indexCatalogue,
+            ['searchQuery']: encodeURIComponent(args.searchQuery).toLowerCase(),
+            ['sf_culture']: args.culture,
+            ['siteId']: args.culture,
+            ['scoringInfo']: args.scoringInfo,
+            ['suggestionFields']: args.suggestionFields,
+            ['resultsForAllSites']: ''
+        };
+
+        if (!!args.resultsForAllSites) {
+            if (args.resultsForAllSites === true) {
+                query['resultsForAllSites'] = 'True';
+            } else {
+                query['resultsForAllSites'] = 'False';
+            }
+        }
+
+        const serviceUrl = RootUrlService.getServerCmsServiceUrl();
+        const wholeUrl = `${serviceUrl}/Default.GetSuggestions()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, query))}`;
+        return RestClient.sendRequest<{value: string[]}>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
+    }
+
     public static getFacatebleFields(args: GetFacatebleFieldsArgs): Promise<FacetsViewModelDto[]> {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.GetFacetableFields(indexCatalogName='${args.indexCatalogue}')`;
@@ -546,6 +581,14 @@ export class RestClient {
             },
             method: 'POST',
             headers: args.additionalHeaders
+        });
+    }
+
+    public static async getPageSharePreviewLink(pageId: string): Promise<any> {
+        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Pages)}(${pageId})/Default.SharePreviewLink()${RestClient.buildQueryParams(RestClient.getQueryParams())}`;
+        return this.sendRequest({
+            url: wholeUrl,
+            method: 'GET'
         });
     }
 
@@ -735,6 +778,13 @@ export class RestClient {
     public static async getTemplates(args: GetTemplatesArgs): Promise<PageTemplateCategoryDto[]> {
         const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/${args.type}/Default.GetPageTemplates(selectedPages=[${args.selectedPages.map(x => `'${x}'`).join(',')}])${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
         return RestClient.sendRequest<{ value: PageTemplateCategoryDto[] } >({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData }).then(x => x.value);
+    }
+
+    public static async getTemplatesStatistics(args: GetTemplatesStatisticsArgs): Promise<PageTemplateStatisticsDto[]> {
+        args.additionalQueryParams = args.additionalQueryParams || {};
+        args.additionalQueryParams['@param'] = `[${args.templateNames.map(x => `'${x}'`).join(',')}]`;
+        const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/${args.type}/Default.GetTemplateStatistics(templateNames=@param, renderer='${RENDERER_NAME}')${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+        return RestClient.sendRequest<{ value: PageTemplateStatisticsDto[] } >({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData }).then(x => x.value);
     }
 
     private static getSimpleFields(type: string, fields: string[]): string[] {

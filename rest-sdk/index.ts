@@ -17,6 +17,7 @@ export * from './args/get-form-layout.args';
 export * from './args/get-item-with-fallback.args';
 export * from './args/get-navigation.args';
 export * from './args/get-page-layout.args';
+export * from './args/get-search-suggestions.args';
 export * from './args/get-taxon.args';
 export * from './args/item.args';
 export * from './args/lock-page.args';

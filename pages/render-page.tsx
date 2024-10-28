@@ -20,7 +20,7 @@ import { ContentListsCommonRestService } from '../widgets/content-lists-common/c
 import { initServerSideRestSdk } from '../rest-sdk/init';
 import { setHostServerContext } from '../services/server-context';
 import { TemplateRegistry } from '..';
-import { RootUrlService } from '../rest-sdk/root-url.service';
+import { WidgetModel } from '../editor/widget-framework/widget-model';
 
 export async function RenderPage({ params, searchParams, relatedFields, templates }: { params: { slug: string[] }, searchParams: Dictionary, relatedFields?: string[], templates?: TemplateRegistry }) {
     const host = headers().get('host') || '';
@@ -32,6 +32,10 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         if (params.slug.some(x => x === '_next') || params.slug[params.slug.length - 1].indexOf('.') !== -1) {
             notFound();
         }
+    }
+
+    if (searchParams && searchParams['sf-auth']) {
+        searchParams['sf-auth'] = encodeURIComponent(searchParams['sf-auth']);
     }
 
     const { span, ctx } = Tracer.startSpan(`RenderPage ${params.slug.join('/')}`, true);
@@ -91,8 +95,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
     };
 
     // get all list widgets
-    const allWidgets = layout.ComponentContext.Components.flatMap(x => x.Children);
-    allWidgets.push(...layout.ComponentContext.Components);
+    const allWidgets = flattenWidgets(layout.ComponentContext.Components || []);
     allWidgets.filter(x => x.Name === 'SitefinityContentList' || x.Name === 'SitefinityDocumentList').forEach(x => {
         // try to resolve pagers
         const entity: ContentListEntityBase = x.Properties as ContentListEntityBase;
@@ -145,4 +148,14 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         {Tracer.endSpan(span)}
       </>
     );
+}
+
+function flattenWidgets(widgets: WidgetModel[]) {
+    return widgets.reduce((acc: WidgetModel[], widget: WidgetModel): WidgetModel[] =>  {
+                if (Array.isArray(widget?.Children) && widget.Children.length) {
+                    return acc.concat(flattenWidgets(widget.Children));
+                } 
+                
+                return acc.concat([widget]);
+            }, []);
 }

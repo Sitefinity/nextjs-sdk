@@ -30,21 +30,18 @@ export class ServiceMetadata {
 
     public static getDefaultFieldName(typeFullName: string)  {
         const entitySet = this.getSetNameFromType(typeFullName);
+        if (entitySet) {
+            const entityTypeDef = this.getEntityDefinition(entitySet);
+            const defaultFieldPropName = 'Telerik.Sitefinity.V1.DefaultField';
+            const propertiesPropName = 'properties';
 
-        if (!entitySet) {
-            throw new Error('Entity set is undefined');
-        }
-
-        const entityTypeDef = this.getEntityDefinition(entitySet);
-        const defaultFieldPropName = 'Telerik.Sitefinity.V1.DefaultField';
-        const propertiesPropName = 'properties';
-
-        if (entityTypeDef.hasOwnProperty(defaultFieldPropName)) {
-            return entityTypeDef[defaultFieldPropName];
-        } else if (entityTypeDef.hasOwnProperty(propertiesPropName)) {
-            const defaultFieldName = entityTypeDef[propertiesPropName][defaultFieldPropName];
-            if (defaultFieldName) {
-                return defaultFieldName;
+            if (entityTypeDef.hasOwnProperty(defaultFieldPropName)) {
+                return entityTypeDef[defaultFieldPropName];
+            } else if (entityTypeDef.hasOwnProperty(propertiesPropName)) {
+                const defaultFieldName = entityTypeDef[propertiesPropName][defaultFieldPropName];
+                if (defaultFieldName) {
+                    return defaultFieldName;
+                }
             }
         }
 
@@ -215,21 +212,22 @@ export class ServiceMetadata {
                 propFormatToString = propFormat.toString();
             }
 
-            if (propType == null) {
+            if (propType === null) {
                 return null;
             }
 
             const propTypeArray: string[] = propType;
             const propTypeString = propType.toString();
-            if (Array.isArray(propType) && propType.length > 0) {
-                if (propTypeArray.some(x => x === 'null') && value === null) {
+
+            if (value === null) {
+                if (propTypeArray != null && propTypeArray.some(x => x === 'null')) {
                     return 'null';
                 }
 
-                if (propTypeArray.some(x => x === 'string')) {
-                    return `'${value}'`;
-                }
-            } else if (propTypeString === 'array') {
+                return null;
+            }
+
+            if (propTypeString === 'array') {
                 if (propMeta.items && propMeta.items.format) {
                     switch (propMeta.items.format) {
                         case 'string':
@@ -238,10 +236,28 @@ export class ServiceMetadata {
                             return value.toString();
                     }
                 }
-            } else if (propFormatToString === 'date-time' && value instanceof Date) {
-                return value.toISOString();
-            } else if (value !== null) {
+
+                return null;
+            } else if (propFormatToString === 'uuid') {
                 return value.toString();
+            } else if (propFormatToString === 'date-time') {
+                if (value instanceof Date) {
+                    return value.toISOString();
+                } else if (Date.parse(value)) {
+                    return new Date(Date.parse(value)).toISOString();
+                }
+
+                return null;
+            } else if (propTypeString === 'boolean' && value instanceof Boolean) {
+                return value.toString();
+            } else if (propTypeArray != null && propType.length > 0) {
+                if (propTypeArray.some(x => x.toString() === 'number')) {
+                    return value.ToString();
+                } else if (propTypeArray.some(x => x.toString() === 'string')) {
+                    return `'${value}'`;
+                }
+            } else if (value != null) {
+                return value.ToString();
             }
         }
 

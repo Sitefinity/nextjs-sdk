@@ -8,6 +8,7 @@ import { ChoiceOption } from '../common/choice-option';
 import { DynamicListEntity } from './dynamic-list.entity';
 import { SelectionMode, TaxonSelectionMode } from './selection-modes';
 import { ServiceMetadata } from '../../../rest-sdk/service-metadata';
+import { TransferableRequestContext } from '../../../editor/request-context';
 
 export interface DynamicListViewProps<T extends DynamicListEntity> extends ViewPropsBase<T> {
     label: string | null;
@@ -19,14 +20,14 @@ export interface DynamicListViewProps<T extends DynamicListEntity> extends ViewP
     columnsNumber: number;
 }
 
-export async function getChoiceItems(entity: DynamicListEntity, traceContext?: any): Promise<ChoiceOption[]> {
+export async function getChoiceItems(entity: DynamicListEntity, requestContext: TransferableRequestContext, traceContext?: any): Promise<ChoiceOption[]> {
     let items: SdkItem[] = [];
     let defaultFieldName: string = 'Title';
 
     if (entity.ListType === SelectionMode.Classification) {
         items = await getClassifications(entity, traceContext);
     } else if (entity.ListType === SelectionMode.Content) {
-        const [itemsFromContent, defaultFieldNameFromContent] = await getContent(entity, traceContext);
+        const [itemsFromContent, defaultFieldNameFromContent] = await getContent(entity, requestContext, traceContext);
         items = itemsFromContent;
         defaultFieldName = defaultFieldNameFromContent ?? defaultFieldName;
     }
@@ -35,7 +36,7 @@ export async function getChoiceItems(entity: DynamicListEntity, traceContext?: a
 }
 
 
-async function getContent(entity: DynamicListEntity, traceContext?: any): Promise<[SdkItem[], string | null]> {
+async function getContent(entity: DynamicListEntity, requestContext: TransferableRequestContext, traceContext?: any): Promise<[SdkItem[], string | null]> {
     if (entity.SelectedContent?.Content &&
         entity.SelectedContent.Content.length > 0 &&
         entity.SelectedContent.Content[0].Type != null) {
@@ -45,6 +46,7 @@ async function getContent(entity: DynamicListEntity, traceContext?: any): Promis
         const getAllArgs: GetAllArgs = {
             orderBy: [],
             type: itemType,
+            culture: requestContext.culture,
             traceContext
         };
 

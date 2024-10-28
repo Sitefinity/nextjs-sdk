@@ -5,6 +5,6 @@ export interface GetTaxonArgs extends RequestArgs {
     orderBy: string;
     taxaIds: string[];
     taxonomyId: string;
-    selectionMode: string;
+    selectionMode: 'All' | 'TopLevel' | 'UnderParent' | 'Selected' | 'ByContentType' | string;
     contentType: string;
 }
