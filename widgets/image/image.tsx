@@ -24,7 +24,8 @@ export async function Image(props: WidgetContext<ImageEntity>) {
                 type: RestSdkTypes.Image,
                 id: entity.Item.Id.toString(),
                 provider: entity.Item.Provider,
-                traceContext: ctx
+                traceContext: ctx,
+                culture: props.requestContext.culture
             });
         } catch (error) {
             const errorMessage = error instanceof ErrorCodeException ? error.message : error as string;

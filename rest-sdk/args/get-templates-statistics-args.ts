@@ -1,5 +1,5 @@
-import { CommonArgs } from './common.args';
+import { RequestArgs } from './request.args';
 
-export interface GetTemplatesStatisticsArgs extends CommonArgs {
+export interface GetTemplatesStatisticsArgs extends RequestArgs {
     templateNames: string[];
 }

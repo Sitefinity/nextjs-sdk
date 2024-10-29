@@ -13,19 +13,19 @@ import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { getHostServerContext } from '../../services/server-context';
 import { RenderView } from '../common/render-view';
 import { RegistrationDefaultView } from './registration.view';
-import { getCustomAttributes, htmlAttributes } from '../../editor/widget-framework/attributes';
+import { getCustomAttributes, htmlAttributes, setWarning } from '../../editor/widget-framework/attributes';
 import { classNames } from '../../editor/utils/classNames';
 import { StyleGenerator } from '../styling/style-generator.service';
 import { Dictionary } from '../../typings/dictionary';
 import { VisibilityStyle } from '../styling/visibility-style';
 
 export async function Registration(props: WidgetContext<RegistrationEntity>) {
-    const {span, ctx} = Tracer.traceWidget(props, true);
+    const { span, ctx } = Tracer.traceWidget(props, true);
     const entity: RegistrationEntity = props.model.Properties;
     const context = props.requestContext;
     const viewProps: RegistrationViewProps<RegistrationEntity> = populateViewProps(entity, props);
 
-    if (entity.ExternalProviders && entity.ExternalProviders.length){
+    if (entity.ExternalProviders && entity.ExternalProviders.length) {
         const externalProviders = await RestClient.getExternalProviders({ traceContext: ctx });
         viewProps.externalProviders = externalProviders.filter((p: ExternalProvider) => entity.ExternalProviders?.indexOf(p.Name) !== -1);
     }
@@ -38,8 +38,8 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
     } catch (error) { /* empty */ }
 
     if (context.isLive) {
-      const host = getHostServerContext() || RootUrlService.getServerCmsUrl();
-      viewProps.activationPageUrl = host + '/' + context.url;
+        const host = getHostServerContext() || RootUrlService.getServerCmsUrl();
+        viewProps.activationPageUrl = host + '/' + context.url;
     }
 
     if (entity.PostRegistrationAction === PostRegistrationAction.RedirectToPage) {
@@ -53,7 +53,8 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
 
     const regSettings = await RestClient.getRegistrationSettings({ traceContext: ctx });
     if (regSettings.ActivationMethod === ActivationMethod.AfterConfirmation && !regSettings.SmtpConfigured) {
-        viewProps.warning = 'Confirmation email cannot be sent because the system has not been configured to send emails. Configure SMTP settings or contact your administrator for assistance.';
+        const warning = 'Confirmation email cannot be sent because the system has not been configured to send emails. Configure SMTP settings or contact your administrator for assistance.';
+        setWarning(viewProps.attributes, warning);
     }
     viewProps.requiresQuestionAndAnswer = regSettings.RequiresQuestionAndAnswer;
     viewProps.activationMethod = regSettings.ActivationMethod;
@@ -64,7 +65,7 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
         widgetKey={props.model.Name}
         traceSpan={span}
         viewProps={viewProps}>
-        <RegistrationDefaultView {...viewProps}/>
+        <RegistrationDefaultView {...viewProps} />
       </RenderView>
     );
 }
@@ -80,9 +81,11 @@ function populateViewProps(entity: RegistrationEntity, widgetContext: WidgetCont
         ['data-sf-visibility-hidden']: StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
     };
 
+    const culture = widgetContext.requestContext.culture;
+
     return {
-        registrationHandlerPath: `/${RootUrlService.getWebServicePath()}/Registration`,
-        resendConfirmationEmailHandlerPath: `/${RootUrlService.getWebServicePath()}/ResendConfirmationEmail`,
+        registrationHandlerPath: `/${RootUrlService.getWebServicePath()}/Registration${culture ? `?sf_culture=${culture}` : ''}`,
+        resendConfirmationEmailHandlerPath: `/${RootUrlService.getWebServicePath()}/ResendConfirmationEmail${culture ? `?sf_culture=${culture}` : ''}`,
         externalLoginHandlerPath: '/sitefinity/external-login-handler',
         postRegistrationAction: entity.PostRegistrationAction,
         labels: {
@@ -106,11 +109,14 @@ function populateViewProps(entity: RegistrationEntity, widgetContext: WidgetCont
             externalProvidersHeader: entity.ExternalProvidersHeader,
             validationRequiredMessage: entity.ValidationRequiredMessage,
             validationMismatchMessage: entity.ValidationMismatchMessage,
-            validationInvalidEmailMessage: entity.ValidationInvalidEmailMessage
+            validationInvalidEmailMessage: entity.ValidationInvalidEmailMessage,
+            activationExpiredHeader: entity.ActivationExpiredHeader,
+            activationExpiredLabel: entity.ActivationExpiredLabel,
+            activationExpiredBtnText: entity.ActivationExpiredBtnText
         },
         visibilityClasses: StylingConfig.VisibilityClasses,
         invalidClass: StylingConfig.InvalidClass,
-        attributes: {...dataAttributes, ...customAttributes, ...widgetAttributes},
+        attributes: { ...dataAttributes, ...customAttributes, ...widgetAttributes },
         widgetContext: getMinimumWidgetContext(widgetContext)
     };
 }

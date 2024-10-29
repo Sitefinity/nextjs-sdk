@@ -458,7 +458,7 @@ export class RestClient {
     public static async getFacets(args: GetFacetsArgs): Promise<FacetFlatResponseDto[]> {
         const facetsStr = JSON.stringify(args.facets);
         const additionalQueryParams = {
-            ['searchQuery']: args.searchQuery,
+            ['searchQuery']: encodeURIComponent(args.searchQuery)?.toLowerCase(),
             ['sf_culture']: args.culture,
             ['indexCatalogName']: args.indexCatalogue,
             ['filter']: args.filter,
@@ -491,7 +491,7 @@ export class RestClient {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.AccountActivation()${RestClient.buildQueryParams({ qs: encodeURIComponent(encryptedParam) })}`;
 
-        return RestClient.sendRequest({ url: wholeUrl, traceContext });
+        return RestClient.sendRequest({ url: wholeUrl, traceContext }, true);
     }
 
     public static getExternalProviders(args: RequestArgs): Promise<ExternalProvider[]> {
@@ -783,7 +783,7 @@ export class RestClient {
     public static async getTemplatesStatistics(args: GetTemplatesStatisticsArgs): Promise<PageTemplateStatisticsDto[]> {
         args.additionalQueryParams = args.additionalQueryParams || {};
         args.additionalQueryParams['@param'] = `[${args.templateNames.map(x => `'${x}'`).join(',')}]`;
-        const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/${args.type}/Default.GetTemplateStatistics(templateNames=@param, renderer='${RENDERER_NAME}')${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+        const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/pages/Default.GetTemplateStatistics(templateNames=@param, renderer='${RENDERER_NAME}')${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
         return RestClient.sendRequest<{ value: PageTemplateStatisticsDto[] } >({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData }).then(x => x.value);
     }
 

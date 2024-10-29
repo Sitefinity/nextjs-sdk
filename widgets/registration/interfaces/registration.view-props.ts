@@ -19,6 +19,9 @@ export interface RegistrationViewProps<T extends RegistrationEntity> extends Vie
         registerButtonLabel: string;
         activationLinkHeader: string;
         activationLinkLabel: string;
+        activationExpiredHeader: string;
+        activationExpiredLabel: string;
+        activationExpiredBtnText: string;
         sendAgainLink: string;
         sendAgainLabel: string;
         successHeader: string;
@@ -30,6 +33,7 @@ export interface RegistrationViewProps<T extends RegistrationEntity> extends Vie
         validationMismatchMessage: string;
         validationInvalidEmailMessage: string;
     };
+    email?: string;
     externalProviders?: ExternalProvider[];
     loginPageUrl?: string;
     redirectUrl?: string;
@@ -39,5 +43,4 @@ export interface RegistrationViewProps<T extends RegistrationEntity> extends Vie
     requiresQuestionAndAnswer?: boolean;
     visibilityClasses?: {[key: string]: string};
     invalidClass?: string;
-    warning?: string;
 }

@@ -55,7 +55,7 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
             '&siteId=' + data.siteId +
             '&scoringInfo=' + data.scoringSetting +
             '&suggestionFields=' + data.suggestionFields +
-            '&searchQuery=' + input.value;
+            '&searchQuery=' + encodeURIComponent(input.value)?.toLowerCase();
         if (data.resultsForAllSites === 1) {
             requestUrl += '&resultsForAllSites=True';
         } else if (data.resultsForAllSites === 2) {

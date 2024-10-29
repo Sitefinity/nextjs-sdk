@@ -48,7 +48,9 @@ export function SearchResultsClient(props: SearchResultsViewProps<SearchResultsE
     const loadResults = async (newSearchParams: SearchParams) => {
       const searchResponse = await performSearch(entity, newSearchParams);
       setSearchResults(searchResponse);
-      if (entity.SearchResultsHeader) {
+      if (searchResponse && searchResponse.totalCount === 0 && entity.NoResultsHeader) {
+        setResultsHeader(entity.NoResultsHeader.replace('{0}', searchParams.searchQuery));
+      } else if (searchResponse && searchResponse.totalCount > 0 && entity.SearchResultsHeader) {
         setResultsHeader(entity.SearchResultsHeader.replace('{0}', searchParams.searchQuery));
       }
     };

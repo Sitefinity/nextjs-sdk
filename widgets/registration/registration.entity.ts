@@ -1,4 +1,23 @@
-import { Category, Choice, ConditionalVisibility, Content, ContentSection, DataModel, DataType, DefaultValue, Description, DisplayName, KeysValues, KnownFieldTypes, LengthDependsOn, Margins, PropertyCategory, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
+import {
+    Category,
+    Choice,
+    ConditionalVisibility,
+    Content,
+    ContentSection,
+    DataModel,
+    DataType,
+    DefaultValue,
+    Description,
+    DisplayName,
+    KeysValues,
+    KnownFieldTypes,
+    LengthDependsOn,
+    Margins,
+    PropertyCategory,
+    ViewSelector,
+    WidgetEntity,
+    WidgetLabel
+} from '@progress/sitefinity-widget-designers-sdk';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { OffsetStyle } from '../styling/offset-style';
 import { PostRegistrationAction } from './interfaces/post-registration-action';
@@ -21,7 +40,9 @@ export class RegistrationEntity {
     })
     @DisplayName('')
     @ContentSection('Select pages', 1)
-    @ConditionalVisibility('{\u0022conditions\u0022:[{\u0022fieldName\u0022:\u0022PostRegistrationAction\u0022,\u0022operator\u0022:\u0022Equals\u0022,\u0022value\u0022:\u0022RedirectToPage\u0022}],\u0022inline\u0022:\u0022true\u0022}')
+    @ConditionalVisibility(
+        '{\u0022conditions\u0022:[{\u0022fieldName\u0022:\u0022PostRegistrationAction\u0022,\u0022operator\u0022:\u0022Equals\u0022,\u0022value\u0022:\u0022RedirectToPage\u0022}],\u0022inline\u0022:\u0022true\u0022}'
+    )
     @DefaultValue(null)
     PostRegistrationRedirectPage?: MixedContentContext;
 
@@ -31,7 +52,9 @@ export class RegistrationEntity {
     })
     @DisplayName('Login page')
     @ContentSection('Select pages', 1)
-    @Description('This is the page where you have dropped the Login form widget. If you leave this field empty, a link to the Login page will not be displayed in the Registration widget.')
+    @Description(
+        'This is the page where you have dropped the Login form widget. If you leave this field empty, a link to the Login page will not be displayed in the Registration widget.'
+    )
     @DefaultValue(null)
     LoginPage?: MixedContentContext;
 
@@ -175,8 +198,28 @@ export class RegistrationEntity {
 
     @Category(PropertyCategory.Advanced)
     @ContentSection('Labels and messages')
-    @DisplayName('Activation fail message')
-    ActivationFailMessage = 'Your account could not be activated';
+    @DisplayName('Activation error title')
+    ActivationFailTitle = 'Error has occured';
+
+    @Category(PropertyCategory.Advanced)
+    @ContentSection('Labels and messages')
+    @DisplayName('Activation error message')
+    ActivationFailLabel = 'We could not activate your account.';
+
+    @Category(PropertyCategory.Advanced)
+    @ContentSection('Labels and messages')
+    @DisplayName('Expired activation link title')
+    ActivationExpiredHeader = 'Activation link has expired';
+
+    @Category(PropertyCategory.Advanced)
+    @ContentSection('Labels and messages')
+    @DisplayName('Expired activation link message')
+    ActivationExpiredLabel = 'To access your account resend activation link to {0}';
+
+    @Category(PropertyCategory.Advanced)
+    @ContentSection('Labels and messages')
+    @DisplayName('Activation expired button text')
+    ActivationExpiredBtnText = 'Send activation link';
 
     @Category(PropertyCategory.Advanced)
     @ContentSection('Attributes')
@@ -184,5 +227,5 @@ export class RegistrationEntity {
     @DataType(KnownFieldTypes.Attributes)
     @DataModel(KeysValues)
     @LengthDependsOn(null, '', ' ', '[{"Name": "Registration", "Title": "Registration"}]')
-    Attributes?: { [key: string]: Array<{ Key: string, Value: string}> };
+    Attributes?: { [key: string]: Array<{ Key: string; Value: string }> };
 }

@@ -5,9 +5,9 @@ export interface ResetPasswordViewProps<T extends ResetPasswordEntity> extends V
     resetUserPasswordHandlerPath: string;
     sendResetPasswordEmailHandlerPath: string;
     loginPageUrl?: string;
+    registrationPageUrl?: string;
     invalidClass: string;
     visibilityClasses: { [key: string]: string };
-    isResetPasswordRequest?: boolean;
     error?: true;
     securityQuestion?: string;
     requiresQuestionAndAnswer?: boolean;

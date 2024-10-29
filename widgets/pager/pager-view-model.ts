@@ -131,37 +131,41 @@ export function getPageNumber(pagerMode: PagerMode, requestContext: Transferable
 
         return !isNaN(pagerQueryParam) ? pagerQueryParam : 1;
     } else {
+        let pageNumber = 1;
         const url = requestContext.url;
-        const segments = url.split('/');
         const template = pagerTemplate !== '' ? pagerTemplate : PagerViewModel.PageNumberDefaultTemplate;
         const extractorRegex = template.match(/(.*?)\{\{[A-z]+\}\}(.*)/);
         if (extractorRegex) {
             const firstPart = extractorRegex[1];
             const secondPart = extractorRegex[2];
             const pageSegmentRegex = `${firstPart}\\d{1,}${secondPart}`;
-            const pagerSegment = segments.find(x => x.match(new RegExp(pageSegmentRegex)));
 
-            if (pagerSegment) {
-                const firstPartIndex = pagerSegment.indexOf(firstPart) + firstPart.length;
-                let lastPartIndex = pagerSegment.lastIndexOf(secondPart);
-                if (lastPartIndex === -1) {
-                    lastPartIndex = pagerSegment.length - 1;
-                }
+            if (url.match(new RegExp(pageSegmentRegex))) {
+                const templateSegments = pageSegmentRegex.split('/');
 
-                const pageNumber = parseInt(pagerSegment.substring(firstPartIndex, lastPartIndex), 10);
+                templateSegments.forEach(templateSegment => {
+                    if (templateSegment.indexOf('\\d{1,}') > -1) {
+                        let prefix = templateSegment.split('\\d{1,}')[0];
+                        let suffix = templateSegment.split('\\d{1,}')[1];
+                        let pattern = '^' + prefix + '(\\d{1,})' + suffix + '$';
+                        const segments = url.split('/');
+                        let numberSegmentMatches = segments.map(x => x.match(new RegExp(pattern))).filter(x => x);
 
-                if (!isNaN(pageNumber)) {
-                    const segmentIndex = requestContext.layout.UrlParameters?.findIndex(x => x === pagerSegment);
-
-                    if (segmentIndex > -1) {
-                        requestContext.layout.UrlParameters?.splice(segmentIndex, 1);
+                        if (numberSegmentMatches?.length === 1) {
+                            pageNumber = parseInt(numberSegmentMatches[0]![1]);
+                            const segmentIndex = requestContext.layout.UrlParameters?.findIndex(x => x === numberSegmentMatches[0]![0]);
+                            requestContext.layout.UrlParameters?.splice(segmentIndex, 1);
+                        }
+                    } else {
+                        const segmentIndex = requestContext.layout.UrlParameters?.findIndex(x => x === templateSegment);
+                        if (segmentIndex > -1) {
+                            requestContext.layout.UrlParameters?.splice(segmentIndex, 1);
+                        }
                     }
-                }
-
-                return !isNaN(pageNumber) ? pageNumber : 1;
+                });
             }
         }
 
-        return 1;
+        return pageNumber;
     }
 }

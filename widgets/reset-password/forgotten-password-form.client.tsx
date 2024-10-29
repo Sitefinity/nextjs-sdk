@@ -8,13 +8,13 @@ import { ResetPasswordViewProps } from './interfaces/reset-password.view-props';
 import { ResetPasswordEntity } from './reset-password.entity';
 import { getUniqueId } from '../../editor/utils/getUniqueId';
 
-export function ForgottenPasswordFormClient (props: ResetPasswordViewProps<ResetPasswordEntity>) {
+export function ForgottenPasswordFormClient(props: ResetPasswordViewProps<ResetPasswordEntity>) {
     const emailInputId = getUniqueId('sf-email-', props.widgetContext.model.Id);
     const formRef = React.useRef<HTMLFormElement>(null);
     const emailInputRef = React.useRef<HTMLInputElement>(null);
     const labels = props.labels;
     const visibilityClassHidden = props.visibilityClasses[VisibilityStyle.Hidden];
-    const [invalidInputs, setInvalidInputs] = React.useState<{[key: string]: boolean | undefined;}>({});
+    const [invalidInputs, setInvalidInputs] = React.useState<{ [key: string]: boolean | undefined; }>({});
     const [showFormContainer, setFormContainer] = React.useState<boolean>(true);
     const [showSuccessContainer, setSuccessContainer] = React.useState<boolean>(false);
     const [errorMessage, setErrorMessage] = React.useState<string>('');
@@ -70,9 +70,9 @@ export function ForgottenPasswordFormClient (props: ResetPasswordViewProps<Reset
 
     const inputValidationAttrs = (name: string) => {
         return {
-            className: classNames('form-control',{
+            className: classNames('form-control', {
                 [props.invalidClass]: invalidInputs[name]
-                }
+            }
             ),
             [invalidDataAttr]: invalidInputs[name],
             name: name
@@ -86,7 +86,7 @@ export function ForgottenPasswordFormClient (props: ResetPasswordViewProps<Reset
         display: !visibilityClassHidden ? errorMessage ? '' : 'none' : ''
     };
 
-    const successContainerClass = classNames('mt-3',{
+    const successContainerClass = classNames('mt-3', {
         [visibilityClassHidden]: !showSuccessContainer
     });
     const successContainerStyle = {
@@ -106,11 +106,11 @@ export function ForgottenPasswordFormClient (props: ResetPasswordViewProps<Reset
       </div>
       <div data-sf-role="form-container"
         className={classNames({
-          [visibilityClassHidden]: !showFormContainer
-        })}
+                [visibilityClassHidden]: !showFormContainer
+            })}
         style={{
-          display: !visibilityClassHidden ? showFormContainer ? '' : 'none' : ''
-        }}
+                display: !visibilityClassHidden ? showFormContainer ? '' : 'none' : ''
+            }}
         >
         <p>{labels.forgottenPasswordLabel}</p>
         <form ref={formRef} onSubmit={handleSubmit} action={props.sendResetPasswordEmailHandlerPath} role="form" noValidate={true}>
@@ -118,11 +118,12 @@ export function ForgottenPasswordFormClient (props: ResetPasswordViewProps<Reset
             <label className="form-label" htmlFor={emailInputId}>{labels.emailLabel}</label>
             <input ref={emailInputRef} id={emailInputId} type="email"
               data-sf-role="required"
-              {...inputValidationAttrs('Email')}/>
+              {...inputValidationAttrs('Email')} />
           </div>
           <input className="btn btn-primary w-100" type="submit" value={labels.sendButtonLabel} />
           <input type="hidden" name="ResetPasswordUrl" value={props.resetPasswordUrl} />
           <input type="hidden" name="MembershipProviderName" value={props.membershipProviderName || ''} />
+          <input type="hidden" name="RegistrationPageUrl" value={props.registrationPageUrl} />
         </form>
 
         <input type="hidden" name="InvalidEmailFormatMessage" value={labels.invalidEmailFormatMessage} />

@@ -1,4 +1,20 @@
-import { Category, Content, ContentSection, DataModel, DataType, Description, DisplayName, KeysValues, KnownFieldTypes, LengthDependsOn, Margins, PropertyCategory, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
+import {
+    Category,
+    Content,
+    ContentSection,
+    DataModel,
+    DataType,
+    Description,
+    DisplayName,
+    KeysValues,
+    KnownFieldTypes,
+    LengthDependsOn,
+    Margins,
+    PropertyCategory,
+    ViewSelector,
+    WidgetEntity,
+    WidgetLabel
+} from '@progress/sitefinity-widget-designers-sdk';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { OffsetStyle } from '../styling/offset-style';
 import { RestSdkTypes } from '../../rest-sdk/rest-client';
@@ -14,9 +30,18 @@ export class ResetPasswordEntity {
     @Description('This is the page where you have dropped login form widget.')
     LoginPage?: MixedContentContext;
 
+    @Content({
+        Type: RestSdkTypes.Pages,
+        AllowMultipleItemsSelection: false
+    })
+    @ContentSection('Select pages', 1)
+    @DisplayName('Registration page')
+    @Description('This is the page where you have dropped registration widget.')
+    RegistrationPage?: MixedContentContext;
+
     @ContentSection('Display settings', 1)
     @DisplayName('Reset password template')
-    @ViewSelector([{Value: 'Default'}])
+    @ViewSelector([{ Value: 'Default' }])
     SfViewName?: string = 'Default';
 
     @ContentSection('Display settings', 1)
@@ -94,7 +119,8 @@ export class ResetPasswordEntity {
     @Category(PropertyCategory.Advanced)
     @ContentSection('Labels and messages', 0)
     @DisplayName('Forgotten password label')
-    ForgottenPasswordLabel: string = 'Enter your login email address and you will receive an email with a link to reset your password.';
+    ForgottenPasswordLabel: string =
+        'Enter your login email address and you will receive an email with a link to reset your password.';
 
     @Category(PropertyCategory.Advanced)
     @ContentSection('Labels and messages', 0)
@@ -114,7 +140,8 @@ export class ResetPasswordEntity {
     @Category(PropertyCategory.Advanced)
     @ContentSection('Labels and messages', 0)
     @DisplayName('Forgotten password link message')
-    ForgottenPasswordLinkMessage: string = 'Use the link provided in your email to reset the password for your account.';
+    ForgottenPasswordLinkMessage: string =
+        'Use the link provided in your email to reset the password for your account.';
 
     @Category(PropertyCategory.Advanced)
     @ContentSection('Labels and messages', 0)
@@ -132,5 +159,5 @@ export class ResetPasswordEntity {
     @DataType(KnownFieldTypes.Attributes)
     @DataModel(KeysValues)
     @LengthDependsOn(null, '', ' ', '[{"Name": "ResetPassword", "Title": "Reset password"}]')
-    Attributes?: { [key: string]: Array<{ Key: string, Value: string}> };
+    Attributes?: { [key: string]: Array<{ Key: string; Value: string }> };
 }

@@ -142,7 +142,7 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
     const groupAllCheckedFacetInputs = useCallback((currentSelectedFacets: SelectedFacetsState): GroupedCheckedFacets => {
         let groupedFilters: GroupedCheckedFacets = {};
 
-        Object.keys(currentSelectedFacets).forEach((facetId: string) => {
+        Object.keys(currentSelectedFacets).sort().forEach((facetId: string) => {
             const selectedFacet = currentSelectedFacets[facetId];
             const facetKey = selectedFacet.facetName;
             const filterValueObj = {
@@ -208,12 +208,15 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
     function buildUrl(queryStringParams: { [key: string]: string; }) {
         let currentLocation = window.location.href.split('?')[0];
 
+        const url = new URL(currentLocation);
+
         // return the pager to 0
         delete queryStringParams.page;
-        const queryString = new URLSearchParams(queryStringParams);
-        let url = currentLocation + '?' + queryString;
+        url.search = Object.entries(queryStringParams)
+            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value || '')}`)
+            .join('&');
 
-        return url;
+        return url.toString();
     }
 
     function constructFilterObject(groupedFilters: GroupedCheckedFacets, lastSelectedElementKey: string, isDeselected: boolean): AppliedFilterObject {

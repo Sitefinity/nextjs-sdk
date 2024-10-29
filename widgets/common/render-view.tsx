@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { RenderWidgetService } from '../../services/render-widget-service';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { ViewPropsBase } from './view-props-base';
+import { RenderViewClient } from './render-view-client';
 
 /**
  * If there is custom view it will be rendered. If there is not the children of this component will be rendered
@@ -23,20 +24,31 @@ export function RenderView({viewName, widgetKey, children, viewProps, traceSpan}
     }
 
     let widgetView = children;
+    let renderClient = false;
+    let widgetViewFunction = null;
 
     if (views && viewName && views[viewName]) {
         const view = views[viewName];
         if (typeof view === 'object' && view.ViewFunction) {
-          widgetView = view.ViewFunction(viewProps);
+          widgetViewFunction = view.ViewFunction;
         } else {
           const viewFunction = views[viewName] as Function;
-          widgetView = viewFunction(viewProps);
+          widgetViewFunction = viewFunction;
+        }
+
+        if ((widgetViewFunction as any).$$typeof) {
+          renderClient = true;
+        } else {
+          widgetView = widgetViewFunction(viewProps);
         }
     }
 
     return (
       <>
-        {widgetView}
+        { !renderClient ?
+          widgetView :
+          <RenderViewClient {...{viewName, viewProps, widgetKey}}/>
+        }
         {traceSpan && Tracer.endSpan(traceSpan)}
       </>
     );

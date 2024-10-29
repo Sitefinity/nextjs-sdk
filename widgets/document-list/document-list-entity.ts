@@ -10,7 +10,7 @@ import { ContentListSettings } from '../../editor/widget-framework/content-list-
 import { DetailPageSelectionMode } from '../content-lists-common/detail-page-selection-mode';
 import { PagerViewModel } from '../pager/pager-view-model';
 
-const viewMeta = {
+export const documentListViewMeta = {
     'DocumentList': [
         {
             'fieldTitle': 'Document list',
@@ -174,7 +174,7 @@ export class DocumentListEntity implements ContentListEntityBase {
     @Category('Advanced')
     @ContentSection('Custom CSS classes', 0)
     @DisplayName('')
-    @CssFieldMappings(viewMeta, false)
+    @CssFieldMappings(documentListViewMeta, false)
     CssClasses: Array<{ FieldName: string; CssClass: string; }> | null = null;
 
     @Attributes('Document list', 'Document list')

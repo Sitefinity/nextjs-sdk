@@ -42,7 +42,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
     try {
         layoutResponse = await pageLayout({ params, searchParams, relatedFields, traceContext: ctx });
     } catch (error) {
-        if (error instanceof ErrorCodeException && error.code === 'NotFound') {
+        if (error instanceof ErrorCodeException && (error.code === 'NotFound' || error.code === 'Forbidden')) {
             notFound();
         }
     }

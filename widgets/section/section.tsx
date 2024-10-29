@@ -1,4 +1,6 @@
 
+import { isAbsoluteUrl } from 'next/dist/shared/lib/utils';
+import { TransferableRequestContext } from '../../editor/request-context';
 import { htmlAttributes } from '../../editor/widget-framework/attributes';
 import { WidgetContext } from '../../editor/widget-framework/widget-context';
 import { getMinimumMetadata } from '../../editor/widget-framework/widget-metadata';
@@ -23,7 +25,7 @@ export async function Section(props: WidgetContext<SectionEntity>) {
     props.model.Properties.ColumnsCount = props.model.Properties.ColumnsCount || 1;
     props.model.Properties.ColumnProportionsInfo = props.model.Properties.ColumnProportionsInfo || ['12'];
     const columns = populateColumns(props);
-    const section = await populateSection(props.model.Properties);
+    const section = await populateSection(props.model.Properties, props.requestContext);
 
     const labels = props.model.Properties.Labels;
     if (labels && labels['Section'] && labels['Section'].Label) {
@@ -137,7 +139,7 @@ function populateColumns(context: WidgetContext<SectionEntity>): ColumnHolder[] 
     return columns;
 }
 
-function populateSection(properties: SectionEntity): Promise<SectionHolder> {
+function populateSection(properties: SectionEntity, requestContext: TransferableRequestContext): Promise<SectionHolder> {
     const sectionObject: SectionHolder = {
         Attributes: {}
     };
@@ -175,7 +177,8 @@ function populateSection(properties: SectionEntity): Promise<SectionHolder> {
             let itemArgs: ItemArgs = {
                 type: RestSdkTypes.Video,
                 id: properties.SectionBackground.VideoItem.Id,
-                provider: properties.SectionBackground.VideoItem.Provider
+                provider: properties.SectionBackground.VideoItem.Provider,
+                culture: requestContext.culture
             };
 
             return RestClient.getItemWithFallback<VideoItem>(itemArgs).then((video) => {
@@ -194,7 +197,8 @@ function populateSection(properties: SectionEntity): Promise<SectionHolder> {
         let itemArgs: ItemArgs = {
             type: RestSdkTypes.Image,
             id: properties.SectionBackground.ImageItem.Id,
-            provider: properties.SectionBackground.ImageItem.Provider
+            provider: properties.SectionBackground.ImageItem.Provider,
+            culture: requestContext.culture
         };
 
         return RestClient.getItemWithFallback<ImageItem>(itemArgs).then((image) => {
@@ -211,7 +215,8 @@ function populateSection(properties: SectionEntity): Promise<SectionHolder> {
                     break;
             }
 
-            const imageUrl = `${RootUrlService.getClientCmsUrl()}${image.Url}`;
+            const imageUrl = isAbsoluteUrl(image.Url) ? image.Url :  `${RootUrlService.getClientCmsUrl()}${image.Url}`;
+
             style['--sf-background-image'] = `url(${imageUrl})`;
             sectionObject.Style = style;
             sectionObject.Attributes['className'] = sectionClasses.filter(x => x).join(' ');

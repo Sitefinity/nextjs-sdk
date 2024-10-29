@@ -92,6 +92,10 @@ export * from './navigation/client/accordion-group-link';
 export * from './navigation/client/accordion-link';
 export * from './navigation/navigation.view-props';
 
+export * from './pager/pager';
+export * from './pager/pager-link-attributes';
+export * from './pager/pager-view-model';
+
 export * from './registration/registration';
 export * from './registration/registration-form.client';
 export * from './registration/registration.entity';

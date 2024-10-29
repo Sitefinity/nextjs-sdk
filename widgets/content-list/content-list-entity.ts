@@ -17,7 +17,7 @@ export class ListFieldMapping {
     Name: string | null = null;
 }
 
-const viewMeta = {
+export const contentListDefaultViewMeta = {
     CardsList: [
         { fieldTitle: 'Image', fieldType: 'RelatedImage' },
         { fieldTitle: 'Title', fieldType: 'ShortText' },
@@ -58,7 +58,7 @@ export class ContentListEntity implements ContentListEntityBase {
     @DisplayName('Field mapping')
     @ContentSection('Select content to display', 2)
     @Description('Specify which fields from the content type you have selected to be displayed in the list.')
-    @FieldMappings(viewMeta)
+    @FieldMappings(contentListDefaultViewMeta)
     ListFieldMapping: Array<FieldMapping> | null = null;
 
     // List setting section
@@ -275,7 +275,7 @@ export class ContentListEntity implements ContentListEntityBase {
     @Category('Advanced')
     @ContentSection('Custom CSS classes', 0)
     @DisplayName('')
-    @CssFieldMappings(viewMeta, true)
+    @CssFieldMappings(contentListDefaultViewMeta, true)
     CssClasses: Array<{ FieldName: string; CssClass: string; }> | null = null;
 
     // Displaying hierarchical content
