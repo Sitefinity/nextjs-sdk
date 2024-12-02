@@ -8,7 +8,7 @@ import { RestClient } from '../rest-sdk/rest-client';
 import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 
 export class RestClientForContext {
-    public static async getItem<T extends SdkItem>(contentContext: MixedContentContext, externalArgs?: CommonArgs): Promise<T> {
+    public static async getItem<T extends SdkItem>(contentContext: MixedContentContext, externalArgs?: Partial<CommonArgs>): Promise<T> {
         return this.getItems<T>(contentContext, {
             ...externalArgs,
             type: externalArgs?.type as string,
@@ -24,7 +24,7 @@ export class RestClientForContext {
         });
     }
 
-    public static async getItems<T extends SdkItem>(contentContext: MixedContentContext, externalArgs?: GetAllArgs): Promise<CollectionResponse<T>> {
+    public static async getItems<T extends SdkItem>(contentContext: MixedContentContext, externalArgs?: Partial<GetAllArgs>): Promise<CollectionResponse<T>> {
         if (!contentContext ||
             !contentContext.Content ||
             contentContext.Content.length === 0) {

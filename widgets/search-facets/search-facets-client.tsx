@@ -213,7 +213,11 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
         // return the pager to 0
         delete queryStringParams.page;
         url.search = Object.entries(queryStringParams)
-            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value || '')}`)
+            .map(([key, value]) => {
+                const encodedKey = encodeURIComponent(key);
+                const encodedValue = key === 'filter' ? value || '' : encodeURIComponent(value || '');
+                return `${encodedKey}=${encodedValue}`;
+            })
             .join('&');
 
         return url.toString();

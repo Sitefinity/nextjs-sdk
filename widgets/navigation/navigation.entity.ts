@@ -1,4 +1,4 @@
-import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, DataType, DefaultValue, DisplayName, KnownFieldTypes, Margins, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
+import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, DataType, DefaultValue, DisplayName, IsNullable, KnownFieldTypes, Margins, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { OffsetStyle } from '../styling/offset-style';
 
@@ -43,6 +43,7 @@ export class NavigationEntity {
             { Title: 'All levels', Name: 'All', Value: null }],
         NotResponsive: true
     })
+    @IsNullable(true)
     LevelsToInclude?: number;
 
     @ContentSection('Display settings', 1)

@@ -25,7 +25,7 @@ export function OrderByDropDown(props: {
 
     const handleSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const orderValue = event.target.value || orderBy;
-        let newQuery = queryList + '&searchQuery=' + encodeURIComponent(query)?.toLowerCase() +
+        let newQuery = queryList + '&searchQuery=' + encodeURIComponent(query) +
             '&indexCatalogue=' + index +
             '&wordsMode=' + wordsMode +
             '&sf_culture=' + language +

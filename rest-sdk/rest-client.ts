@@ -271,7 +271,11 @@ export class RestClient {
             throw `Cannot find the type behind the field -> ${args.relationName}`;
         }
 
-        const relatedItemUri = `${RestClient.buildItemBaseUrl(relatedTypeName)}(${args.relatedItemId})`;
+        let relatedItemUri = `${RestClient.buildItemBaseUrl(relatedTypeName)}(${args.relatedItemId})`;
+
+        if (args.relatedItemProvider) {
+            relatedItemUri = relatedItemUri + `?sf_provider=${args.relatedItemProvider}`;
+        }
         return RestClient.sendRequest({
             url: wholeUrl,
             data: {
@@ -518,6 +522,19 @@ export class RestClient {
         const wholeUrl = `${RestClient.buildItemBaseUrl('sites')}/current`;
 
         return RestClient.sendRequest<{ value: SiteDto }>({
+            url: wholeUrl,
+            method: 'GET',
+            additionalFetchData: args?.additionalFetchData,
+            traceContext: args?.traceContext
+        }).then((x) => {
+            return x.value;
+        });
+    }
+
+    public static getSites(args?: RequestArgs): Promise<SiteDto[]> {
+        const wholeUrl = `${RestClient.buildItemBaseUrl('sites')}`;
+
+        return RestClient.sendRequest<{ value: SiteDto[] }>({
             url: wholeUrl,
             method: 'GET',
             additionalFetchData: args?.additionalFetchData,

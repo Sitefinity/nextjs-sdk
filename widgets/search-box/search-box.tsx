@@ -32,10 +32,13 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
 
     let searchResultsPageUrl: string | null = null;
     if (entity.SearchResultsPage?.Content?.length && entity.SearchResultsPage.Content[0].Variations?.length) {
-        const searchResultsPage = await RestClientForContext.getItem<PageItem>(entity.SearchResultsPage, { type: RestSdkTypes.Pages, culture: requestContext.culture, traceContext: ctx });
-        if (searchResultsPage) {
-            searchResultsPageUrl = searchResultsPage['ViewUrl'];
-        }
+        try {
+            const searchResultsPage = await RestClientForContext.getItem<PageItem>(entity.SearchResultsPage, { type: RestSdkTypes.Pages, culture: requestContext.culture, traceContext: ctx });
+            if (searchResultsPage) {
+                searchResultsPageUrl = searchResultsPage['ViewUrl'];
+            }
+            
+        } catch (error) {/* empty */}
     }
 
     const viewProps: SearchBoxViewProps<SearchBoxEntity> = {
