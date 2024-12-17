@@ -1,7 +1,7 @@
 import { CombinedFilter } from '../filters/combined-filter';
 import { FilterClause, FilterOperators, StringOperators } from '../filters/filter-clause';
 import { RelationFilter } from '../filters/relation-filter';
-import { ServiceMetadata } from '../service-metadata';
+import { FieldType, ServiceMetadata } from '../service-metadata';
 
 export class ODataFilterSerializer {
     propertyPrefix: string;
@@ -70,9 +70,28 @@ export class ODataFilterSerializer {
 
     private serializeFilterClause(filter: FilterClause, filterContext: FilterContext): string | null {
         let fieldNameWithPrefix = `${this.propertyPrefix}${filter.FieldName}`;
+        const fieldType = ServiceMetadata.getFieldType(filterContext.Type, filter.FieldName);
         switch (filter.Operator) {
             case FilterOperators.Equal:
             case FilterOperators.NotEqual:
+                const serializedValue1 = this.serializeFilterValue(filter.FieldValue, filter.FieldName, filterContext);
+                let filterResult = null;
+                switch (fieldType) {
+                    case FieldType.ChoiceField:
+                        filterResult = `cast(${fieldNameWithPrefix}, 'Edm.String') ${filter.Operator} '${serializedValue1}'`;
+                        break;
+                    case FieldType.ClassificationField:
+                        filterResult = `${fieldNameWithPrefix}/any(x:x eq ${serializedValue1})`;
+                        if (filter.Operator === 'ne') {
+                            filterResult = 'not ' + filter;
+                        }
+                        break;
+                    default:
+                        filterResult = `(${fieldNameWithPrefix} ${filter.Operator} ${serializedValue1})`;
+                    break;
+                }
+
+                return filterResult;
             case FilterOperators.GreaterThan:
             case FilterOperators.LessThan:
             case FilterOperators.GreaterThanOrEqual:
@@ -114,6 +133,8 @@ export class ODataFilterSerializer {
             case StringOperators.Contains:
                 const serializedValueForString = this.serializeFilterValue(filter.FieldValue, filter.FieldName, filterContext);
                 return `${filter.Operator}(${fieldNameWithPrefix}, ${serializedValueForString})`;
+            case FilterOperators.In:
+                return `${filter.FieldName} ${filter.Operator} (${filter.FieldValue})`;
             default:
                 throw new Error(`The value provided for the operator filter clause: ${filter.Operator} is not supported`);
         }
@@ -143,7 +164,12 @@ export class ODataFilterSerializer {
     }
 
     private serializeFilterValue(value: any, propName: string, filterContext: FilterContext) {
-        return ServiceMetadata.serializeFilterValue(filterContext.Type, propName, value);
+        const serialized = ServiceMetadata.serializeFilterValue(filterContext.Type, propName, value);
+        if (serialized === null || serialized === undefined) {
+            return value.toString();
+        }
+
+        return serialized;
     }
 
     private serializeFilterValuesArray(value: any, propName: string, filterContext: FilterContext): string[] {

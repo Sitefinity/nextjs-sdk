@@ -13,7 +13,8 @@ export enum FilterOperators {
     LessThanOrEqual = 'le',
     ContainsOr = 'any+or',
     ContainsAnd = 'any+and',
-    DoesNotContain = 'not+(any+or)'
+    DoesNotContain = 'not+(any+or)',
+    In = 'in'
 };
 
 export const StringOperators = {

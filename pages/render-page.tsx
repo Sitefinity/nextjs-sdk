@@ -42,7 +42,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
     try {
         layoutResponse = await pageLayout({ params, searchParams, relatedFields, traceContext: ctx });
     } catch (error) {
-        if (error instanceof ErrorCodeException && (error.code === 'NotFound' || error.code === 'Forbidden')) {
+        if (error instanceof ErrorCodeException && (error.code === 'NotFound' || error.code === 'Forbidden' || error.code === 'Unauthorized')) {
             notFound();
         }
     }
@@ -138,7 +138,9 @@ export async function RenderPage({ params, searchParams, relatedFields, template
 
     return (
       <>
-        <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} additionalQueryParams={{ sf_culture: layout.Culture, sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''}} />
+        <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache}
+          taxonomies={ServiceMetadata.taxonomies}
+          additionalQueryParams={{ sf_culture: layout.Culture, sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''}} />
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} />
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} />
         {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} />}
@@ -154,8 +156,8 @@ function flattenWidgets(widgets: WidgetModel[]) {
     return widgets.reduce((acc: WidgetModel[], widget: WidgetModel): WidgetModel[] =>  {
                 if (Array.isArray(widget?.Children) && widget.Children.length) {
                     return acc.concat(flattenWidgets(widget.Children));
-                } 
-                
+                }
+
                 return acc.concat([widget]);
             }, []);
 }

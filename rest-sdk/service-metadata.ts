@@ -162,10 +162,9 @@ export class ServiceMetadata {
             return null;
         }
 
-        relatedReferenceType = relatedReferenceType.replace('#/definitions/', '');
-
-        if (this.serviceMetadataCache.definitions.hasOwnProperty(relatedReferenceType)) {
-            return relatedReferenceType;
+        const foundEntity = Object.values(this.serviceMetadataCache.entityContainer.entitySets).some(x => x['entityType']['$ref'] === relatedReferenceType);
+        if (foundEntity) {
+            return relatedReferenceType.replace('#/definitions/', '');
         }
 
         return null;
@@ -212,7 +211,7 @@ export class ServiceMetadata {
                 propFormatToString = propFormat.toString();
             }
 
-            if (propType === null) {
+            if (propType === null || propType === undefined) {
                 return null;
             }
 
@@ -298,6 +297,55 @@ export class ServiceMetadata {
             return fieldMeta['Telerik.Sitefinity.V1.Taxonomy'] === taxonomyName;
         });
     }
+
+    public static getFieldType(type: string, propName: string) {
+        const definition = ServiceMetadata.serviceMetadataCache.definitions[type];
+        const propMeta = definition['properties'][propName];
+        const fieldType = propMeta['Telerik.Sitefinity.V1.FieldType']?.toString();
+
+        if (fieldType === 'ShortText' || fieldType === 'LongText') {
+            return FieldType.TextField;
+        } else if (fieldType === 'Choices' || fieldType === 'MultipleChoice') {
+            return FieldType.ChoiceField;
+        } else if (fieldType === 'Number') {
+            return FieldType.NumberField;
+        }
+
+        const propFormat = propMeta['format']?.toString();
+        if (propFormat === 'date-time') {
+            return FieldType.DatetimeField;
+        }
+
+        const propType = propMeta['type'];
+        if (propType) {
+            const propTypeNumberArray = Array.isArray(propType);
+            if (propTypeNumberArray) {
+                const propAsArray = propType as string[];
+                if (propAsArray.includes('number')) {
+                    return FieldType.NumberField;
+                } else if (propAsArray.includes('boolean')) {
+                    return FieldType.BooleanField;
+                } else if (propAsArray.includes('string')) {
+                    return FieldType.TextField;
+                }
+            } else {
+                if (propType === 'integer') {
+                    return FieldType.NumberField;
+                } else if (propType === 'boolean') {
+                   return FieldType.BooleanField;
+                } else if (propType === 'string') {
+                    return FieldType.TextField;
+                }
+            }
+        }
+
+        let taxonomy = propMeta['Telerik.Sitefinity.V1.Taxonomy'];
+        if (taxonomy && ServiceMetadata.taxonomies.find(x => x.Name === taxonomy)) {
+            return FieldType.ClassificationField;
+        }
+
+        return FieldType.TextField;
+    }
 }
 
 export interface ServiceMetadataDefinition {
@@ -305,4 +353,13 @@ export interface ServiceMetadataDefinition {
     entityContainer: {
         entitySets: { [key: string] : any }
     };
+}
+
+export enum FieldType {
+    TextField,
+    ChoiceField,
+    NumberField,
+    ClassificationField,
+    DatetimeField,
+    BooleanField
 }

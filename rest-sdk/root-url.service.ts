@@ -26,6 +26,10 @@ export class RootUrlService {
     }
 
     public static getWebServicePath() {
-        return 'api/default';
+        return process?.env?.SF_WEBSERVICE_PATH ?
+            process.env.SF_WEBSERVICE_PATH.trim()[0] === '/' ?
+            process.env.SF_WEBSERVICE_PATH.trim().substring(1) :
+            process.env.SF_WEBSERVICE_PATH.trim() :
+            'api/default';
     }
 }
