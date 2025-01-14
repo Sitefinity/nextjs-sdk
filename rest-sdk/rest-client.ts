@@ -786,6 +786,12 @@ export class RestClient {
         }
 
         const layoutResponse = await RestClient.handleApiResponse<LayoutServiceResponse>(httpLayoutResponse, requestData, true);
+
+        const cacheControl = httpLayoutResponse.headers.get('Cache-Control');
+        if (cacheControl && layoutResponse) {
+            layoutResponse.CacheControl = cacheControl;
+        }
+
         return {
             isRedirect: false,
             layout: layoutResponse

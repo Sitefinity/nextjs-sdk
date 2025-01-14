@@ -1,4 +1,4 @@
-import { Attributes, Category, Choice,ConditionalVisibility, Content, ContentSection, ContentSectionTitles, CssFieldMappings, DataModel, DataType, DefaultValue, Description, DisplayName, FallbackToDefaultValueWhenEmpty, FieldMapping, FieldMappings, KnownFieldTypes, MaxLength, Model, Required, SectionsOrder, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
+import { Attributes, Category, Choice,ConditionalVisibility, Content, ContentSection, ContentSectionTitles, CssFieldMappings, DataModel, DataType, DefaultValue, Description, DisplayName, FallbackToDefaultValueWhenEmpty, FieldMapping, FieldMappings, KnownFieldTypes, MaxLength, Model, Required, SectionsOrder, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { ContentListEntityBase } from '../content-lists-common/content-lists-base.entity';
 import { ContentListSettings } from '../../editor/widget-framework/content-list-settings';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
@@ -46,9 +46,8 @@ export class ContentListEntity implements ContentListEntityBase {
 
     @DefaultValue('CardsList')
     @DisplayName('List template')
-    @DataType('viewSelector')
     @ContentSection('Select content to display', 1)
-    @Choice([
+    @ViewSelector([
             { Title: 'Cards list', Value: 'CardsList'},
             { Title: 'List with image', Value: 'ListWithImage'},
             { Title: 'List with summary', Value: 'ListWithSummary'}
@@ -86,8 +85,7 @@ export class ContentListEntity implements ContentListEntityBase {
 
     @DisplayName('Single item template')
     @ContentSection('Single item settings', 1)
-    @DataType('viewSelector')
-    @Choice([
+    @ViewSelector([
             {Title: 'Details.Blog posts.Default', Value: 'Details.BlogPosts.Default'},
             {Title: 'Details.Dynamic.Default', Value: 'Details.Dynamic.Default'},
             {Title: 'Details.Events.Default', Value: 'Details.Events.Default'},

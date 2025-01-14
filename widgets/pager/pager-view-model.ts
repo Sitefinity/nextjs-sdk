@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { TransferableRequestContext } from '../../editor/request-context';
 import { PagerMode } from '../common/page-mode';
+import { setQueryParams } from '../common/query-params';
 
 export class PagerViewModel {
     public static readonly PageNumberDefaultTemplate: string = '-page-{{pageNumber}}-';
@@ -82,7 +83,7 @@ export class PagerViewModel {
             path = this.ViewUrl;
         }
 
-        let queryString = `${new URLSearchParams(context?.searchParams)}`;
+        let queryString = setQueryParams(context?.searchParams);
 
         if (this.PagerMode === PagerMode.URLSegments) {
             const desiredPage = this.PagerSegmentTemplate.replace(this.PageNumberSlot, pageNumber.toString());
@@ -99,8 +100,8 @@ export class PagerViewModel {
             return path + desiredPage + queryString;
         } else {
             const template = this.PagerQueryParameterTemplate;
-            const queryPattern = new RegExp(`${template}=(\\d{1,})`);
-            const queryDesiredPage = `${template}=${pageNumber}`;
+            const queryPattern = new RegExp(`${encodeURIComponent(template)}=(\\d{1,})`);
+            const queryDesiredPage = `${encodeURIComponent(template)}=${pageNumber}`;
             const value = context.searchParams[template];
 
             if (value && value.length > 0 && parseInt( value, 10)) {

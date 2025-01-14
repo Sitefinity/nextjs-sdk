@@ -1,4 +1,4 @@
-import { WidgetEntity, ContentSection, DisplayName, Description, DataType, KnownFieldTypes, DefaultValue, Choice, Margins, WidgetLabel, Category, Attributes } from '@progress/sitefinity-widget-designers-sdk';
+import { WidgetEntity, ContentSection, DisplayName, Description, DataType, KnownFieldTypes, DefaultValue, Choice, Margins, WidgetLabel, Category, Attributes, ViewSelector } from '@progress/sitefinity-widget-designers-sdk';
 import { OffsetStyle } from '../styling/offset-style';
 import { LanguageSelectorLinkAction } from './interfaces/language-selector-link-action';
 
@@ -17,7 +17,7 @@ export class LanguageSelectorEntity {
 
     @ContentSection('Display settings')
     @DisplayName('Language selector template')
-    @DataType('viewSelector')
+    @ViewSelector()
     SfViewName: string = 'Language selector';
 
     @ContentSection('Display settings', 1)

@@ -1,5 +1,5 @@
 import { EntityMetadataGenerator, MetadataModel, PropertyModel } from '@progress/sitefinity-widget-designers-sdk';
-import { WidgetMetadata } from './widget-metadata';
+import { WidgetMetadata, WidgetViewsRegistration } from './widget-metadata';
 
 export interface WidgetRegistry {
     widgets: {
@@ -17,7 +17,7 @@ export function initRegistry(widgetRegistry: WidgetRegistry) {
             throw new Error(`There should be either entity or designer metadata provided for ${widgetKey} widget`);
         }
 
-        const metadata = EntityMetadataGenerator.extractMetadata(widgetRegistration.entity);
+        const metadata: MetadataModel = EntityMetadataGenerator.extractMetadata(widgetRegistration.entity) || widgetRegistration.designerMetadata;
         addViewChoices(widgetRegistration, metadata);
         if (!widgetRegistration.entity) {
             return;
@@ -53,6 +53,16 @@ export function initRegistry(widgetRegistry: WidgetRegistry) {
     return widgetRegistry;
 }
 
+/**
+ * Adds custom views to a chosen widget in the widget registry. Existing key entries will be replaced.
+ * @param widgetRegistry The widget registry object
+ * @param widgetKey The key of the widget in the registry
+ * @param views The views object that is to be added
+ */
+export function addWidgetViews(widgetRegistry: WidgetRegistry, widgetKey: string, views: WidgetViewsRegistration) {
+    const widgetResistration: WidgetMetadata = widgetRegistry.widgets[widgetKey];
+    widgetResistration.views = {...(widgetResistration.views || {}), ...views};
+}
 
 function addViewChoices(widgetRegistration: WidgetMetadata, metadata: MetadataModel | undefined) {
     if (!(widgetRegistration.templates || widgetRegistration.views) || !metadata) {
@@ -64,15 +74,15 @@ function addViewChoices(widgetRegistration: WidgetMetadata, metadata: MetadataMo
     // TODO: implement a regex in the @ViewSelector to filter views based on it. See the impl in .NetCore renderer for reference
     const viewSelectorsProps = propertyMetadataFlat.filter(p => p.Type === 'viewSelector' && p.Name !== 'SfDetailViewName');
     const SfDetailViewNameProp = propertyMetadataFlat.find(p => p.Name === 'SfDetailViewName');
-    viewSelectorsProps.forEach(x => addChoices(x, widgetRegistration, (viewName: string) => !viewName.toLowerCase().startsWith('details.')));
-    addChoices(SfDetailViewNameProp, widgetRegistration, (viewName: string) => viewName.toLowerCase().startsWith('details.'));
+    viewSelectorsProps.forEach(x => addWidgetViewsChoices(x, widgetRegistration, (viewName: string) => !viewName.toLowerCase().startsWith('details.')));
+    addWidgetViewsChoices(SfDetailViewNameProp, widgetRegistration, (viewName: string) => viewName.toLowerCase().startsWith('details.'));
 
     if (metadata.PropertyMetadataFlat) {
         metadata.PropertyMetadataFlat = propertyMetadataFlat;
     }
 }
 
-function addChoices(property: PropertyModel | undefined, widgetRegistration: WidgetMetadata, viewFilter: (view: string) => boolean) {
+function addWidgetViewsChoices(property: PropertyModel | undefined, widgetRegistration: WidgetMetadata, viewFilter: (view: string) => boolean) {
     if (!property) {
         return;
     }

@@ -1,4 +1,4 @@
-import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, DataType, DefaultValue, DisplayName, IsNullable, KnownFieldTypes, Margins, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
+import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, DataType, DefaultValue, DisplayName, IsNullable, KnownFieldTypes, Margins, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { OffsetStyle } from '../styling/offset-style';
 
@@ -53,10 +53,12 @@ export class NavigationEntity {
     // Display settings
     @ContentSection('Display settings', 2)
     @DisplayName('View')
-    @DataType('viewSelector')
     @DefaultValue('Horizontal')
-    @Choice([
-        { Value: 'Accordion'}, { Value: 'Horizontal'}, { Value: 'Tabs'}, { Value: 'Vertical'}
+    @ViewSelector([
+        { Value: 'Accordion'},
+        { Value: 'Horizontal'},
+        { Value: 'Tabs'},
+        { Value: 'Vertical'}
     ])
     SfViewName?: string;
 

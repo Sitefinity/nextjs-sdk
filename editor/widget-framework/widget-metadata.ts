@@ -1,11 +1,14 @@
 import { deepCopy } from '../utils/object-utils';
 import { EditorMetadata } from './widget-editor-metadata';
 
+export type WidgetViewsRegistration = { [key: string]: Function | { Title: string, ViewFunction: Function } };
+
 export interface WidgetMetadataBase {
     designerMetadata?: any;
     editorMetadata?: EditorMetadata;
     ssr?: boolean;
 }
+
 export interface WidgetMetadata extends WidgetMetadataBase {
     componentType: any;
     entity?: any;
@@ -13,8 +16,8 @@ export interface WidgetMetadata extends WidgetMetadataBase {
     /**
      * @deprecated: Use 'views' property instead.
      */
-    templates?: { [key: string]: Function | { Title: string, ViewFunction: Function } };
-    views?: { [key: string]: Function | { Title: string, ViewFunction: Function } };
+    templates?: WidgetViewsRegistration;
+    views?: WidgetViewsRegistration;
 }
 
 export function getMinimumMetadata(metadata: WidgetMetadata, isEdit: boolean): WidgetMetadataBase {

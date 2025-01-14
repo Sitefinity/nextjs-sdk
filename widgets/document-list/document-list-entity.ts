@@ -3,7 +3,7 @@ import { OffsetStyle } from '../styling/offset-style';
 import { PageTitleMode } from '../content-lists-common/page-title-mode';
 import { ContentViewDisplayMode } from '../content-lists-common/content-view-display-mode';
 import { ContentListEntityBase } from '../content-lists-common/content-lists-base.entity';
-import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, ContentSectionTitles, CssFieldMappings, DataModel, DataType, DefaultValue, Description, DisplayName, FallbackToDefaultValueWhenEmpty, FieldMapping, FieldMappings, KnownFieldTypes, Margins, PropertyCategory, SectionsOrder, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
+import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, ContentSectionTitles, CssFieldMappings, DataModel, DataType, DefaultValue, Description, DisplayName, FallbackToDefaultValueWhenEmpty, FieldMapping, FieldMappings, KnownFieldTypes, Margins, PropertyCategory, SectionsOrder, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { PagerMode } from '../common/page-mode';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { ContentListSettings } from '../../editor/widget-framework/content-list-settings';
@@ -43,9 +43,8 @@ export class DocumentListEntity implements ContentListEntityBase {
     SelectedItems: MixedContentContext | null = null;
 
     @DisplayName('List template')
-    @DataType('viewSelector')
     @ContentSection('Display settings', 0)
-    @Choice([
+    @ViewSelector([
             { Title: 'Document list', Value: 'DocumentList'},
             { Title: 'Document table', Value: 'DocumentTable'}
         ])
@@ -75,8 +74,7 @@ export class DocumentListEntity implements ContentListEntityBase {
 
     @DisplayName('Single item template')
     @ContentSection('Display settings', 1)
-    @DataType('viewSelector')
-    @Choice([
+    @ViewSelector([
             {Title: 'Details.Document details', Value: 'Details.DocumentDetails'}
         ])
     SfDetailViewName: string = 'Details.DocumentDetails';

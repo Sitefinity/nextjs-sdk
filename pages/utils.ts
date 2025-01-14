@@ -95,6 +95,13 @@ export async function pageMetadata({ params, searchParams }: PageParams): Promis
             (result.openGraph as any).type = layout.MetaInfo.OpenGraphType;
         }
 
+        // only in sfcloud
+        if (process?.env?.SF_REMOTE_VALIDATION_KEY && layout.CacheControl) {
+            result.other = {
+                'Sf-Cache-Control': layout.CacheControl
+            };
+        }
+
         return result;
     }
 

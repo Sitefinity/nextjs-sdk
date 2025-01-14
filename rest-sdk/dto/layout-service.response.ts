@@ -29,7 +29,8 @@ export interface LayoutServiceResponse extends PartialLayoutServiceResponse {
     DetailItem?: DetailItem,
     Scripts: PageScript[],
     TemplateName?: string,
-    MetadataHash: string
+    MetadataHash: string,
+    CacheControl?: string
 }
 
 export interface LayoutResponse {

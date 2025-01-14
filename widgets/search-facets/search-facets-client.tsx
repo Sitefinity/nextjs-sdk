@@ -9,7 +9,7 @@ import { RANGE_SEPARATOR, computeFacetRangeLabelForType, getCheckboxId, getFacet
 import { getFacets, getInitialFacetsWithModels, getSearchFacets, getSelectedFacetsToBeUsed, updateFacetsViewProps } from './search-facets-common';
 import { SearchFacetsEntity } from './search-facets.entity';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getQueryParams } from '../common/query-params';
+import { getQueryParams, setQueryParams } from '../common/query-params';
 
 const FILTER_QUERY_PARAM = 'filter';
 
@@ -212,13 +212,7 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
 
         // return the pager to 0
         delete queryStringParams.page;
-        url.search = Object.entries(queryStringParams)
-            .map(([key, value]) => {
-                const encodedKey = encodeURIComponent(key);
-                const encodedValue = key === 'filter' ? value || '' : encodeURIComponent(value || '');
-                return `${encodedKey}=${encodedValue}`;
-            })
-            .join('&');
+        url.search = setQueryParams(queryStringParams);
 
         return url.toString();
     }

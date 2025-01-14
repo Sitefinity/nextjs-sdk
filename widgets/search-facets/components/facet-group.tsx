@@ -107,8 +107,7 @@ export function FacetGroup(props: { facet: SearchFacetModel, viewProps: SearchFa
 
                     return (<li
                       key={idx}
-                      hidden={hideElement}
-                      className={hideElement ? '' : 'd-flex'}
+                      className={hideElement ? 'd-none' : 'd-flex'}
                     >
                       <input type="checkbox"
                         onChange={(e) => facetCheckboxChanged(e, encodedName, encodedValue, facetElement.FacetLabel!)}

@@ -250,7 +250,7 @@ export class ServiceMetadata {
             } else if (propTypeString === 'boolean' && value instanceof Boolean) {
                 return value.toString();
             } else if (propTypeArray != null && propType.length > 0) {
-                if (propTypeArray.some(x => x.toString() === 'number')) {
+                if (propTypeArray.some(x => x.toString() === 'number') || propTypeArray.some(x => x.toString() === 'boolean')) {
                     return value.ToString();
                 } else if (propTypeArray.some(x => x.toString() === 'string')) {
                     return `'${value}'`;
