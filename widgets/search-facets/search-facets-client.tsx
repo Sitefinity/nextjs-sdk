@@ -36,8 +36,9 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
     const [showClearButton, setShowClearButton] = useState(!!queryParams[FILTER_QUERY_PARAM]);
     const [sf, setSearchFacets] = useState<SearchFacetModel[]>([]);
     const [hasFacetElements, setHasAnyFacetElements] = useState<boolean>(false);
+    const [selectedFacets, setSelectedFacets] = useState<SelectedFacetsState>({});
 
-    const markSelectedInputs = useCallback(() => {
+    function setInitialSelectedFacets(sf: SearchFacetModel[]) {
         const filterQuery = getQueryParams(searchParamsNext)[FILTER_QUERY_PARAM];
         if (filterQuery) {
             const decodedFilterParam = atob(filterQuery);
@@ -80,22 +81,15 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
                 });
             });
 
-            return newCheckedInputs;
+            setSelectedFacets(newCheckedInputs);
         }
-
-        return {};
-    }, [searchParamsNext, sf]);
-
-    const initialSelectedInputs = useMemo(() => {
-        return markSelectedInputs();
-    }, [markSelectedInputs]);
-
-    const [selectedFacets, setSelectedFacets] = useState<SelectedFacetsState>(initialSelectedInputs);
+    };
 
     useEffect(() => {
         getInitialFacetsWithModels(queryParams, viewProps.widgetContext.model.Properties).then(({searchFacets, hasAnyFacetElements}) => {
             setSearchFacets(searchFacets);
             setHasAnyFacetElements(hasAnyFacetElements);
+            setInitialSelectedFacets(searchFacets);
         });
     }, []);
 
