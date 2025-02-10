@@ -18,7 +18,14 @@ export interface UserDto {
     Id: string | null;
     FirstName: string | null;
     LastName: string | null;
+    Nickname: string | null;
     Avatar: string | null;
+    AllowedAvatarFormats: string[];
+    About: string | null;
+    CustomFields: {
+      [key: string]: any;
+    };
+    ReadOnlyFields: string[];
     Preferences: {
       [key: string]: string;
     };

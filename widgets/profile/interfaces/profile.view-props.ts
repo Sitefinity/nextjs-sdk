@@ -1,0 +1,57 @@
+import { ViewPropsBase } from '../../common/view-props-base';
+import { ProfileEntity } from '../profile.entity';
+import { ProfilePostUpdateAction } from './profile-post-update-action';
+import { ProfileViewMode } from './profile-view-mode';
+
+export interface ProfileViewProps<T extends ProfileEntity> extends ViewPropsBase<T> {
+    labels: {
+        header: string;
+        firstNameLabel: string;
+        lastNameLabel: string;
+        nicknameLabel: string;
+        aboutLabel: string;
+        emailLabel: string;
+        passwordLabel: string;
+        saveButtonLabel: string;
+        changePhotoLabel: string;
+        invalidPhotoErrorMessage: string;
+        validationRequiredMessage: string;
+        invalidEmailErrorMessage: string;
+        changeEmailLabel: string;
+        invalidPasswordErrorMessage: string;
+        successNotification: string;
+        confirmEmailChangeTitleLabel: string;
+        confirmEmailChangeDescriptionLabel: string;
+        confirmEmailChangeTitleExpiredLabel: string;
+        confirmEmailChangeDescriptionExpiredLabel: string;
+        sendActivationLink: string;
+        sendAgainActivationLink: string;
+        sendConfirmationLinkSuccessTitle: string;
+        sendConfirmationLinkSuccessMessage: string;
+        confirmEmailChangeTitleErrorLabel: string;
+        confirmEmailChangeDescriptionErrorLabel: string;
+        editProfileLink: string;
+    };
+    isUserAuthenticated?: boolean;
+    viewMode?: ProfileViewMode;
+    editModeAction?: ProfilePostUpdateAction;
+    readEditModeAction?: ProfilePostUpdateAction;
+    editModeRedirectUrl?: string;
+    readEditModeRedirectUrl?: string;
+    updateProfileHandlerPath: string;
+    sendAgainActivationLinkUrl : string;
+    id?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    providerName?: string;
+    nickname?: string;
+    about?: string;
+    avatarUrl?: string;
+    allowedAvatarFormats?: string[];
+    customFields?: { [key: string]: any };
+    readOnlyFields?: string[];
+    activationMethod?: string;
+    visibilityClasses?: { [key: string]: string };
+    invalidClass?: string;
+}

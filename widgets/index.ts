@@ -103,6 +103,15 @@ export * from './registration/interfaces/post-registration-action';
 export * from './registration/interfaces/registration.view-props';
 export * from './registration/registration.view';
 
+export * from './profile/profile';
+export * from './profile/profile.view';
+export * from './profile/profile.entity';
+export * from './profile/profile-form';
+export * from './profile/profile-client';
+export * from './profile/interfaces/profile-post-update-action';
+export * from './profile/interfaces/profile-view-mode';
+export * from './profile/interfaces/profile.view-props';
+
 export * from './reset-password/reset-password';
 export * from './reset-password/reset-password-form.client';
 export * from './reset-password/reset-password.entity';

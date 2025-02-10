@@ -54,7 +54,7 @@ export async function RenderWidget({ searchParams }: { searchParams: { [key: str
 
     let widgetModel: WidgetModel<any> | undefined;
     // lazy widget should be rendered in another way because getting the model is only possible in a locked state
-    if (widgetSegmentId && widgetSegmentId !== 'undefined' && widgetSegmentId !== 'null') {
+    if (widgetSegmentId && widgetSegmentId !== 'undefined' && widgetSegmentId !== 'null' && widgetSegmentId !== '00000000-0000-0000-0000-000000000000') {
         widgetModel = await RestClient.getLazyWidget({
             id: itemId,
             type: itemType,

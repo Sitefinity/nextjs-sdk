@@ -70,6 +70,8 @@ import { FormCSR } from './form/form.csr';
 import { DynamicListCSR } from './form-widgets/dynamic-list/dynamic-list.csr';
 import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
 import { LanguageSelectorEntity } from './language-selector/language-selector-entity';
+import { ProfileEntity } from './profile/profile.entity';
+import { Profile } from './profile/profile';
 
 export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
     'SitefinityForm': {
@@ -642,6 +644,22 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 EmptyIconAction: 'Edit',
                 HasQuickEditOperation: true,
                 IconName: 'registration',
+                WidgetBehavior: {
+                    NotPersonalizable: true
+                }
+            },
+            ssr: true
+        },
+        'SitefinityProfile': {
+            entity: ProfileEntity,
+            componentType: Profile,
+            editorMetadata: {
+                Title: 'Profile',
+                Section: 'Login and users',
+                Category: 'Content',
+                EmptyIconAction: 'Edit',
+                HasQuickEditOperation: true,
+                IconName: 'profile',
                 WidgetBehavior: {
                     NotPersonalizable: true
                 }
