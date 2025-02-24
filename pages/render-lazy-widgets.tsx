@@ -7,10 +7,16 @@ import { LayoutResponse } from '../rest-sdk/dto/layout-service.response';
 import { PageItem } from '../rest-sdk/dto/page-item';
 import { setHostServerContext } from '../services/server-context';
 import { initServerSideRestSdk } from '../rest-sdk/init';
+import { widgetRegistry } from '@widgetregistry';
+import { initRegistry } from '../editor/widget-framework/widget-registry';
 
 export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key: string]: string } }) {
     const hostHeader = headers().get('host') || '';
     setHostServerContext(hostHeader);
+
+    if (!RenderWidgetService.widgetRegistry) {
+      RenderWidgetService.widgetRegistry = initRegistry(widgetRegistry);
+    }
 
     const pageUrl = searchParams['pageUrl'];
     let cookie = cookies().toString();

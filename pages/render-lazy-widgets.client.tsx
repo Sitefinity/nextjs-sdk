@@ -2,14 +2,14 @@
 'use client';
 
 import { RenderWidgetService } from '../services/render-widget-service';
-import { widgetRegistry } from '@widgetregistry';
 import { ServiceMetadataDefinition, ServiceMetadata } from '../rest-sdk/service-metadata';
 import { SdkItem } from '../rest-sdk/dto/sdk-item';
 import { useEffect } from 'react';
 import { EVENTS, PersonalizedWidgetsPayload, useSfEvents } from './useSfEvents';
+import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 
-export function RenderLazyWidgetsClient({ metadata, taxonomies, url }: { metadata: ServiceMetadataDefinition, taxonomies: SdkItem[], url: string }) {
-    RenderWidgetService.widgetRegistry = widgetRegistry;
+export function RenderLazyWidgetsClient({ metadata, taxonomies, url, registry }: { metadata: ServiceMetadataDefinition, taxonomies: SdkItem[], url: string, registry: WidgetRegistry }) {
+    RenderWidgetService.widgetRegistry = registry;
     ServiceMetadata.serviceMetadataCache = metadata;
     ServiceMetadata.taxonomies = taxonomies;
 

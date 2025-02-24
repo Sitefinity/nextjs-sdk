@@ -3,7 +3,7 @@
 import React from 'react';
 import { WidgetContext } from '../editor/widget-framework/widget-context';
 import { usePathname } from 'next/navigation';
-import { RenderWidgetService } from '../services/render-widget-service';
+import { WidgetExecutionError } from '../widgets/error/widget-execution-error-component';
 
 export interface ErrorBoundaryCustomProps {
   children?: React.ReactNode,
@@ -66,7 +66,7 @@ ErrorBoundaryHandlerCustomProps,
           context: this.props.context,
           error: this.state.error.message + '\n' + this.state.error.stack
         };
-        const element = React.createElement(RenderWidgetService.errorComponentType, errorProps);
+        const element = React.createElement(WidgetExecutionError, errorProps);
         return (element);
       }
 

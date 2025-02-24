@@ -7,6 +7,7 @@ export interface WidgetMetadataBase {
     designerMetadata?: any;
     editorMetadata?: EditorMetadata;
     ssr?: boolean;
+    defaultValues?: any;
 }
 
 export interface WidgetMetadata extends WidgetMetadataBase {
@@ -27,8 +28,9 @@ export function getMinimumMetadata(metadata: WidgetMetadata, isEdit: boolean): W
         };
     }
 
-    return deepCopy({
+    return deepCopy<WidgetMetadataBase>({
         designerMetadata: metadata?.designerMetadata,
+        defaultValues: metadata?.defaultValues,
         editorMetadata: metadata?.editorMetadata,
         ssr: metadata?.ssr
     });

@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { getWhiteListSearchParams } from '../document-list/common/utils';
 import { SearchParams } from './interfaces/search-params';
+import { getWhiteListSearchParams } from '../common/utils';
 
 export function LanguagesList(props: {
     languages: {Name: string, Title: string}[],

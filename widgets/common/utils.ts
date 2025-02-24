@@ -34,3 +34,18 @@ export const formatDate = function (date: Date | string, culture?: string) {
 
     return date.toLocaleString(culture, dateOptionsDay) + ' ' + date.toLocaleString(culture, dateOptions);
 };
+
+export const getWhiteListSearchParams = (
+    searchParams:  {
+        [key: string]: string;
+    },
+    whitelistedQueryParams: string[]) => {
+    const filteredQueryCollection: { [key: string]: string } = {};
+    whitelistedQueryParams.forEach(param => {
+        const searchParamValue = (searchParams || {})[param];
+        if (searchParamValue) {
+            filteredQueryCollection[param] = searchParamValue;
+        }
+    });
+    return filteredQueryCollection;
+};

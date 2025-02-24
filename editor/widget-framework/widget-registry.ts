@@ -7,6 +7,9 @@ export interface WidgetRegistry {
     }
 }
 
+/**
+ * @deprecated Used internally
+ */
 export function initRegistry(widgetRegistry: WidgetRegistry) {
     const widgets = Object.keys(widgetRegistry.widgets);
 
@@ -17,7 +20,7 @@ export function initRegistry(widgetRegistry: WidgetRegistry) {
             throw new Error(`There should be either entity or designer metadata provided for ${widgetKey} widget`);
         }
 
-        const metadata: MetadataModel = EntityMetadataGenerator.extractMetadata(widgetRegistration.entity) || widgetRegistration.designerMetadata;
+        const metadata: MetadataModel = widgetRegistration.entity ? EntityMetadataGenerator.extractMetadata(widgetRegistration.entity) : widgetRegistration.designerMetadata;
         addViewChoices(widgetRegistration, metadata);
         if (!widgetRegistration.entity) {
             return;
@@ -46,6 +49,7 @@ export function initRegistry(widgetRegistry: WidgetRegistry) {
         }
 
         widgetRegistration.designerMetadata = metadata;
+        widgetRegistration.defaultValues ||= EntityMetadataGenerator.extractDefaultValues(metadata) || {};
 
         delete widgetRegistration.entity;
     });

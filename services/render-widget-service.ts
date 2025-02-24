@@ -9,10 +9,10 @@ import { EntityMetadataGenerator } from '@progress/sitefinity-widget-designers-s
 import { WidgetMetadata, getMinimumMetadata } from '../editor/widget-framework/widget-metadata';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { ErrorBoundaryCustom } from '../pages/error-boundary';
+import { WidgetExecutionError } from '../widgets/error/widget-execution-error-component';
 
 export class RenderWidgetService {
     public static widgetRegistry: WidgetRegistry;
-    public static errorComponentType: any;
 
     public static createComponent(widgetModel: WidgetModel, requestContext: TransferableRequestContext, traceContext?: any) {
         Tracer.logEvent(`render widget start: ${widgetModel.Caption || widgetModel.Name}`);
@@ -21,7 +21,7 @@ export class RenderWidgetService {
         const propsForWidget: WidgetContext = {
             metadata: getMinimumMetadata(registeredType, requestContext.isEdit), // modify props to remove functions in order to pass them to client component
             model: deepCopy(widgetModel),
-            requestContext: getMinimumRequestContext(deepCopy(requestContext)),
+            requestContext: getMinimumRequestContext(deepCopy<TransferableRequestContext>(requestContext)),
             traceContext: registeredType?.ssr ? traceContext : null
         };
 
@@ -49,7 +49,7 @@ export class RenderWidgetService {
                     error: errCast.message
                 };
 
-                const errorElement = React.createElement(RenderWidgetService.errorComponentType, errorProps);
+                const errorElement = React.createElement(WidgetExecutionError, errorProps);
                 return errorElement;
             }
 
@@ -58,7 +58,7 @@ export class RenderWidgetService {
     }
 
     public static parseProperties(widgetProperties: {[key: string]: any}, widgetMetadata: WidgetMetadata) {
-        const defaultValues = EntityMetadataGenerator.extractDefaultValues(widgetMetadata?.designerMetadata) || {};
+        const defaultValues = widgetMetadata.defaultValues || {};
         const persistedProperties = widgetMetadata?.designerMetadata ? EntityMetadataGenerator.parseValues(widgetProperties, widgetMetadata.designerMetadata) : {};
 
         return Object.assign({}, defaultValues, persistedProperties);

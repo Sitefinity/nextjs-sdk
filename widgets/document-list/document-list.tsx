@@ -6,7 +6,7 @@ import { ContentViewDisplayMode } from '../content-lists-common/content-view-dis
 import { DetailPageSelectionMode } from '../content-lists-common/detail-page-selection-mode';
 import { DocumentListListView } from './document-list-list.view';
 import { DocumentListGridView } from './document-list-grid.view';
-import { getPageQueryString, getWhiteListSearchParams } from './common/utils';
+import { getPageQueryString } from './common/utils';
 import { DocumentDetailItemView } from './document-list-detail-item.view';
 import { ContentListsCommonRestService } from '../content-lists-common/content-lists-rest.setvice';
 import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
@@ -21,6 +21,7 @@ import { getPageNumber } from '../pager/pager-view-model';
 import { RenderView } from '../common/render-view';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { RestClientForContext } from '../../services/rest-client-for-context';
+import { getWhiteListSearchParams } from '../common/utils';
 
 export async function DocumentList(props: WidgetContext<DocumentListEntity>) {
     const {span, ctx} = Tracer.traceWidget(props, true);

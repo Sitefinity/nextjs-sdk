@@ -18,7 +18,7 @@ import { FilterOperators } from '../../rest-sdk/filters/filter-clause';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { ContentListMasterProps, ContentListDetailProps } from '../content-lists-common/content-list.view-props';
 import { Dictionary } from '../../typings/dictionary';
-import { RestClientForContext } from '../..';
+import { RestClientForContext } from '../../services/rest-client-for-context';
 
 export async function ContentList(props: WidgetContext<ContentListEntity>) {
     const {span, ctx} = Tracer.traceWidget(props, true);

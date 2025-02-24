@@ -10,7 +10,7 @@ export interface WidgetContext<T extends {[key: string]: any} = {[key: string]: 
     readonly traceContext?: any;
 }
 
-export function getMinimumRequestContext (requestContext: RequestContext): TransferableRequestContext {
+export function getMinimumRequestContext (requestContext: RequestContext | TransferableRequestContext): TransferableRequestContext {
     const context: TransferableRequestContext = {...requestContext, ...{
         layout: {
             Culture: requestContext.layout.Culture,
@@ -27,7 +27,7 @@ export function getMinimumRequestContext (requestContext: RequestContext): Trans
 }
 
 export function getMinimumWidgetContext<T extends {[key: string]: any} = {[key: string]: any}>(widgetContext: WidgetContext<T>  ): WidgetContext<T> {
-    return deepCopy({
+    return deepCopy<WidgetContext<T>>({
         model: widgetContext.model,
         requestContext: getMinimumRequestContext(widgetContext.requestContext as RequestContext),
         metadata: widgetContext.metadata,

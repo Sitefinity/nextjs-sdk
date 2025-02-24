@@ -19,12 +19,19 @@ import { ContentListEntityBase } from '../widgets/content-lists-common/content-l
 import { ContentListsCommonRestService } from '../widgets/content-lists-common/content-lists-rest.setvice';
 import { initServerSideRestSdk } from '../rest-sdk/init';
 import { setHostServerContext } from '../services/server-context';
-import { TemplateRegistry } from '..';
+import { TemplateRegistry } from '../editor/default-template-registry';
+import { initRegistry, WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { WidgetModel } from '../editor/widget-framework/widget-model';
+import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
+import { widgetRegistry } from '@widgetregistry';
 
 export async function RenderPage({ params, searchParams, relatedFields, templates }: { params: { slug: string[] }, searchParams: Dictionary, relatedFields?: string[], templates?: TemplateRegistry }) {
     const host = headers().get('host') || '';
     setHostServerContext(host);
+
+    if (!RenderWidgetService.widgetRegistry) {
+        RenderWidgetService.widgetRegistry = initRegistry(widgetRegistry);
+    }
 
     let layoutResponse: LayoutResponse | null = null;
 
@@ -136,15 +143,38 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         });
     }
 
+    const registryForFrontent: WidgetRegistry = {
+        widgets: Object.fromEntries(Object.entries(RenderWidgetService.widgetRegistry.widgets).filter(([key, registration]) => {
+            return !registration.ssr;
+        }))
+    };
+
+    const registryForEdit: WidgetRegistry = {
+        widgets: Object.fromEntries(Object.entries(RenderWidgetService.widgetRegistry.widgets).map(([key, registration]) => {
+            if (!registration.ssr) {
+                return [key, registration];
+            }
+
+            const reg: WidgetMetadata = {
+                designerMetadata: registration.designerMetadata,
+                editorMetadata: registration.editorMetadata,
+                ssr: registration.ssr,
+                componentType: null
+            };
+            return [key, reg];
+        }))
+    };
+
     return (
       <>
         <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache}
           taxonomies={ServiceMetadata.taxonomies}
-          additionalQueryParams={{ sf_culture: layout.Culture, sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''}} />
+          additionalQueryParams={{ sf_culture: layout.Culture, sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''}}
+          registry={registryForFrontent}/>
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} />
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} />
-        {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} />}
-        {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} />}
+        {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} registry={registryForEdit} />}
+        {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} registry={registryForFrontent} />}
         {pageTemplate}
         <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyBottom} />
         {Tracer.endSpan(span)}

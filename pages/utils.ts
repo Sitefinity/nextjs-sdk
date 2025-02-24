@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { PageParams } from './page-params';
 import { RenderWidgetService } from '../services/render-widget-service';
 import { RestClient } from '../rest-sdk/rest-client';
-import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
+import { initRegistry, WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { LayoutResponse } from '../rest-sdk/dto/layout-service.response';
 import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 import { GetPageLayoutArgs } from '../rest-sdk/args/get-page-layout.args';
@@ -96,7 +96,7 @@ export async function pageMetadata({ params, searchParams }: PageParams): Promis
         }
 
         // only in sfcloud
-        if (process?.env?.SF_REMOTE_VALIDATION_KEY && layout.CacheControl) {
+        if (process?.env?.SF_NEXTJS_SET_CACHE_CONTROL_METATAG && layout.CacheControl) {
             result.other = {
                 'Sf-Cache-Control': layout.CacheControl
             };
@@ -108,7 +108,9 @@ export async function pageMetadata({ params, searchParams }: PageParams): Promis
     return {};
 }
 
+/**
+ * @deprecated Not needed anymore
+ */
 export function initRendering(widgetRegistry: WidgetRegistry, errorComponentType: any) {
-    RenderWidgetService.widgetRegistry = widgetRegistry;
-    RenderWidgetService.errorComponentType = errorComponentType;
+    // RenderWidgetService.widgetRegistry = widgetRegistry;
 }

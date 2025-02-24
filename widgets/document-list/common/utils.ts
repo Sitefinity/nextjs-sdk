@@ -61,18 +61,3 @@ export const getPageQueryString = (page: PageItem) => {
 
     return dividedUrls[1];
 };
-
-export const getWhiteListSearchParams = (
-    searchParams:  {
-        [key: string]: string;
-    },
-    whitelistedQueryParams: string[]) => {
-    const filteredQueryCollection: { [key: string]: string } = {};
-    whitelistedQueryParams.forEach(param => {
-        const searchParamValue = (searchParams || {})[param];
-        if (searchParamValue) {
-            filteredQueryCollection[param] = searchParamValue;
-        }
-    });
-    return filteredQueryCollection;
-};

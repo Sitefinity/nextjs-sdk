@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { SearchResultsSorting } from './interfaces/search-results-sorting';
-import { getWhiteListSearchParams } from '../document-list/common/utils';
 import { SearchParams } from './interfaces/search-params';
+import { getWhiteListSearchParams } from '../common/utils';
 
 export function OrderByDropDown(props: {
     sortingSelectId: string;

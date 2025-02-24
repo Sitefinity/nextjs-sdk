@@ -8,8 +8,14 @@ import { notFound } from 'next/navigation';
 import { PageItem } from '../rest-sdk/dto/page-item';
 import { setHostServerContext } from '../services/server-context';
 import { WidgetModel } from '../editor/widget-framework/widget-model';
+import { widgetRegistry } from '@widgetregistry';
+import { initRegistry } from '../editor/widget-framework/widget-registry';
 
 export async function RenderWidget({ searchParams }: { searchParams: { [key: string]: string } }) {
+    if (!RenderWidgetService.widgetRegistry) {
+        RenderWidgetService.widgetRegistry = initRegistry(widgetRegistry);
+    }
+
     const host = headers().get('host') || '';
     setHostServerContext(host);
 
