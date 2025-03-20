@@ -837,7 +837,7 @@ export class RestClient {
                 const fieldName = fieldMatch.groups['fieldName'];
                 if (relatedFields.some(x => x === fieldName)) {
                     const innerFields = fieldMatch.groups['nested'];
-                    const relatedFieldsInput = this.parseInnerFields(innerFields);
+                    const relatedFieldsInput = this.parseInnerFields(innerFields.replaceAll(' ', ''));
 
                     const relatedTypeName = ServiceMetadata.getRelatedType(type, fieldName);
                     if (relatedTypeName) {
@@ -900,13 +900,13 @@ export class RestClient {
                 if (openingBraceCounter > 0 && openingBraceCounter === closingBraceCounter) {
                     let relatedField = input.substring(fieldStartIndex, fieldStartIndex + charIterator - fieldStartIndex - 1).trim();
                     allFields.push(relatedField);
-                    fieldStartIndex = charIterator + 1;
+                    fieldStartIndex = charIterator;
                     openingBraceCounter = 0;
                     closingBraceCounter = 0;
                 } else if (openingBraceCounter === 0 && closingBraceCounter === 0) {
                     let basicField = input.substring(fieldStartIndex, fieldStartIndex + charIterator - fieldStartIndex - 1).trim();
                     allFields.push(basicField);
-                    fieldStartIndex = charIterator + 1;
+                    fieldStartIndex = charIterator;
                 }
             }
         }

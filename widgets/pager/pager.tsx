@@ -28,7 +28,7 @@ export function Pager(props: PagerProps) {
     pagerQueryTemplate,
     props.pagerMode
   );
-  pagerModel.ViewUrl = context.layout.Fields.ViewUrl;
+  pagerModel.ViewUrl = context.layout.Fields?.ViewUrl;
 
   return (pagerModel.EndPageIndex > 1 &&
     <div className="mt-2">

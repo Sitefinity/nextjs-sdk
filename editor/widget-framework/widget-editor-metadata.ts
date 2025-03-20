@@ -21,5 +21,14 @@ export interface EditorMetadata {
 }
 
 export interface WidgetBehavior {
+    /**
+     * Indicates whether the widget is personalizable.
+     */
     NotPersonalizable?: boolean;
+
+    /**
+     * Indicates whether the widget registers a content location.
+     * SelectedItems property of type MixedContentContent is required in the entity.
+     */
+    IsContentLocation?: boolean;
 }

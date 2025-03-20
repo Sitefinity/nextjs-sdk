@@ -198,7 +198,7 @@ async function handleListView(props: WidgetContext<ContentListEntity>, requestCo
     let detailPageUrl: string | undefined;
     if (!(props.model.Properties.ContentViewDisplayMode === ContentViewDisplayMode.Master && props.model.Properties.DetailPageMode === DetailPageSelectionMode.SamePage)
         && items.Items.length > 0) {
-        detailPageUrl = props.requestContext.pageNode.ViewUrl;
+        detailPageUrl = props.requestContext.pageNode?.ViewUrl;
         if (props.model.Properties.DetailPageMode === DetailPageSelectionMode.ExistingPage && props.model.Properties.DetailPage) {
             const detailPages = await RestClientForContext.getItems<PageItem>(props.model.Properties.DetailPage, {
                 type: RestSdkTypes.Pages,

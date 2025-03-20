@@ -453,7 +453,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Section: 'Lists',
                 EmptyIconText: 'Select content',
                 EmptyIcon: 'plus-circle',
-                IconName: 'content-list'
+                IconName: 'content-list',
+                WidgetBehavior: {
+                    IsContentLocation: true
+                }
             },
             ssr: true,
             views: {
@@ -493,7 +496,10 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                 Section: 'Lists',
                 EmptyIconAction: 'Edit',
                 HasQuickEditOperation: true,
-                IconName: 'document'
+                IconName: 'document',
+                WidgetBehavior: {
+                    IsContentLocation: true
+                }
             },
             ssr: true,
             views: {

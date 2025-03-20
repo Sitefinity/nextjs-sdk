@@ -31,7 +31,7 @@ export async function Breadcrumb(props: WidgetContext<BreadcrumbEntity>) {
         addHomePageAtBeginning: entity.AddHomePageLinkAtBeginning,
         includeGroupPages: entity.IncludeGroupPages,
         currentPageId: props.requestContext.layout.Id,
-        currentPageUrl: props.requestContext.layout.Fields['ViewUrl'],
+        currentPageUrl: props.requestContext.layout.Fields?.['ViewUrl'],
         culture: props.requestContext.culture,
         traceContext: ctx
     };

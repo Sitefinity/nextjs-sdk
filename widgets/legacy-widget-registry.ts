@@ -513,7 +513,10 @@ export const legacyWidgetRegistry: WidgetRegistry = {
                 Title: 'Content list',
                 Section: 'Basic',
                 EmptyIconText: 'Select content',
-                EmptyIcon: 'plus-circle'
+                EmptyIcon: 'plus-circle',
+                WidgetBehavior: {
+                    IsContentLocation: true
+                }
             },
             ssr: true,
             templates: {
@@ -536,7 +539,10 @@ export const legacyWidgetRegistry: WidgetRegistry = {
                 EmptyIcon: 'plus-circle',
                 Section: 'Basic',
                 EmptyIconAction: 'Edit',
-                HasQuickEditOperation: true
+                HasQuickEditOperation: true,
+                WidgetBehavior: {
+                    IsContentLocation: true
+                }
             },
             ssr: true,
             templates: {

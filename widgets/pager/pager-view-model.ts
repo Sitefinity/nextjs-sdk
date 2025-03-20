@@ -73,7 +73,7 @@ export class PagerViewModel {
     }
 
     public getPagerUrl(pageNumber: number, context: TransferableRequestContext): string {
-        let path: string = context?.url || context?.layout.Fields.ViewUrl;
+        let path: string = context?.url || context?.layout.Fields?.ViewUrl;
         if (path[0] !== '/') {
             path = `/${path}`;
         }
