@@ -170,7 +170,7 @@ export function ResetPasswordFormClient (props: ResetPasswordViewProps<ResetPass
               {...inputValidationAttrs('NewPassword')}/>
           </div>
 
-          <input type="hidden" name="SecurityToken" value={props.securityToken} />
+          <input type="hidden" name="SecurityToken" value={props.securityToken || ''} />
           <input type="hidden" name="MembershipProviderName" value={props.membershipProviderName  || ''} />
           <input className="btn btn-primary w-100" type="submit" value={labels.saveButtonLabel} />
         </form>

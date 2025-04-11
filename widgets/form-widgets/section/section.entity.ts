@@ -1,4 +1,9 @@
-import { Category, DataType, DisplayName, LengthDependsOn, WidgetEntity, Range } from '@progress/sitefinity-widget-designers-sdk';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Range } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
+import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
+import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { LengthDependsOn } from '@progress/sitefinity-widget-designers-sdk/decorators/length-depends-on';
 
 @WidgetEntity('SitefinitySection', 'Section')
 export class FormSectionEntity {

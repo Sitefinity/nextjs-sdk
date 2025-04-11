@@ -10,11 +10,13 @@ import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 import { GetPageLayoutArgs } from '../rest-sdk/args/get-page-layout.args';
 
 export async function pageLayout({ params, searchParams, relatedFields, traceContext }: PageParams): Promise<LayoutResponse> {
+    const pageParams = params instanceof Promise ? await params : params;
+    const queryParams = searchParams instanceof Promise ? await searchParams : searchParams;
     try {
         const args: GetPageLayoutArgs = {
-            pagePath: params.slug.join('/'),
-            queryParams: searchParams,
-            cookie: cookies().toString(),
+            pagePath: pageParams?.slug.join('/'),
+            queryParams,
+            cookie: (await cookies()).toString(),
             followRedirects: false,
             relatedFields,
             traceContext
@@ -36,19 +38,20 @@ export async function pageLayout({ params, searchParams, relatedFields, traceCon
             throw error;
         }
 
-        throw `Could not fetch layout for url -> ${params.slug.join('/')}`;
+        throw `Could not fetch layout for url -> ${pageParams?.slug.join('/')}`;
     }
 }
 
 export async function pageMetadata({ params, searchParams }: PageParams): Promise<Metadata> {
+    const pageParams = params instanceof Promise ? await params : params;
     let layoutResponse: LayoutResponse | null = null;
 
-    if (/^sitefinity\/(template|forms)/i.test(params.slug.join('/'))) {
+    if (/^sitefinity\/(template|forms)/i.test(pageParams?.slug.join('/'))) {
         return {};
     }
 
-    if (params && params.slug && params.slug.length > 0) {
-        if (params.slug.some(x => x === '_next') || params.slug[params.slug.length - 1].indexOf('.') !== -1) {
+    if (pageParams && pageParams.slug && pageParams.slug.length > 0) {
+        if (pageParams.slug.some(x => x === '_next') || pageParams.slug[pageParams.slug.length - 1].indexOf('.') !== -1) {
             return {};
         }
     }

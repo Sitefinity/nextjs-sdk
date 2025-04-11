@@ -1,4 +1,3 @@
-import { Attributes, Category, Choice,ConditionalVisibility, Content, ContentSection, ContentSectionTitles, CssFieldMappings, DataModel, DataType, DefaultValue, Description, DisplayName, FallbackToDefaultValueWhenEmpty, FieldMapping, FieldMappings, KnownFieldTypes, MaxLength, Model, Required, SectionsOrder, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { ContentListEntityBase } from '../content-lists-common/content-lists-base.entity';
 import { ContentListSettings } from '../../editor/widget-framework/content-list-settings';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
@@ -7,6 +6,25 @@ import { ContentViewDisplayMode } from '../content-lists-common/content-view-dis
 import { DetailPageSelectionMode } from '../content-lists-common/detail-page-selection-mode';
 import { PageTitleMode } from '../content-lists-common/page-title-mode';
 import { PagerViewModel } from '../pager/pager-view-model';
+import { Model, SectionsOrder } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
+import { FieldMapping, FieldMappings } from '@progress/sitefinity-widget-designers-sdk/decorators/field-mappings';
+import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
+import { ContentSectionTitles, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
+import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
+import { Required } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
+import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
+import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
+import { FallbackToDefaultValueWhenEmpty } from '@progress/sitefinity-widget-designers-sdk/decorators/fallback-to-default-when-empty';
+import { CssFieldMappings } from '@progress/sitefinity-widget-designers-sdk/decorators/css-field-mappings';
+import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
 
 @Model()
 export class ListFieldMapping {

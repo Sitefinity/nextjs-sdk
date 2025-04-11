@@ -18,8 +18,8 @@ const generateHiddenFields = (fields: string[]) =>{
 export function FormClient(props: FromContainerProps) {
     const { children, viewProps, className, formDataAttributes } = props;
     const fromElementRef = React.useRef<HTMLFormElement>(null);
-    const formRef = React.useRef<HTMLDivElement>();
-    const formRules = React.useRef<FormRulesExecutor>();
+    const formRef = React.useRef<HTMLDivElement>(null);
+    const formRules = React.useRef<FormRulesExecutor>(null);
     const [ disabledSubmitButton, setDisabledSubmitButton] = React.useState(false);
     const [ showLoading, setShowLoading] = React.useState(false);
     const [ showFields, setShowFields] = React.useState(true);
@@ -81,7 +81,6 @@ export function FormClient(props: FromContainerProps) {
                 return newSkippedFields;
             });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     },[]);
 
     const formCreateRef = React.useCallback((node: HTMLDivElement) => {

@@ -1,4 +1,4 @@
-import { Model } from '@progress/sitefinity-widget-designers-sdk';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
 import { ListDisplayMode } from './list-display-mode';
 
 @Model()

@@ -7,40 +7,38 @@ import { DropdownEntity } from '../dropdown/dropdown.entity';
 import { htmlAttributes, setWarning } from '../../../editor/widget-framework/attributes';
 import { getChoiceItems } from './dynamic-list.view-props';
 import { ChoiceEntityBase } from '../interfaces/choice-entity-base';
-import { useEffect, useState } from 'react';
+import { JSX, useEffect, useState } from 'react';
 import { DropdownDefaultView } from '../dropdown/dropdown.view';
 import { CheckboxesDefaultView } from '../checkboxes/checkboxes.view';
 import { DropdownViewProps } from '../dropdown/interfaces/dropdown.view-props';
 import { CheckboxesViewProps } from '../checkboxes/interfaces/checkboxes-view-model';
 import { StylingConfig } from '../../styling/styling-config';
 import { classNames } from '../../../editor/utils/classNames';
+import { SelectionMode } from './selection-modes';
 
 export function DynamicListCSR(props: WidgetContext<DynamicListEntity>) {
     const entity = props.model.Properties;
-    const hasContent = entity.SelectedContent != null && entity.SelectedContent.Content != null && entity.SelectedContent.Content[0].Type;
     const requestContext = props.requestContext;
-    const dataAttributes = htmlAttributes(props);
+    const hasContent = entity.SelectedContent != null && entity.SelectedContent.Content != null && entity.SelectedContent.Content[0].Type != null;
+    const hasClassifications = entity.ClassificationSettings != null && entity.ClassificationSettings.selectionMode != null && entity.ClassificationSettings.selectedTaxonomyName != null;
 
+    const [dataAttributes, setDataAttributes] = useState(htmlAttributes(props));
     const [defaultRender, setRender] = useState<JSX.Element | null>(null);
 
-    if (props.requestContext.isEdit && !hasContent) {
-        setWarning(dataAttributes, 'No list type have been selected');
+    if (props.requestContext.isEdit ) {
+        if ((entity.ListType === SelectionMode.Content && !hasContent) ||
+            (entity.ListType === SelectionMode.Classification && !hasClassifications)) {
+            setWarning(dataAttributes, 'No list type have been selected');
+        }
     }
 
     useEffect(() => {
-        const baseEntity: ChoiceEntityBase = {
-            Choices: [],
-            CssClass: entity.CssClass,
-            Hidden: entity.Hidden,
-            InstructionalText: entity.InstructionalText,
-            SfFieldName: entity.SfFieldName,
-            Required: entity.Required,
-            RequiredErrorMessage: entity.RequiredErrorMessage || '',
-            SfViewName: 'Default',
-            Label: entity.Label || ''
-        };
-
         getChoiceItems(entity, requestContext).then(choices => {
+            if (props.requestContext.isEdit && (hasContent || hasClassifications) && choices.length === 0) {
+                setWarning(dataAttributes, 'Selected list is empty');
+                setDataAttributes(dataAttributes);
+            }
+
             if (entity.SfViewName === 'Dropdown') {
                 if (choices.length > 0) {
                     choices.unshift({ Name: 'Select', Value: '', Selected: true });
@@ -89,11 +87,6 @@ export function DynamicListCSR(props: WidgetContext<DynamicListEntity>) {
 
                 setRender(<CheckboxesDefaultView {...viewProps} /> );
             }
-
-            if (props.requestContext.isEdit && hasContent && choices.length === 0) {
-                setWarning(dataAttributes, 'Selected list is empty');
-            }
-
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

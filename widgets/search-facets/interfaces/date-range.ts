@@ -1,4 +1,11 @@
-import { DataType, DateSettings, DefaultValue, Description, DisplayName, Model, Placeholder, Required } from '@progress/sitefinity-widget-designers-sdk';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { DateSettings } from '@progress/sitefinity-widget-designers-sdk/decorators/date-settings';
+import { Placeholder } from '@progress/sitefinity-widget-designers-sdk/decorators/placeholder';
+import { Required } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
 
 @Model()
 export class DateRange {

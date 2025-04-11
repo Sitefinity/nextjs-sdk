@@ -2,7 +2,7 @@ import { ContentBlock } from './content-block/content-block';
 import { ContentList } from './content-list/content-list';
 import { CallToAction } from './call-to-action/call-to-action';
 import { Classification } from './classification/classification';
-import { Image } from './image/image';
+import { SitefinityImage } from './image/image';
 import { Breadcrumb } from './breadcrumb/breadcrumb';
 import { Navigation } from './navigation/navigation';
 import { SearchBox } from './search-box/search-box';
@@ -390,7 +390,7 @@ export const legacyWidgetRegistry: WidgetRegistry = {
         },
         'SitefinityImage': {
             entity: ImageEntity,
-            componentType: Image,
+            componentType: SitefinityImage,
             editorMetadata: {
                 Title: 'Image',
                 Section: 'Basic',

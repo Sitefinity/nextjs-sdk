@@ -1,4 +1,4 @@
-import { EntityMetadataGenerator, MetadataModel, PropertyModel } from '@progress/sitefinity-widget-designers-sdk';
+import { EntityMetadataGenerator, MetadataModel, PropertyModel } from '@progress/sitefinity-widget-designers-sdk/metadata';
 import { WidgetMetadata, WidgetViewsRegistration } from './widget-metadata';
 
 export interface WidgetRegistry {

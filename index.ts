@@ -29,3 +29,4 @@ export * from './services/rest-client-for-context';
 export * from './services/sanitizer-service';
 
 export * from './server-side-cookie';
+export * from './server-side-headers';

@@ -3,12 +3,28 @@ import { OffsetStyle } from '../styling/offset-style';
 import { PageTitleMode } from '../content-lists-common/page-title-mode';
 import { ContentViewDisplayMode } from '../content-lists-common/content-view-display-mode';
 import { ContentListEntityBase } from '../content-lists-common/content-lists-base.entity';
-import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, ContentSectionTitles, CssFieldMappings, DataModel, DataType, DefaultValue, Description, DisplayName, FallbackToDefaultValueWhenEmpty, FieldMapping, FieldMappings, KnownFieldTypes, Margins, PropertyCategory, SectionsOrder, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { PagerMode } from '../common/page-mode';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { ContentListSettings } from '../../editor/widget-framework/content-list-settings';
 import { DetailPageSelectionMode } from '../content-lists-common/detail-page-selection-mode';
 import { PagerViewModel } from '../pager/pager-view-model';
+import { SectionsOrder, WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { ContentSectionTitles } from '@progress/sitefinity-widget-designers-sdk/common';
+import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
+import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
+import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
+import { Category, PropertyCategory } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
+import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
+import { CssFieldMappings } from '@progress/sitefinity-widget-designers-sdk/decorators/css-field-mappings';
+import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
+import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
+import { KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
+import { Margins } from '@progress/sitefinity-widget-designers-sdk/decorators/margins';
+import { FallbackToDefaultValueWhenEmpty } from '@progress/sitefinity-widget-designers-sdk/decorators/fallback-to-default-when-empty';
 
 export const documentListViewMeta = {
     'DocumentList': [

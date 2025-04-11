@@ -1,4 +1,7 @@
-import { Choice, DataType, Model } from '@progress/sitefinity-widget-designers-sdk';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
+import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+
 
 @Model(true)
 export class ClassificationSettings {

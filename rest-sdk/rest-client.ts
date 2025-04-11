@@ -56,6 +56,7 @@ import { GetFacatebleFieldsArgs } from './args/get-facateble-fields.args';
 import { GetSharedContentArgs } from './args/get-shared-content.args';
 import { GetTemplatesStatisticsArgs } from './args/get-templates-statistics-args';
 import { SearchMetadataDto } from './dto/search-metadata-dto';
+import { getFilteredServerSideHeaders } from '../server-side-headers';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
@@ -704,6 +705,13 @@ export class RestClient {
             headers['Cookie'] = args.cookie;
         }
 
+        const serverSideHeaders = await getFilteredServerSideHeaders();
+        if (serverSideHeaders) {
+            Object.entries(serverSideHeaders).forEach(([headerKey, headerValue]) => {
+                headers[headerKey] = headerValue;
+            });
+        }
+
         if (typeof window === 'undefined' || process.env.NODE_ENV === 'test') {
             const host = getHostServerContext();
             const proxyHeaders = getProxyHeaders(host!);
@@ -1001,6 +1009,13 @@ export class RestClient {
 
     public static async sendRequest<T>(request: RequestData, throwErrorAsJson?: boolean): Promise<T> {
         const headers = this.buildHeaders(request);
+
+        const serverSideHeaders = await getFilteredServerSideHeaders();
+        if (serverSideHeaders) {
+            Object.entries(serverSideHeaders).forEach(([headerKey, headerValue]) => {
+                headers[headerKey] = headerValue;
+            });
+        }
 
         if (process.env.NODE_ENV === 'test') {
             RestClient.addAuthHeaders(undefined, headers);

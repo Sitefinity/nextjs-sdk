@@ -1,4 +1,4 @@
-import { ChoiceItem } from '@progress/sitefinity-widget-designers-sdk';
+import { ChoiceItem } from '@progress/sitefinity-widget-designers-sdk/common';
 
 export enum ImageClickAction {
     DoNothing = 'DoNothing',

@@ -1,6 +1,17 @@
 import { DecimalNumberRange, NumberRange } from './number-range';
 import { DateRange } from './date-range';
-import { Choice,ComplexType, ConditionalVisibility, DataModel, DataType, DefaultValue, Description, DisplayName, DisplaySettings, KnownFieldTypes, Model, Placeholder, Range, StringLength, TableView } from '@progress/sitefinity-widget-designers-sdk';
+import { ComplexType, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/table-view';
+import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
+import { Placeholder } from '@progress/sitefinity-widget-designers-sdk/decorators/placeholder';
+import { StringLength, Range } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
+import { DisplaySettings } from '@progress/sitefinity-widget-designers-sdk/decorators/display-settings';
 
 @Model()
 export class FacetSettings {

@@ -1,35 +1,38 @@
 
 import { RenderWidgetService } from '../services/render-widget-service';
 import { RequestContext } from '../editor/request-context';
-import { RestClient } from '../rest-sdk/rest-client';
+import { RestClient, RestSdkTypes } from '../rest-sdk/rest-client';
 import { initServerSideRestSdk } from '../rest-sdk/init';
 import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { PageItem } from '../rest-sdk/dto/page-item';
 import { setHostServerContext } from '../services/server-context';
 import { WidgetModel } from '../editor/widget-framework/widget-model';
+import { Dictionary } from '../typings/dictionary';
 import { widgetRegistry } from '@widgetregistry';
 import { initRegistry } from '../editor/widget-framework/widget-registry';
+import { EMTPY_GUID } from '../editor/utils/guid';
 
-export async function RenderWidget({ searchParams }: { searchParams: { [key: string]: string } }) {
+export async function RenderWidget({ searchParams }: { searchParams: Dictionary | Promise<Dictionary> }) {
     if (!RenderWidgetService.widgetRegistry) {
         RenderWidgetService.widgetRegistry = initRegistry(widgetRegistry);
     }
 
-    const host = headers().get('host') || '';
+    const host = (await headers()).get('host') || '';
+    const queryParams = searchParams instanceof Promise ? await searchParams : searchParams;
     setHostServerContext(host);
 
-    const widgetId = searchParams['widgetId'];
-    const itemId = searchParams['itemId'];
-    const itemType = searchParams['itemType'];
-    const widgetSegmentId = searchParams['widgetSegmentId'];
-    const segmentId = searchParams['segment'];
+    const widgetId = queryParams['widgetId'];
+    const itemId = queryParams['itemId'];
+    const itemType = queryParams['itemType'];
+    const widgetSegmentId = queryParams['widgetSegmentId'];
+    const segmentId = queryParams['segment'];
 
 
-    const isEdit = searchParams['sfaction'] === 'edit';
-    const isPreview = searchParams['sfaction'] === 'preview';
+    const isEdit = queryParams['sfaction'] === 'edit';
+    const isPreview = queryParams['sfaction'] === 'preview';
     const isLive = !(isEdit || isPreview);
-    const pageUrl = searchParams['pageUrl'] as string;
+    const pageUrl = queryParams['pageUrl'] as string;
 
     let path = pageUrl;
     let query = '';
@@ -42,10 +45,12 @@ export async function RenderWidget({ searchParams }: { searchParams: { [key: str
     let params = new URLSearchParams(query);
     const paramsAsObject = Object.fromEntries(params);
 
+    const cookie = (await cookies()).toString();
+
     const layoutResponse = await RestClient.getPageLayout({
         pagePath: path,
         queryParams: paramsAsObject,
-        cookie: cookies().toString(),
+        cookie,
         followRedirects: true
     });
 
@@ -60,26 +65,30 @@ export async function RenderWidget({ searchParams }: { searchParams: { [key: str
 
     let widgetModel: WidgetModel<any> | undefined;
     // lazy widget should be rendered in another way because getting the model is only possible in a locked state
-    if (widgetSegmentId && widgetSegmentId !== 'undefined' && widgetSegmentId !== 'null' && widgetSegmentId !== '00000000-0000-0000-0000-000000000000') {
+    if (itemType !== RestSdkTypes.Form) {
         widgetModel = await RestClient.getLazyWidget({
             id: itemId,
             type: itemType,
             widgetId,
             widgetSegmentId,
             segmentId,
-            additionalHeaders: {'Cookie': cookies().toString()} });
-    } else {
+            additionalHeaders: { 'Cookie': cookie }
+        });
+    }
+
+    if (!widgetModel && isEdit && !(widgetSegmentId && widgetSegmentId !== 'undefined' && widgetSegmentId !== 'null' && widgetSegmentId !== EMTPY_GUID)) {
         widgetModel = await RestClient.getWidgetModel({
             id: itemId,
             type: itemType,
             widgetId,
             widgetSegmentId,
             segmentId,
-            additionalHeaders: {'Cookie': cookies().toString()} });
+            additionalHeaders: { 'Cookie': cookie }
+        });
     }
 
     if (!widgetModel) {
-        notFound();
+        return notFound();
     }
 
     const requestContext: RequestContext = {

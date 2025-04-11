@@ -22,13 +22,13 @@ export interface EditorMetadata {
 
 export interface WidgetBehavior {
     /**
-     * Indicates whether the widget is personalizable.
+     * Defines that widget is not personalizable. Custom widgets can be personalized by default.
      */
     NotPersonalizable?: boolean;
 
     /**
-     * Indicates whether the widget registers a content location.
-     * SelectedItems property of type MixedContentContent is required in the entity.
+     * Defines that the widget conatins items that are to be tracked in content locations.
+     * For more information refer to: https://www.progress.com/documentation/sitefinity-cms/configure-custom-widgets-to-support-content-locations 
      */
     IsContentLocation?: boolean;
 }

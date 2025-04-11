@@ -1,4 +1,8 @@
-import { Choice, DefaultValue, DisplayName, Model } from '@progress/sitefinity-widget-designers-sdk';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+
 
 @Model()
 export class ButtonStyle {

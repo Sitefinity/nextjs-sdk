@@ -1,6 +1,18 @@
-import { WidgetEntity, ContentSection, DisplayName, Description, DataType, KnownFieldTypes, DefaultValue, Choice, Margins, WidgetLabel, Category, Attributes, ViewSelector } from '@progress/sitefinity-widget-designers-sdk';
 import { OffsetStyle } from '../styling/offset-style';
 import { LanguageSelectorLinkAction } from './interfaces/language-selector-link-action';
+import { KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
+import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
+import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
+import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
+import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
+import { Margins } from '@progress/sitefinity-widget-designers-sdk/decorators/margins';
 
 @WidgetEntity('SitefinityLanguageSelector', 'Language selector')
 export class LanguageSelectorEntity {

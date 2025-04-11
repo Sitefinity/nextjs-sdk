@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { ImageClickAction } from './interfaces/image-click-action';
 import { ImageDisplayMode } from './interfaces/image-display-mode';
 import { ImageViewProps } from './interfaces/image.view-props';
@@ -13,7 +12,7 @@ import { RenderView } from '../common/render-view';
 import { ImageDefaultView } from './image.view';
 import { ErrorCodeException } from '../../rest-sdk/errors/error-code.exception';
 
-export async function Image(props: WidgetContext<ImageEntity>) {
+export async function SitefinityImage(props: WidgetContext<ImageEntity>) {
     const { span, ctx } = Tracer.traceWidget(props, true);
     const entity: ImageEntity = props.model.Properties;
 
@@ -98,3 +97,8 @@ export async function Image(props: WidgetContext<ImageEntity>) {
       </RenderView>
     );
 }
+
+/**
+ * @deprecated Use `SitefinityImage` instead.
+ */
+export const Image = SitefinityImage;;
