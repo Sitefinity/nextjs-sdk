@@ -33,7 +33,8 @@ export function CardsListView(props: CardsListViewProps<ContentListEntity>) {
                             detailPageMode={props.widgetContext.model.Properties?.DetailPageMode!}
                             detailPageUrl={props.detailPageUrl}
                             requestContext={props.widgetContext.requestContext}
-                            item={item} />
+                            item={item}
+                            type={props.type}/>
                         </h5>
                         {item.Text && <p className={'card-text ' + item.Text.Css} dangerouslySetInnerHTML={{ __html: SanitizerService.getInstance().sanitizeHtml(content) as any }} />}
                       </div>

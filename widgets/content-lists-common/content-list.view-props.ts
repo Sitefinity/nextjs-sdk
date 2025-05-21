@@ -20,6 +20,7 @@ export interface ContentListMasterViewProps<T extends ContentListEntityBase> ext
     }[];
     totalCount: number;
     pageNumber: number;
+    type?: string;
 }
 
 export interface ContentListDetailProps<T extends ContentListEntityBase> extends ViewPropsBase<T> {

@@ -1141,6 +1141,8 @@ export class RestSdkTypes {
     public static readonly Calendar: string = 'Telerik.Sitefinity.Events.Model.Calendar';
     public static readonly BlogPost: string = 'Telerik.Sitefinity.Blogs.Model.BlogPost';
     public static readonly Author: string = 'Telerik.Sitefinity.DynamicTypes.Model.Authors.Author';
+    public static readonly List: string = 'Telerik.Sitefinity.Lists.Model.List';
+    public static readonly ListItem: string = 'Telerik.Sitefinity.Lists.Model.ListItem';
 }
 
 interface RequestData {
