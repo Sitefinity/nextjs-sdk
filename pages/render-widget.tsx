@@ -65,7 +65,7 @@ export async function RenderWidget({ searchParams }: { searchParams: Dictionary 
 
     let widgetModel: WidgetModel<any> | undefined;
     // lazy widget should be rendered in another way because getting the model is only possible in a locked state
-    if (itemType !== RestSdkTypes.Form) {
+    if (itemType !== RestSdkTypes.Form && widgetSegmentId !== 'undefined' && widgetSegmentId !== 'null') {
         widgetModel = await RestClient.getLazyWidget({
             id: itemId,
             type: itemType,

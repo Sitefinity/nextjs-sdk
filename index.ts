@@ -1,4 +1,6 @@
 export * from './widgets/error/widget-execution-error-component';
+export * from './widgets/form-components-registry';
+export * from './widgets/form-csr-components-registry';
 export * from './widgets/default-widget-registry';
 export * from './widgets/legacy-widget-registry';
 export * from './editor/default-template-registry';
