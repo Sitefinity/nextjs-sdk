@@ -52,10 +52,7 @@ export async function Registration(props: WidgetContext<RegistrationEntity>) {
     }
 
     const regSettings = await RestClient.getRegistrationSettings({ traceContext: ctx });
-    if (!regSettings.RegistrationEnabled) {
-        const warning = 'Registration is disabled. To enable registration on your site go to Administration > Advanced settings > Security > User registration settings, or contact your administrator for assistance.';
-        setWarning(viewProps.attributes, warning);
-    } else if (regSettings.ActivationMethod === ActivationMethod.AfterConfirmation && !regSettings.SmtpConfigured) {
+    if (regSettings.ActivationMethod === ActivationMethod.AfterConfirmation && !regSettings.SmtpConfigured) {
         const warning = 'Confirmation email cannot be sent because the system has not been configured to send emails. Configure SMTP settings or contact your administrator for assistance.';
         setWarning(viewProps.attributes, warning);
     }

@@ -1,4 +1,4 @@
-import { JSX, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { RequestContext } from './request-context';
 
 export interface TemplateRegistry {

@@ -1,4 +1,5 @@
 import { RootUrlService } from '../rest-sdk/root-url.service';
+
 export const RENDERER_NAME = 'NextJS';
 
 export function getProxyHeaders(host: string) {
@@ -26,22 +27,5 @@ export function getProxyHeaders(host: string) {
         headersCollection['X-SF-WEBSERVICEPATH'] = RootUrlService.getWebServicePath();
     }
 
-    if (!headersCollection['x-sf-correlation-id']) {
-        headersCollection['x-sf-correlation-id'] = generateRandomString();
-    }
-
     return headersCollection;
 }
-
-function generateRandomString() {
-    let result = '';
-    let length = 16;
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    for ( let i = 0; i < length; i++ ) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-
-    return result;
-}
-

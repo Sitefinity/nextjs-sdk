@@ -1,17 +1,6 @@
+import { Category, ConditionalVisibility, ContentSection, ContentSectionTitles, DataModel, DataType, Description, DisplayName, Group, KnownFieldTypes, PropertyCategory, Suffix, ViewSelector, WidgetEntity } from '@progress/sitefinity-widget-designers-sdk';
 import { NumericRange } from '../common/numeric-range';
 import { FileTypes } from './interface/file-types';
-import { ContentSectionTitles, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Group } from '@progress/sitefinity-widget-designers-sdk/decorators/group';
-import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
-import { Suffix } from '@progress/sitefinity-widget-designers-sdk/decorators/suffix';
-import { Category, PropertyCategory } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
-import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
-import { Browsable } from '@progress/sitefinity-widget-designers-sdk/decorators/browsable';
 
 @WidgetEntity('SitefinityFileField', 'File upload')
 export class FileUploadEntity {
@@ -77,9 +66,6 @@ export class FileUploadEntity {
     @DisplayName('CSS class')
     CssClass?: string;
 
-    @Browsable(false)
     SfFieldType?: string;
-    
-    @Browsable(false)
     SfFieldName?: string;
 }

@@ -1,7 +1,4 @@
-import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { Placeholder } from '@progress/sitefinity-widget-designers-sdk/decorators/placeholder';
-import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { DataType, DisplayName, Model, Placeholder } from '@progress/sitefinity-widget-designers-sdk';
 
 @Model()
 export class CustomCssModel {

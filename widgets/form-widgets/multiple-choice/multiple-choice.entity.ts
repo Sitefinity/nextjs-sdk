@@ -1,12 +1,5 @@
+import { Choice, ContentSection, ContentSectionTitles, DataType, DefaultValue, DisplayName, Group, KnownFieldTypes, WidgetEntity } from '@progress/sitefinity-widget-designers-sdk';
 import { ChoiceEntityBase } from '../interfaces/choice-entity-base';
-import { ContentSectionTitles, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Group } from '@progress/sitefinity-widget-designers-sdk/decorators/group';
-import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
 
 @WidgetEntity('SitefinityMultipleChoice', 'Multiple choice')
 export class MultipleChoiceEntity extends ChoiceEntityBase {

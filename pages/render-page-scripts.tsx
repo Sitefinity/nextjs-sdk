@@ -33,11 +33,9 @@ function RenderPageHeadScript(script: PageScript, scriptAttributes: { [key: stri
         return <noscript key={index} {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value || '' }} />;
     } else {
         if (script.Source) {
-            // eslint-disable-next-line @next/next/no-before-interactive-script-outside-document
             return <Script key={index} {...scriptAttributes} src={script.Source} strategy="beforeInteractive" />;
         }
 
-        // eslint-disable-next-line @next/next/no-before-interactive-script-outside-document
         return <Script key={index} {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value }} strategy="beforeInteractive" />;
     }
 }

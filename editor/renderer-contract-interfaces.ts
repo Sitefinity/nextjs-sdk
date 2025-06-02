@@ -35,7 +35,6 @@ export interface WidgetItem {
     iconUrl?: string;
     initialProperties?: Array<{ name: string, value: string}>
     widgetBehavior?: WidgetBehavior;
-    isEmptyEntity?: boolean;
 }
 
 export interface WidgetSection {

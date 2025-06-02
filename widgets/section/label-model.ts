@@ -1,8 +1,4 @@
-import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { Placeholder } from '@progress/sitefinity-widget-designers-sdk/decorators/placeholder';
-import { MaxLength } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
-import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { DataType, DisplayName, MaxLength, Model, Placeholder } from '@progress/sitefinity-widget-designers-sdk';
 
 @Model()
 export class LabelModel {

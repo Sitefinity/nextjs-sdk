@@ -1,23 +1,7 @@
+import { Attributes, Category, Choice, ComplexType, ConditionalVisibility, Content, ContentSection, ContentSectionTitles, DataModel, DataType, DefaultValue, Description, DisplayName, KeysValues, KnownFieldTypes, Placeholder, Required, TableView, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { OffsetStyle } from '../styling/offset-style';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { RestSdkTypes } from '../../rest-sdk/rest-client';
-import { ComplexType, ContentSectionTitles, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
-import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
-import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
-import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
-import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/table-view';
-import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
-import { Attributes, KeysValues } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
-import { Placeholder } from '@progress/sitefinity-widget-designers-sdk/decorators/placeholder';
-import { Required } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
-import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
-import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
 
 @WidgetEntity('SitefinitySearchBox', 'Search box')
 export class SearchBoxEntity {

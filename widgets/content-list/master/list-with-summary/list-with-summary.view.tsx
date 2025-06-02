@@ -21,8 +21,7 @@ export function ListWithSummaryView(props: ListWithSummaryViewProps<ContentListE
                               detailPageMode={props.widgetContext.model.Properties.DetailPageMode!}
                               detailPageUrl={props.detailPageUrl}
                               requestContext={props.widgetContext.requestContext}
-                              item={item}
-                              type={props.type} />
+                              item={item} />
                           </h5>}
                         {item.PublicationDate &&
                           <p className={'text-muted ' + item.PublicationDate.Css}>

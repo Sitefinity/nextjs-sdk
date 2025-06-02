@@ -2,7 +2,7 @@ import { ContentBlock } from './content-block/content-block';
 import { ContentList } from './content-list/content-list';
 import { CallToAction } from './call-to-action/call-to-action';
 import { Classification } from './classification/classification';
-import { SitefinityImage } from './image/image';
+import { Image } from './image/image';
 import { Breadcrumb } from './breadcrumb/breadcrumb';
 import { Navigation } from './navigation/navigation';
 import { SearchBox } from './search-box/search-box';
@@ -16,11 +16,23 @@ import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { DocumentList } from './document-list/document-list';
 import { SearchResults } from './search-results/search-results';
 import { SearchFacets } from './search-facets/search-facets';
+import { Form } from './form/form';
+import { FormSection } from './form-widgets/section/section';
+import { Checkboxes } from './form-widgets/checkboxes/checkboxes';
+import { FormContentBlock } from './form-widgets/content-block/content-block';
+import { Dropdown } from './form-widgets/dropdown/dropdown';
+import { DynamicList } from './form-widgets/dynamic-list/dynamic-list';
+import { FileUpload } from './form-widgets/file-upload/file-upload';
+import { MultipleChoice } from './form-widgets/multiple-choice/multiple-choice';
+import { Paragraph } from './form-widgets/paragraph/paragraph';
+import { SubmitButton } from './form-widgets/submit-button/submit-button';
+import { TextField } from './form-widgets/textfield/textfield';
 import { ClassificationEntity } from './classification/classification-entity';
 import { ContentListEntity } from './content-list/content-list-entity';
 import { SectionEntity } from './section/section.entity';
 import { ImageEntity } from './image/image.entity';
 import { ContentBlockEntity } from './content-block/content-block.entity';
+
 import { SearchFacetsEntity } from './search-facets/search-facets.entity';
 import { BreadcrumbEntity } from './breadcrumb/breadcrumb.entity';
 import { DocumentListEntity } from './document-list/document-list-entity';
@@ -29,9 +41,20 @@ import { LoginFormEntity } from './login-form/login-form.entity';
 import { ResetPasswordEntity } from './reset-password/reset-password.entity';
 import { RegistrationEntity } from './registration/registration.entity';
 import { ChangePasswordEntity } from './change-password/change-password.entity';
+import { FormEntity } from './form/form.entity';
 import { SearchResultsEntity } from './search-results/search-results.entity';
 import { SearchBoxEntity } from './search-box/search-box.entity';
 import { CallToActionEntity } from './call-to-action/call-to-action.entity';
+import { CheckboxesEntity } from './form-widgets/checkboxes/checkboxes.entity';
+import { DropdownEntity } from './form-widgets/dropdown/dropdown.entity';
+import { FileUploadEntity } from './form-widgets/file-upload/file-upload.entity';
+import { MultipleChoiceEntity } from './form-widgets/multiple-choice/multiple-choice.entity';
+import { SubmitButtonEntity } from './form-widgets/submit-button/submit-button.entity';
+import { ParagraphEntity } from './form-widgets/paragraph/paragraph.entity';
+import { TextFieldEntity } from './form-widgets/textfield/text-field.entity';
+import { FormSectionEntity } from './form-widgets/section/section.entity';
+import { FormContentBlockEntity } from './form-widgets/content-block/content-block.entity';
+import { DynamicListEntity } from './form-widgets/dynamic-list/dynamic-list.entity';
 import { BlogPostDetailView } from './content-list/detail/content-list-detail.blog-post.view';
 import { DynamicDetailView } from './content-list/detail/content-list-detail.dynamic.view';
 import { EventDetailView } from './content-list/detail/content-list-detail.event.view';
@@ -43,10 +66,341 @@ import { ListWithSummaryView } from './content-list/master/list-with-summary/lis
 import { DocumentDetailItemView } from './document-list/document-list-detail-item.view';
 import { DocumentListGridView } from './document-list/document-list-grid.view';
 import { DocumentListListView } from './document-list/document-list-list.view';
+import { FormCSR } from './form/form.csr';
+import { DynamicListCSR } from './form-widgets/dynamic-list/dynamic-list.csr';
+import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
 import { LanguageSelectorEntity } from './language-selector/language-selector-entity';
 import { ProfileEntity } from './profile/profile.entity';
 import { Profile } from './profile/profile';
-import { SSRFormComponents } from './form-components-registry';
+
+export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
+    'SitefinityForm': {
+        entity: FormEntity,
+        componentType: FormCSR,
+        editorMetadata: {
+            Title: 'Form',
+            EmptyIcon: 'plus-circle',
+            EmptyIconAction: 'Edit',
+            EmptyIconText: 'Select a form',
+            Category: 'Content',
+            Section: 'Basic',
+            HasQuickEditOperation: true,
+            InitialProperties: {
+                ContentViewDisplayMode: 'Detail'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityFormSection': {
+        entity: FormSectionEntity,
+        componentType: FormSection,
+        editorMetadata: {
+            Title: 'Section',
+            Toolbox: 'Forms',
+            Category: 'Layout',
+            InitialProperties: {
+                SfFieldType: 'FormSection'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityTextField': {
+        entity: TextFieldEntity,
+        componentType: TextField,
+        editorMetadata: {
+            Title: 'Textbox',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'ShortText'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityParagraph': {
+        entity: ParagraphEntity,
+        componentType: Paragraph,
+        editorMetadata: {
+            Title: 'Paragraph',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'Paragraph'
+            }
+        },
+        ssr: false
+    },
+    'SitefinitySubmitButton': {
+        entity: SubmitButtonEntity,
+        componentType: SubmitButton,
+        editorMetadata: {
+            Title: 'Submit button',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'SubmitButton'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityMultipleChoice': {
+        entity: MultipleChoiceEntity,
+        componentType: MultipleChoice,
+        editorMetadata: {
+            Title: 'Multiple choice',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'MultipleChoice'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityCheckboxes': {
+        entity: CheckboxesEntity,
+        componentType: Checkboxes,
+        editorMetadata: {
+            Title: 'Checkboxes',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityDropdown': {
+        entity: DropdownEntity,
+        componentType: Dropdown,
+        editorMetadata: {
+            Title: 'Dropdown',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Dropdown'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityDynamicList': {
+        entity: DynamicListEntity,
+        componentType: DynamicListCSR,
+        editorMetadata: {
+            Title: 'Dynamic list',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityFileField': {
+        entity: FileUploadEntity,
+        componentType: FileUpload,
+        editorMetadata: {
+            Title: 'File upload',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'File'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityFormContentBlock': {
+        entity: FormContentBlockEntity,
+        componentType: FormContentBlock,
+        editorMetadata: {
+            Title: 'Content block',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'ContentBlock'
+            },
+            IconName: 'content-block'
+        },
+        ssr: false
+    }
+};
+
+export const SSRFormComponents: {[key: string]: WidgetMetadata} = {
+    'SitefinityForm': {
+        entity: FormEntity,
+        componentType: Form,
+        editorMetadata: {
+            Title: 'Form',
+            EmptyIcon: 'plus-circle',
+            EmptyIconAction: 'Edit',
+            EmptyIconText: 'Select a form',
+            Category: 'Content',
+            Section: 'Basic',
+            HasQuickEditOperation: true,
+            IconName: 'form',
+            InitialProperties: {
+                ContentViewDisplayMode: 'Detail'
+            }
+        },
+        ssr: true
+    },
+    'SitefinityFormSection': {
+        entity: FormSectionEntity,
+        componentType: FormSection,
+        editorMetadata: {
+            Title: 'Section',
+            Toolbox: 'Forms',
+            Category: 'Layout',
+            InitialProperties: {
+                SfFieldType: 'FormSection'
+            },
+            IconName: 'section'
+        },
+        ssr: true
+    },
+    'SitefinityTextField': {
+        entity: TextFieldEntity,
+        componentType: TextField,
+        editorMetadata: {
+            Title: 'Textbox',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'ShortText'
+            },
+            IconName: 'textbox'
+        },
+        ssr: true
+    },
+    'SitefinityParagraph': {
+        entity: ParagraphEntity,
+        componentType: Paragraph,
+        editorMetadata: {
+            Title: 'Paragraph',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'Paragraph'
+            },
+            IconName: 'paragraph'
+        },
+        ssr: true
+    },
+    'SitefinitySubmitButton': {
+        entity: SubmitButtonEntity,
+        componentType: SubmitButton,
+        editorMetadata: {
+            Title: 'Submit button',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'SubmitButton'
+            },
+            IconName: 'button'
+        },
+        ssr: true
+    },
+    'SitefinityMultipleChoice': {
+        entity: MultipleChoiceEntity,
+        componentType: MultipleChoice,
+        editorMetadata: {
+            Title: 'Multiple choice',
+            Toolbox: 'Forms',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'MultipleChoice'
+            },
+            IconName: 'multiple-choice'
+        },
+        ssr: true
+    },
+    'SitefinityCheckboxes': {
+        entity: CheckboxesEntity,
+        componentType: Checkboxes,
+        editorMetadata: {
+            Title: 'Checkboxes',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            },
+            IconName: 'checkboxes'
+        },
+        ssr: true
+    },
+    'SitefinityDropdown': {
+        entity: DropdownEntity,
+        componentType: Dropdown,
+        editorMetadata: {
+            Title: 'Dropdown',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Dropdown'
+            },
+            IconName: 'dropdown'
+        },
+        ssr: true
+    },
+    'SitefinityDynamicList': {
+        entity: DynamicListEntity,
+        componentType: DynamicList,
+        editorMetadata: {
+            Title: 'Dynamic list',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Choices',
+            InitialProperties: {
+                SfFieldType: 'Checkboxes'
+            },
+            IconName: 'dropdown'
+        },
+        ssr: true
+    },
+    'SitefinityFileField': {
+        entity: FileUploadEntity,
+        componentType: FileUpload,
+        editorMetadata: {
+            Title: 'File upload',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'File'
+            },
+            IconName: 'file-upload'
+        },
+        ssr: true
+    },
+    'SitefinityFormContentBlock': {
+        entity: FormContentBlockEntity,
+        componentType: FormContentBlock,
+        editorMetadata: {
+            Title: 'Content block',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'ContentBlock'
+            },
+            IconName: 'content-block'
+        },
+        ssr: true
+    }
+};
 
 export const defaultWidgetRegistry: WidgetRegistry = {
     widgets: {
@@ -64,7 +418,7 @@ export const defaultWidgetRegistry: WidgetRegistry = {
         },
         'SitefinityImage': {
             entity: ImageEntity,
-            componentType: SitefinityImage,
+            componentType: Image,
             editorMetadata: {
                 Title: 'Image',
                 Category: 'Content',

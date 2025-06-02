@@ -56,7 +56,6 @@ import { GetFacatebleFieldsArgs } from './args/get-facateble-fields.args';
 import { GetSharedContentArgs } from './args/get-shared-content.args';
 import { GetTemplatesStatisticsArgs } from './args/get-templates-statistics-args';
 import { SearchMetadataDto } from './dto/search-metadata-dto';
-import { getFilteredServerSideHeaders } from '../server-side-headers';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
@@ -68,7 +67,7 @@ export class RestClient {
         };
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.GetItemWithFallback()${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
-        return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }, true);
+        return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }, true);
     }
 
     public static getTaxons(args: GetTaxonArgs): Promise<TaxonDto[]> {
@@ -84,9 +83,9 @@ export class RestClient {
         }
 
         const action = `Default.GetTaxons(taxonomyId=${args.taxonomyId},selectedTaxaIds=@param,selectionMode='${args.selectionMode}',contentType='${args.contentType}')`;
-        const wholeUrl = `${RestClient.buildItemBaseUrl(taxonomy['TaxaUrl'])}/${action}${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
+        const wholeUrl = `${RestClient.buildItemBaseUrl(taxonomy['TaxaUrl'])}/${action}${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
 
-        return this.sendRequest<{ value: SdkItem[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then(x => x.value as TaxonDto[]);
+        return this.sendRequest<{ value: SdkItem[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then(x => x.value as TaxonDto[]);
     }
 
     public static getSearchMetadata() {
@@ -103,7 +102,7 @@ export class RestClient {
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.GetItemWithStatus()${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
 
-        return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders });
+        return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
     }
 
     public static getItem<T extends SdkItem>(args: ItemArgs): Promise<T> {
@@ -116,7 +115,7 @@ export class RestClient {
         };
 
         const wholeUrl = `${this.buildItemBaseUrl(args.type)}(${args.id})${this.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
-        return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders });
+        return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
     }
 
     public static getSharedContent(args: GetSharedContentArgs): Promise<GenericContentItem> {
@@ -125,11 +124,11 @@ export class RestClient {
         };
 
         if (args.cultureName) {
-            queryParams[QueryParamNames.Culture] = args.cultureName;
+            queryParams['sf_culture'] = args.cultureName;
         }
 
-        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.GenericContent)}/Default.GetItemById(itemId=${args.id})${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
-        return this.sendRequest<GenericContentItem>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }, true);
+        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.GenericContent)}/Default.GetItemById(itemId=${args.id})${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
+        return this.sendRequest<GenericContentItem>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }, true);
     }
 
     public static getItems<T extends SdkItem>(args: GetAllArgs): Promise<CollectionResponse<T>> {
@@ -148,7 +147,7 @@ export class RestClient {
         };
 
         const wholeUrl = `${this.buildItemBaseUrl(args.type)}${this.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
-        return this.sendRequest<{ value: T[], '@odata.count'?: number }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then((x) => {
+        return this.sendRequest<{ value: T[], '@odata.count'?: number }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then((x) => {
             return <CollectionResponse<T>>{ Items: x.value, TotalCount: x['@odata.count'] };
         });
     }
@@ -393,10 +392,10 @@ export class RestClient {
         }
 
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
-        const wholeUrl = `${serviceUrl}/Default.PerformSearch()${RestClient.buildQueryParams(RestClient.getQueryParams(args, query))}`;
+        const wholeUrl = `${serviceUrl}/Default.PerformSearch()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, query))}`;
         const searchResultsDocumentsDefaultKeys = ['HighLighterResult', 'Language', 'Provider', 'Link', 'Title', 'ContentType', 'Id', 'ThumbnailUrl'];
 
-        return RestClient.sendRequest<{ TotalCount: number, SearchResults: SearchResultDocumentDto[] | any[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then(x => {
+        return RestClient.sendRequest<{ TotalCount: number, SearchResults: SearchResultDocumentDto[] | any[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then(x => {
             const mappedSearchResults : SearchResultDocumentDto[] = x.SearchResults.map(searchResult => {
                 const document: SearchResultDocumentDto = {
                     HighLighterResult: searchResult.HighLighterResult,
@@ -450,14 +449,14 @@ export class RestClient {
 
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.GetSuggestions()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, query))}`;
-        return RestClient.sendRequest<{value: string[]}>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders });
+        return RestClient.sendRequest<{value: string[]}>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
     }
 
     public static getFacatebleFields(args: GetFacatebleFieldsArgs): Promise<FacetsViewModelDto[]> {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.GetFacetableFields(indexCatalogName='${args.indexCatalogue}')`;
 
-        return RestClient.sendRequest<{ value: FacetsViewModelDto[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then(x => x.value);
+        return RestClient.sendRequest<{ value: FacetsViewModelDto[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then(x => x.value);
     }
 
     public static async getFacets(args: GetFacetsArgs): Promise<FacetFlatResponseDto[]> {
@@ -475,7 +474,7 @@ export class RestClient {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.GetFacets()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, additionalQueryParams))}`;
 
-        return RestClient.sendRequest<{ value: FacetFlatResponseDto[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then(x => x.value);
+        return RestClient.sendRequest<{ value: FacetFlatResponseDto[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then(x => x.value);
     }
 
     public static getResetPasswordModel(token: string, traceContext?: any): Promise<RegistrationSettingsDto> {
@@ -487,9 +486,9 @@ export class RestClient {
 
     public static getRegistrationSettings(args: RequestArgs): Promise<RegistrationSettingsDto> {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
-        const wholeUrl = `${serviceUrl}/Default.RegistrationSettings()${RestClient.buildQueryParams(RestClient.getQueryParams(args, {}))}`;
+        const wholeUrl = `${serviceUrl}/Default.RegistrationSettings()`;
 
-        return RestClient.sendRequest<RegistrationSettingsDto>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders });
+        return RestClient.sendRequest<RegistrationSettingsDto>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext });
     }
 
     public static activateAccount(encryptedParam: string, traceContext?: any): Promise<void> {
@@ -503,18 +502,17 @@ export class RestClient {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.GetExternalProviders()`;
 
-        return RestClient.sendRequest<{ value: ExternalProvider[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then((x) => x.value);
+        return RestClient.sendRequest<{ value: ExternalProvider[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then((x) => x.value);
     }
 
     public static getCurrentUser(args?: RequestArgs): Promise<UserDto> {
-        const wholeUrl = `${RestClient.buildItemBaseUrl('users')}/current${RestClient.buildQueryParams(RestClient.getQueryParams(args, {}))}`;
+        const wholeUrl = `${RestClient.buildItemBaseUrl('users')}/current`;
 
         return RestClient.sendRequest<{ value: UserDto }>({
             url: wholeUrl,
             method: 'GET',
             additionalFetchData: args?.additionalFetchData,
-            traceContext: args?.traceContext,
-            headers: args?.additionalHeaders
+            traceContext: args?.traceContext
         }).then((x) => {
             return x.value;
         });
@@ -527,22 +525,20 @@ export class RestClient {
             url: wholeUrl,
             method: 'GET',
             additionalFetchData: args?.additionalFetchData,
-            traceContext: args?.traceContext,
-            headers: args?.additionalHeaders
+            traceContext: args?.traceContext
         }).then((x) => {
             return x.value;
         });
     }
 
     public static getSites(args?: RequestArgs): Promise<SiteDto[]> {
-        const wholeUrl = `${RestClient.buildItemBaseUrl('sites')}${RestClient.buildQueryParams(RestClient.getQueryParams(args, {}))}`;
+        const wholeUrl = `${RestClient.buildItemBaseUrl('sites')}`;
 
         return RestClient.sendRequest<{ value: SiteDto[] }>({
             url: wholeUrl,
             method: 'GET',
             additionalFetchData: args?.additionalFetchData,
-            traceContext: args?.traceContext,
-            headers: args?.additionalHeaders
+            traceContext: args?.traceContext
         }).then((x) => {
             return x.value;
         });
@@ -558,9 +554,9 @@ export class RestClient {
             'selectedPageId': args.selectedPageId
         };
 
-        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Pages)}/Default.HierarhicalByLevelsResponse()${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryMap))}`;
+        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Pages)}/Default.HierarhicalByLevelsResponse()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryMap))}`;
 
-        return this.sendRequest<{ value: NavigationItem[], '@odata.count': number }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then((x) => {
+        return this.sendRequest<{ value: NavigationItem[], '@odata.count': number }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then((x) => {
             return x.value;
         });
     }
@@ -575,8 +571,8 @@ export class RestClient {
             }
         });
 
-        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Pages)}/Default.GetBreadcrumb()${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryMap))}`;
-        return this.sendRequest<{ value: BreadcrumbItem[], '@odata.count'?: number }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then((x) => {
+        const wholeUrl = `${RestClient.buildItemBaseUrl(RestSdkTypes.Pages)}/Default.GetBreadcrumb()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryMap))}`;
+        return this.sendRequest<{ value: BreadcrumbItem[], '@odata.count'?: number }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext }).then((x) => {
             return x.value;
         });
     }
@@ -706,13 +702,6 @@ export class RestClient {
         let headers: { [key: string]: string } = args.additionalHeaders || {};
         if (args.cookie) {
             headers['Cookie'] = args.cookie;
-        }
-
-        const serverSideHeaders = await getFilteredServerSideHeaders();
-        if (serverSideHeaders) {
-            Object.entries(serverSideHeaders).forEach(([headerKey, headerValue]) => {
-                headers[headerKey] = headerValue;
-            });
         }
 
         if (typeof window === 'undefined' || process.env.NODE_ENV === 'test') {
@@ -970,20 +959,14 @@ export class RestClient {
         }
     }
 
-    private static getQueryParams(args?: RequestArgs, queryParams?: Dictionary) {
-        let queryParamsFromArgs: Dictionary = {};
+    private static getQueryParams(args?: CommonArgs, queryParams?: Dictionary) {
+        let queryParamsFromArgs = {};
 
         if (args) {
-            const commonArgs = args as CommonArgs;
-            if (commonArgs) {
-                if (commonArgs.provider) {
-                    queryParamsFromArgs[QueryParamNames.Provider] = commonArgs.provider;
-                }
-
-                if (commonArgs.culture) {
-                    queryParamsFromArgs[QueryParamNames.Culture] = commonArgs.culture;
-                }
-            }
+            queryParamsFromArgs = {
+                [QueryParamNames.Provider]: args.provider,
+                [QueryParamNames.Culture]: args.culture
+            };
         }
 
         if (typeof window === 'undefined') {
@@ -1018,13 +1001,6 @@ export class RestClient {
 
     public static async sendRequest<T>(request: RequestData, throwErrorAsJson?: boolean): Promise<T> {
         const headers = this.buildHeaders(request);
-
-        const serverSideHeaders = await getFilteredServerSideHeaders();
-        if (serverSideHeaders) {
-            Object.entries(serverSideHeaders).forEach(([headerKey, headerValue]) => {
-                headers[headerKey] = headerValue;
-            });
-        }
 
         if (process.env.NODE_ENV === 'test') {
             RestClient.addAuthHeaders(undefined, headers);
@@ -1150,8 +1126,6 @@ export class RestSdkTypes {
     public static readonly Calendar: string = 'Telerik.Sitefinity.Events.Model.Calendar';
     public static readonly BlogPost: string = 'Telerik.Sitefinity.Blogs.Model.BlogPost';
     public static readonly Author: string = 'Telerik.Sitefinity.DynamicTypes.Model.Authors.Author';
-    public static readonly List: string = 'Telerik.Sitefinity.Lists.Model.List';
-    public static readonly ListItem: string = 'Telerik.Sitefinity.Lists.Model.ListItem';
 }
 
 interface RequestData {

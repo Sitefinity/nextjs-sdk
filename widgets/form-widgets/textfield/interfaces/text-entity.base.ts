@@ -1,18 +1,6 @@
+import { Category, Choice, ConditionalVisibility, ContentSection, ContentSectionTitles, DataType, DefaultValue, Description, DisplayName, Group, KnownFieldTypes, Model, SectionsOrder, Suffix } from '@progress/sitefinity-widget-designers-sdk';
 import { FieldSize } from '../../../styling/field-size';
 import { NumericRange } from '../../common/numeric-range';
-import { Model, SectionsOrder } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
-import { ContentSectionTitles, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
-import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Group } from '@progress/sitefinity-widget-designers-sdk/decorators/group';
-import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
-import { Suffix } from '@progress/sitefinity-widget-designers-sdk/decorators/suffix';
-import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
-import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { Browsable } from '@progress/sitefinity-widget-designers-sdk/decorators/browsable';
 
 @Model()
 @SectionsOrder([ContentSectionTitles.LabelsAndContent, ContentSectionTitles.Limitations, ContentSectionTitles.DisplaySettings])
@@ -73,9 +61,6 @@ export class TextEntityBase {
     @DisplayName('CSS class')
     CssClass: string | null = null;
 
-    @Browsable(false)
     SfFieldType!: string;
-
-    @Browsable(false)
     SfFieldName!: string;
 }

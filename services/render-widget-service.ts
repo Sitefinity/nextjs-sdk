@@ -5,7 +5,7 @@ import { WidgetModel } from '../editor/widget-framework/widget-model';
 import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { LazyComponent } from '../widgets/lazy/lazy-component';
 import { deepCopy } from '../editor/utils/object-utils';
-import { EntityMetadataGenerator } from '@progress/sitefinity-widget-designers-sdk/metadata';
+import { EntityMetadataGenerator } from '@progress/sitefinity-widget-designers-sdk';
 import { WidgetMetadata, getMinimumMetadata } from '../editor/widget-framework/widget-metadata';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { ErrorBoundaryCustom } from '../pages/error-boundary';

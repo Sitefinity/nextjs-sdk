@@ -117,10 +117,6 @@ export function ContentListMaster(props: ContentListMasterProps<ContentListEntit
         };
     }
 
-    if (props.widgetContext.model.Properties.SelectedItems?.Content && props.widgetContext.model.Properties.SelectedItems?.Content.length > 0) {
-      data.model.type = props.widgetContext.model.Properties.SelectedItems?.Content[0].Type;
-    }
-
     return (
       <RenderView
         viewName={props.viewName}

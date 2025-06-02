@@ -1,21 +1,7 @@
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, DataModel, DataType, DefaultValue, DisplayName, Group, KnownFieldTypes, TableView, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { OffsetStyle } from '../styling/offset-style';
 import { BreadcrumbIncludeOption } from './breadcrumb';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
-import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
-import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
-import { Group } from '@progress/sitefinity-widget-designers-sdk/decorators/group';
-import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
-import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/table-view';
-import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
-import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
-import { KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
 
 @WidgetEntity('SitefinityBreadcrumb', 'Breadcrumb')
 export class BreadcrumbEntity {

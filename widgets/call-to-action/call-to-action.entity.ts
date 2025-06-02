@@ -1,19 +1,9 @@
 
 import { OffsetStyle } from '../styling/offset-style';
 import { LinkModel } from '../../editor/widget-framework/link-model';
+import { Attributes, Category, ComplexType, ContentSection, ContentSectionTitles, DataModel, DataType, DescriptionExtended, DisplayName, KeysValues, LengthDependsOn, TableView, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { ButtonStyle } from './button-style';
 import { AlignmentStyle } from './alignment-style';
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { DescriptionExtended } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { ComplexType, ContentSectionTitles } from '@progress/sitefinity-widget-designers-sdk/common';
-import { LengthDependsOn } from '@progress/sitefinity-widget-designers-sdk/decorators/length-depends-on';
-import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/table-view';
-import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
-import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { Attributes, KeysValues } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
 
 @WidgetEntity('SitefinityButton', 'Call to action')
 export class CallToActionEntity {

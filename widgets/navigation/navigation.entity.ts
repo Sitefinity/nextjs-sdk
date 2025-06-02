@@ -1,20 +1,6 @@
+import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, DataType, DefaultValue, DisplayName, IsNullable, KnownFieldTypes, Margins, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { OffsetStyle } from '../styling/offset-style';
-import { KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
-import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
-import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
-import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
-import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
-import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
-import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
-import { Margins } from '@progress/sitefinity-widget-designers-sdk/decorators/margins';
-import { IsNullable } from '@progress/sitefinity-widget-designers-sdk/decorators/is-nullable';
 
 @WidgetEntity('SitefinityNavigation', 'Navigation')
 export class NavigationEntity {
