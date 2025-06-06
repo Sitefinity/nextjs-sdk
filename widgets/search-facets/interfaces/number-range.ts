@@ -1,4 +1,10 @@
-import { DataType, DecimalPlaces, DefaultValue, Description, DisplayName, Model, Placeholder, Required } from '@progress/sitefinity-widget-designers-sdk';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { Placeholder } from '@progress/sitefinity-widget-designers-sdk/decorators/placeholder';
+import { DecimalPlaces, Required } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
 
 @Model()
 export class NumberRange {

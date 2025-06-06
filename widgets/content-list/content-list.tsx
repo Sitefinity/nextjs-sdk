@@ -24,7 +24,7 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
     const {span, ctx} = Tracer.traceWidget(props, true);
     const model = props.model;
     const properties = model.Properties;
-    const type = properties?.SelectedItems?.Content[0].Type;
+    const type = properties?.SelectedItems?.Content[0]?.Type;
     if (props.requestContext.isEdit && !model.Caption && type) {
         model.Caption = `Content list - ${ServiceMetadata.getModuleDisplayName(type)}`;
     }
@@ -95,7 +95,7 @@ async function handleShowDetailsViewOnChildDetailsView(props: WidgetContext<Cont
     const context = props.requestContext;
     const model = props.model;
     const properties = model.Properties;
-    const type = properties?.SelectedItems?.Content[0].Type;
+    const type = properties?.SelectedItems?.Content[0]?.Type;
 
     if (context.detailItem && properties.ShowDetailsViewOnChildDetailsView && type) {
         const childTypes = ServiceMetadata.getChildTypes(type!).flatMap((x, i) => x.map(y => {

@@ -1,5 +1,11 @@
-import { BasicValueTypes, DataModel, DataType, DefaultValue, Description, Dialog, DisplayName, KnownFieldTypes, Model } from '@progress/sitefinity-widget-designers-sdk';
 import { FacetSettings } from './facet-settings';
+import { BasicValueTypes, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { Dialog } from '@progress/sitefinity-widget-designers-sdk/decorators/dialog';
 
 @Model()
 export class FacetField {

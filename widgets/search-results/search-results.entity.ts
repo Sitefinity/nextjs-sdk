@@ -1,16 +1,36 @@
-import { Attributes, Category, Choice, ContentSection, ContentSectionTitles, DataModel, DataType, DefaultValue, Description, DisplayName, KnownFieldTypes, TableView, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { OffsetStyle } from '../styling/offset-style';
-import { ContentListSettings } from './content-list-settings';
+import { ContentListSettings } from '../../editor/widget-framework/content-list-settings';
 import { SearchResultsSorting } from './interfaces/search-results-sorting';
+import { ContentSectionTitles, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
+import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
+import { Model, WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
+import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/table-view';
+import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
+import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
+import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
+
+@Model()
+export class ExtendedContentListSettings extends ContentListSettings {
+    DisplayMode: ListDisplayMode = ListDisplayMode.All;
+
+    ShowAllResults: boolean = false;
+}
 
 @WidgetEntity('SitefinitySearchResults', 'Search results')
 export class SearchResultsEntity {
 
     @DataType('resultsListSettings')
-    @DataModel(ContentListSettings)
+    @DataModel(ExtendedContentListSettings)
     @ContentSection(ContentSectionTitles.ResultsListSettings, 1)
     @DisplayName('Number of list items')
-    ListSettings: ContentListSettings | null = null;
+    ListSettings: ExtendedContentListSettings | null = null;
 
     @ContentSection(ContentSectionTitles.ResultsListSettings, 2)
     @DefaultValue(SearchResultsSorting.MostRelevantOnTop)

@@ -5,7 +5,7 @@ import { ComponentMetadata, GetCategoriesArgs, GetWidgetMetadataArgs, GetWidgets
 import { RequestContext } from '../editor/request-context';
 import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
 import { createRoot } from 'react-dom/client';
-import { MetadataModel } from '@progress/sitefinity-widget-designers-sdk';
+import { MetadataModel } from '@progress/sitefinity-widget-designers-sdk/metadata';
 import { RestClient } from '../rest-sdk/rest-client';
 import { LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
 
@@ -161,7 +161,8 @@ export class RendererContractImpl implements RendererContract {
                         iconName: y.editorMetadata?.IconName,
                         iconUrl: y.editorMetadata?.IconUrl,
                         initialProperties: initialProperties,
-                        widgetBehavior: y.editorMetadata?.WidgetBehavior
+                        widgetBehavior: y.editorMetadata?.WidgetBehavior,
+                        isEmptyEntity: y.editorMetadata?.IsEmptyEntity
                     };
                 })
             };

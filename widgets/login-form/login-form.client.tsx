@@ -61,6 +61,7 @@ export function LoginFormClient(props: LoginFormViewProps<LoginFormEntity>) {
       }) ?? [];
 
       setExternalProvidersData(externalProviderData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const validateForm = (form: HTMLFormElement) => {

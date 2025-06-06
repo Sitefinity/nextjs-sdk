@@ -1,8 +1,15 @@
 
 import { ImagePosition } from './image-position';
-import { Choice,ColorPalette, ConditionalVisibility, DataModel, DataType, DisplayName, KnownFieldTypes, MediaItem, Model, SdkItemModel } from '@progress/sitefinity-widget-designers-sdk';
 import { StylingConfig } from './styling-config';
 import { SdkItem } from '../../rest-sdk/dto/sdk-item';
+import { ContentSectionTitles, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { ColorPalette } from '@progress/sitefinity-widget-designers-sdk/decorators/color-palette';
+import { MediaItem, SdkItemModel } from '@progress/sitefinity-widget-designers-sdk/decorators/media-item';
 
 @Model()
 export class BackgroundStyle {

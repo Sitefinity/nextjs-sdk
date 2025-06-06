@@ -1,4 +1,5 @@
-import { DefaultValue, Model } from '@progress/sitefinity-widget-designers-sdk';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
 
 export interface SdkItem {
     Provider: string;

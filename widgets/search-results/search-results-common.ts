@@ -1,7 +1,7 @@
 import { SearchResultsEntity } from './search-results.entity';
 import { SearchParams } from './interfaces/search-params';
 import { SearchResultsSorting } from './interfaces/search-results-sorting';
-import { ContentListSettings } from './content-list-settings';
+import { ContentListSettings } from '../../editor/widget-framework/content-list-settings';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
 

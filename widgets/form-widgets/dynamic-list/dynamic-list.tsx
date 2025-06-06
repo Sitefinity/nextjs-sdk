@@ -13,6 +13,8 @@ import { DropdownViewProps } from '../dropdown/interfaces/dropdown.view-props';
 import { CheckboxesViewProps } from '../checkboxes/interfaces/checkboxes-view-model';
 import { classNames } from '../../../editor/utils/classNames';
 import { StylingConfig } from '../../styling/styling-config';
+import { SelectionMode } from './selection-modes';
+import { JSX } from 'react';
 
 export async function DynamicList(props: WidgetContext<DynamicListEntity>) {
     const { span, ctx } = Tracer.traceWidget(props, true);
@@ -84,11 +86,18 @@ export async function DynamicList(props: WidgetContext<DynamicListEntity>) {
 
     const dataAttributes = htmlAttributes(props);
     if (props.requestContext.isEdit) {
-
-        if (entity.SelectedContent === null || entity.SelectedContent.Content === null || !entity.SelectedContent.Content[0].Type) {
-            setWarning(dataAttributes, 'No list type have been selected');
-        } else if (choices.length === 0) {
-            setWarning(dataAttributes, 'Selected list is empty');
+        if (entity.ListType === SelectionMode.Content) {
+            if (entity.SelectedContent === null || entity.SelectedContent.Content === null || !entity.SelectedContent.Content[0].Type) {
+                setWarning(dataAttributes, 'No list type have been selected');
+            } else if (choices.length === 0) {
+                setWarning(dataAttributes, 'Selected list is empty');
+            }
+        } else if (entity.ListType === SelectionMode.Classification) {
+            if (entity.ClassificationSettings === null || entity.ClassificationSettings.selectionMode === null || entity.ClassificationSettings.selectedTaxonomyName === null) {
+                setWarning(dataAttributes, 'No list type have been selected');
+            } else if (choices.length === 0) {
+                setWarning(dataAttributes, 'Selected list is empty');
+            }
         }
     }
 

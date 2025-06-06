@@ -1,6 +1,7 @@
-import { TableView, WidgetEntity } from '@progress/sitefinity-widget-designers-sdk';
 import { MultipleChoiceEntity } from '../multiple-choice/multiple-choice.entity';
 import { ChoiceOption } from '../common/choice-option';
+import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/table-view';
 
 @WidgetEntity('SitefinityCheckboxes', 'Checkboxes')
 export class CheckboxesEntity extends MultipleChoiceEntity {
