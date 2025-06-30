@@ -29,7 +29,7 @@ export async function Navigation(props: WidgetContext<NavigationEntity>) {
     }) || [];
 
     const marginClass = entity.Margins && StyleGenerator.getMarginClasses(entity.Margins);
-    const customAttributes = getCustomAttributes(entity.Attributes, 'Navigation');
+    const customAttributes = getCustomAttributes(entity.Attributes, 'SitefinityNavigation');
 
     dataAttributes['className'] = combineClassNames(marginClass, entity.WrapperCssClass);
     const viewName = props.model.Properties.SfViewName;

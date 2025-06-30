@@ -22,16 +22,11 @@ import { setHostServerContext } from '../services/server-context';
 import { TemplateRegistry } from '../editor/default-template-registry';
 import { initRegistry, WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { WidgetModel } from '../editor/widget-framework/widget-model';
-import { JSX } from 'react';
-import { UrlParams } from './page-params';
-import { env } from 'process';
 import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
 import { widgetRegistry } from '@widgetregistry';
 
-export async function RenderPage({ params, searchParams, relatedFields, templates }: { params: UrlParams | Promise<UrlParams>, searchParams: Dictionary | Promise<Dictionary>, relatedFields?: string[], templates?: TemplateRegistry }) {
-    const host = (await headers()).get('host') || '';
-    const pageParams = params instanceof Promise ? await params : params;
-    const queryParams = (searchParams instanceof Promise ? await searchParams : searchParams) ?? {};
+export async function RenderPage({ params, searchParams, relatedFields, templates }: { params: { slug: string[] }, searchParams: Dictionary, relatedFields?: string[], templates?: TemplateRegistry }) {
+    const host = headers().get('host') || '';
     setHostServerContext(host);
 
     if (!RenderWidgetService.widgetRegistry) {
@@ -40,25 +35,21 @@ export async function RenderPage({ params, searchParams, relatedFields, template
 
     let layoutResponse: LayoutResponse | null = null;
 
-    if (pageParams && pageParams.slug && pageParams.slug.length > 0) {
-        if (pageParams.slug.some(x => x === '_next') || pageParams.slug[pageParams.slug.length - 1].indexOf('.') !== -1) {
+    if (params && params.slug && params.slug.length > 0) {
+        if (params.slug.some(x => x === '_next') || params.slug[params.slug.length - 1].indexOf('.') !== -1) {
             notFound();
         }
     }
 
-    if (queryParams && queryParams['sf-auth']) {
-        queryParams['sf-auth'] = encodeURIComponent(queryParams['sf-auth']);
+    if (searchParams && searchParams['sf-auth']) {
+        searchParams['sf-auth'] = encodeURIComponent(searchParams['sf-auth']);
     }
 
-    const { span, ctx } = Tracer.startSpan(`RenderPage ${pageParams?.slug.join('/')}`, true);
+    const { span, ctx } = Tracer.startSpan(`RenderPage ${params.slug.join('/')}`, true);
     try {
-        layoutResponse = await pageLayout({ params: pageParams, searchParams: queryParams, relatedFields, traceContext: ctx });
+        layoutResponse = await pageLayout({ params, searchParams, relatedFields, traceContext: ctx });
     } catch (error) {
         if (error instanceof ErrorCodeException && (error.code === 'NotFound' || error.code === 'Forbidden' || error.code === 'Unauthorized')) {
-            if (env.NODE_ENV !== 'production') {
-                console.log(error);
-            }
-
             notFound();
         }
     }
@@ -82,8 +73,8 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         return notFound();
     }
 
-    const isEdit = queryParams['sfaction'] === 'edit';
-    const isPreview = queryParams['sfaction'] === 'preview';
+    const isEdit = searchParams['sfaction'] === 'edit';
+    const isPreview = searchParams['sfaction'] === 'preview';
     const isLive = !(isEdit || isPreview);
 
     const layout = layoutResponse.layout;
@@ -98,13 +89,13 @@ export async function RenderPage({ params, searchParams, relatedFields, template
     const appState : AppState = {
         requestContext: {
             layout: layout,
-            searchParams: queryParams,
+            searchParams: searchParams,
             detailItem: layout.DetailItem,
             culture: layout.Culture,
             isEdit,
             isPreview,
             isLive,
-            url: pageParams?.slug.join('/'),
+            url: params.slug.join('/'),
             pageNode: layout.Fields as PageItem
         },
         widgets: layout.ComponentContext.Components
@@ -126,7 +117,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         notFound();
     }
 
-    const liveUrl = '/' + pageParams?.slug.join('/') + '?' + new URLSearchParams(queryParams).toString();
+    const liveUrl = '/' + params.slug.join('/') + '?' + new URLSearchParams(searchParams).toString();
 
     let pageTemplate;
     if (layout.TemplateName && templates && templates[layout.TemplateName]) {
@@ -174,20 +165,18 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         }))
     };
 
-    const isTesting = process.env.NODE_ENV === 'test';
-
     return (
       <>
         <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache}
           taxonomies={ServiceMetadata.taxonomies}
           additionalQueryParams={{ sf_culture: layout.Culture, sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''}}
           registry={registryForFrontent}/>
-        {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} /> }
-        {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} /> }
+        <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} />
+        <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} />
         {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} registry={registryForEdit} />}
         {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} registry={registryForFrontent} />}
         {pageTemplate}
-        {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyBottom} /> }
+        <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyBottom} />
         {Tracer.endSpan(span)}
       </>
     );

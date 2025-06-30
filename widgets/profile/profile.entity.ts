@@ -1,22 +1,28 @@
+import {
+    Category,
+    Choice,
+    ConditionalVisibility,
+    Content,
+    ContentSection,
+    ContentSectionTitles,
+    DataModel,
+    DataType,
+    DisplayName,
+    KeysValues,
+    KnownFieldTypes,
+    LengthDependsOn,
+    Margins,
+    PropertyCategory,
+    SectionsOrder,
+    ViewSelector,
+    WidgetEntity,
+    WidgetLabel
+} from '@progress/sitefinity-widget-designers-sdk';
 import { OffsetStyle } from '../styling/offset-style';
 import { ProfileViewMode } from './interfaces/profile-view-mode';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { RestSdkTypes } from '../../rest-sdk/rest-client';
 import { ProfilePostUpdateAction } from './interfaces/profile-post-update-action';
-import { ContentSectionTitles, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
-import { Category, PropertyCategory } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { SectionsOrder, WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
-import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
-import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
-import { KeysValues } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
-import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
-import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
-import { Margins } from '@progress/sitefinity-widget-designers-sdk/decorators/margins';
-import { LengthDependsOn } from '@progress/sitefinity-widget-designers-sdk/decorators/length-depends-on';
 
 @WidgetEntity('SitefinityProfile', 'Profile')
 @SectionsOrder(['Select mode', ContentSectionTitles.DisplaySettings])

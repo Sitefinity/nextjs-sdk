@@ -6,14 +6,20 @@ import { invalidDataAttr, isValidEmail, serializeForm } from '../common/utils';
 import { classNames } from '../../editor/utils/classNames';
 import { getQueryParams } from '../common/query-params';
 import { useSearchParams } from 'next/navigation';
-import { RegistrationFormProps } from './interfaces/registration-form-props';
+import { RegistrationViewProps } from './interfaces/registration.view-props';
 import { SecurityService } from '../../services/security-service';
 import { ExternalLoginBase, ExternalProviderData } from '../external-login-base';
+import { RegistrationEntity } from './registration.entity';
 import { getUniqueId } from '../../editor/utils/getUniqueId';
+
+export interface RegistrationFormProps {
+    action: string;
+    viewProps: RegistrationViewProps<RegistrationEntity>;
+}
 
 export function RegistrationFormClient(props: RegistrationFormProps) {
     const searchParams = useSearchParams();
-    const viewProps = { ...props.viewProps };
+    const { viewProps } = props;
 
     const context = viewProps.widgetContext.requestContext;
 
@@ -52,7 +58,6 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
         }) ?? [];
 
         setExternalProvidersData(externalProviderData);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, []);
 
 

@@ -6,7 +6,6 @@ export interface RegistrationSettingsDto {
     SecurityQuestion: string;
     SecurityToken: string;
     SmtpConfigured: boolean;
-    RegistrationEnabled: boolean;
 }
 
 export enum ActivationMethod {

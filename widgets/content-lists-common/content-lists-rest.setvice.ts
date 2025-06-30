@@ -54,7 +54,6 @@ export class ContentListsCommonRestService {
             };
 
             const skipAndTakeParams = this.getSkipAndTake(entity, currentPage);
-            const orderByParams = this.getOrderByExpression(entity);
             const getAllArgs: GetAllArgs = {
                 skip: skipAndTakeParams.Skip,
                 take: skipAndTakeParams.Take,
@@ -62,15 +61,14 @@ export class ContentListsCommonRestService {
                 type: selectedContent.Type,
                 provider: variation?.Source,
                 culture: requestContext?.culture,
-                orderBy: orderByParams,
+                orderBy: this.getOrderByExpression(entity),
                 fields: this.getSelectExpression(entity),
                 filter: bigFilter,
                 traceContext
             };
 
             const result = await RestClient.getItems(getAllArgs);
-
-            if (entity.SelectedItems?.ItemIdsOrdered && entity.SelectedItems?.ItemIdsOrdered.length > 1 && !orderByParams) {
+            if (entity.SelectedItems?.ItemIdsOrdered && entity.SelectedItems?.ItemIdsOrdered.length > 1) {
                 const orderedCollection: SdkItem[] = [];
                 entity.SelectedItems.ItemIdsOrdered.forEach(id => {
                     const orderedItem = result.Items.find(x => x.Id === id);

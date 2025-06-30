@@ -1,19 +1,23 @@
+import {
+    Category,
+    Content,
+    ContentSection,
+    DataModel,
+    DataType,
+    Description,
+    DisplayName,
+    KeysValues,
+    KnownFieldTypes,
+    LengthDependsOn,
+    Margins,
+    PropertyCategory,
+    ViewSelector,
+    WidgetEntity,
+    WidgetLabel
+} from '@progress/sitefinity-widget-designers-sdk';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { OffsetStyle } from '../styling/offset-style';
 import { RestSdkTypes } from '../../rest-sdk/rest-client';
-import { KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Category, PropertyCategory } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
-import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
-import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
-import { KeysValues } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
-import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
-import { Margins } from '@progress/sitefinity-widget-designers-sdk/decorators/margins';
-import { LengthDependsOn } from '@progress/sitefinity-widget-designers-sdk/decorators/length-depends-on';
 
 @WidgetEntity('SitefinityResetPassword', 'Reset password')
 export class ResetPasswordEntity {

@@ -1,20 +1,10 @@
+
+import { WidgetEntity, Range, Category, LengthDependsOn, DisplayName, DataType, ContentSection, DataModel, TableView, Attributes, DefaultValue, Description, RegularExpression, ComplexType } from '@progress/sitefinity-widget-designers-sdk';
 import { BackgroundStyle } from '../styling/background-style';
 import { CustomCssModel } from '../styling/custom-css-model';
 import { OffsetStyle } from '../styling/offset-style';
 import { SimpleBackgroundStyle } from '../styling/simple-background-style';
 import { LabelModel } from './label-model';
-import { ComplexType } from '@progress/sitefinity-widget-designers-sdk/common';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
-import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
-import { LengthDependsOn } from '@progress/sitefinity-widget-designers-sdk/decorators/length-depends-on';
-import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/table-view';
-import { RegularExpression, Range } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
-import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
 
 @WidgetEntity('SitefinitySection', 'Section')
 export class SectionEntity {

@@ -1,19 +1,6 @@
+import { Attributes, Category, Choice,ContentSection, DataModel, DataType, Description, DisplayName, KnownFieldTypes, Margins, Model, Placeholder, Required, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { OffsetStyle } from '../styling/offset-style';
 import { ClassificationSettings } from '../common/classification-settings';
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Required } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
-import { Placeholder } from '@progress/sitefinity-widget-designers-sdk/decorators/placeholder';
-import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
-import { KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
-import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
-import { Margins } from '@progress/sitefinity-widget-designers-sdk/decorators/margins';
-import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
-import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
-import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
 
 @WidgetEntity('SitefinityClassification', 'Classification')
 export class ClassificationEntity {

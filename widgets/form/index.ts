@@ -21,5 +21,4 @@ export * from './rules/extractors/form-rule-action-extractor';
 export * from './rules/extractors/go-to-page-action-extractor';
 export * from './rules/extractors/hide-show-action-extractor';
 export * from './rules/extractors/send-notification-action-extractor';
-export * from './rules/extractors/show-message-action-extractor';
 export * from './rules/extractors/skip-to-page-action-extractor';

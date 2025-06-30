@@ -4,8 +4,6 @@ export * from './document-list-entity';
 export * from './document-list-grid.view';
 export * from './document-list-list.view';
 export * from './common/utils';
-export * from './interfaces/document-list-detail.view-props';
-export * from './interfaces/document-list-master.view-props';
 
 export * from '../content-lists-common/content-list.view-props';
 export * from '../content-lists-common/content-lists-base.entity';

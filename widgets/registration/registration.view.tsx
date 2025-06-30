@@ -20,8 +20,6 @@ export function RegistrationDefaultView(props: RegistrationViewProps<Registratio
   }, [searchParams]);
 
   const labels = props.labels;
-  const [propsClone, setPropsClone] = useState<RegistrationViewProps<RegistrationEntity>>(JSON.parse(JSON.stringify(props)));
-
   const showSuccessMessage = useMemo(() => {
     return getQueryParams(searchParams).showSuccessMessage?.toLowerCase() === 'true';
   }, [searchParams]);
@@ -45,10 +43,7 @@ export function RegistrationDefaultView(props: RegistrationViewProps<Registratio
       }).catch((error) => {
         if (error instanceof ErrorCodeException && error.code === 'Gone') {
           setIsActivationExpired(true);
-          setPropsClone((currentProps) => ({
-            ...currentProps,
-            email: error.message
-          }));
+          props.email = error.message;
         } else {
           setIsActivationError(true);
           setActivationTitle(entity.ActivationFailTitle);
@@ -62,13 +57,13 @@ export function RegistrationDefaultView(props: RegistrationViewProps<Registratio
   return (
     <>
       <div
-        {...propsClone.attributes}
+        {...props.attributes}
       >
         {isActivationExpired &&
           <>
             <ActivationClient
-              action={propsClone.resendConfirmationEmailHandlerPath}
-              viewProps={propsClone}
+              action={props.resendConfirmationEmailHandlerPath}
+              viewProps={props}
             />
           </>}
 
@@ -86,8 +81,8 @@ export function RegistrationDefaultView(props: RegistrationViewProps<Registratio
             <>
 
               <RegistrationFormClient
-                action={propsClone.registrationHandlerPath}
-                viewProps={propsClone}
+                action={props.registrationHandlerPath}
+                viewProps={props}
               />
             </>
           }

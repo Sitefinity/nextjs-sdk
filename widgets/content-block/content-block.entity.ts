@@ -1,15 +1,5 @@
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { Attributes, Category, ContentContainer, ContentSection, DataModel, DataType, DisplayName, KnownFieldTypes, RegularExpression, TableView, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { OffsetStyle } from '../styling/offset-style';
-import { ContentContainer } from '@progress/sitefinity-widget-designers-sdk/decorators/content-container';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
-import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
-import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/table-view';
-import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
-import { RegularExpression } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
 
 @WidgetEntity('SitefinityContentBlock', 'Content block')
 export class ContentBlockEntity {

@@ -1,15 +1,8 @@
+import { Choice, ContentSection, ContentSectionTitles, DataType, DefaultValue, DisplayName, KnownFieldTypes, TableView, WidgetEntity } from '@progress/sitefinity-widget-designers-sdk';
 import { ChoiceEntityBase } from '../interfaces/choice-entity-base';
 import { FIELD_SIZE_OPTIONS, FieldSize } from '../../styling/field-size';
 import { DROPWDOWN_PREDEFINED_LIST } from './dropdown-predefined-list';
 import { ChoiceOption } from '../common/choice-option';
-import { ContentSectionTitles, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
-import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
-import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
-import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
-import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
-import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
-import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/table-view';
 
 export type DropdownSorting = 'Manual' | 'Alphabetical';
 

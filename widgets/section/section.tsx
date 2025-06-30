@@ -16,7 +16,6 @@ import { ColumnHolder, ComponentContainer } from './column-holder';
 import { SectionHolder } from './section-holder';
 import { SectionEntity } from './section.entity';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
-import { JSX } from 'react';
 
 const ColumnNamePrefix = 'Column';
 const sectionKey = 'Section';
