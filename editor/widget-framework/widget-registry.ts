@@ -1,4 +1,4 @@
-import { EntityMetadataGenerator, MetadataModel, PropertyModel } from '@progress/sitefinity-widget-designers-sdk';
+import { EntityMetadataGenerator, MetadataModel, PropertyModel } from '@progress/sitefinity-widget-designers-sdk/metadata';
 import { WidgetMetadata, WidgetViewsRegistration } from './widget-metadata';
 
 export interface WidgetRegistry {
@@ -17,10 +17,19 @@ export function initRegistry(widgetRegistry: WidgetRegistry) {
         const widgetRegistration = widgetRegistry.widgets[widgetKey];
 
         if (widgetRegistration.entity == null && widgetRegistration.designerMetadata == null) {
-            throw new Error(`There should be either entity or designer metadata provided for ${widgetKey} widget`);
+            if (widgetRegistration.editorMetadata){
+                widgetRegistration.editorMetadata.IsEmptyEntity = true;
+            }
+
+            return;
         }
 
         const metadata: MetadataModel = widgetRegistration.entity ? EntityMetadataGenerator.extractMetadata(widgetRegistration.entity) : widgetRegistration.designerMetadata;
+        const sectionsDifferentFromQuickEdit = metadata.PropertyMetadata.map(x => x.Name).filter(x => x !== 'QuickEdit');
+        if (sectionsDifferentFromQuickEdit.length === 0 && widgetRegistration.editorMetadata) {
+            widgetRegistration.editorMetadata.IsEmptyEntity = true;
+        }
+
         addViewChoices(widgetRegistration, metadata);
         if (!widgetRegistration.entity) {
             return;

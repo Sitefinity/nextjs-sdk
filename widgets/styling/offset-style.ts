@@ -1,5 +1,9 @@
-import { Choice,DataType, KnownFieldTypes, Model, Offset_Choices } from '@progress/sitefinity-widget-designers-sdk';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
 import { OffsetSize } from './offset-size';
+import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { Offset_Choices } from '@progress/sitefinity-widget-designers-sdk/decorators/margins';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
 
 @Model()
 export class OffsetStyle {

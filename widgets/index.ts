@@ -1,6 +1,7 @@
 export * from './breadcrumb/breadcrumb';
 export * from './breadcrumb/breadcrumb.entity';
 export * from './breadcrumb/breadcrumb.view';
+export * from './breadcrumb/breadcrumb.view-props';
 
 export * from './call-to-action/call-to-action';
 export * from './call-to-action/call-to-action.entity';
@@ -59,6 +60,8 @@ export * from './document-list/document-list-entity';
 export * from './document-list/document-list-grid.view';
 export * from './document-list/document-list-list.view';
 export * from './document-list/common/utils';
+export * from './document-list/interfaces/document-list-detail.view-props';
+export * from './document-list/interfaces/document-list-master.view-props';
 
 export * from './image/image';
 export * from './image/image.entity';
@@ -96,11 +99,13 @@ export * from './pager/pager';
 export * from './pager/pager-link-attributes';
 export * from './pager/pager-view-model';
 
+export * from './registration/activation.client';
 export * from './registration/registration';
 export * from './registration/registration-form.client';
 export * from './registration/registration.entity';
 export * from './registration/interfaces/post-registration-action';
 export * from './registration/interfaces/registration.view-props';
+export * from './registration/interfaces/registration-form-props';
 export * from './registration/registration.view';
 
 export * from './profile/profile';
@@ -125,10 +130,12 @@ export * from './search-box/search-box.view-props';
 export * from './search-box/search-box.entity';
 export * from './search-box/utils';
 
+export * from './search-facets/facet-field-mapper';
 export * from './search-facets/search-facets';
 export * from './search-facets/search-facets-extensions';
 export * from './search-facets/search-facets-client';
 export * from './search-facets/search-facets-common';
+export * from './search-facets/search-facets-class';
 export * from './search-facets/components/facet-group';
 export * from './search-facets/components/facet-custom-range';
 export * from './search-facets/components/utils';

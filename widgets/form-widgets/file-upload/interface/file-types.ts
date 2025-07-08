@@ -1,4 +1,5 @@
-import { DataType, Model } from '@progress/sitefinity-widget-designers-sdk';
+import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
 
 @Model()
 export class FileTypes {

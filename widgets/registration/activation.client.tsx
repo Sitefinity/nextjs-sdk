@@ -1,14 +1,8 @@
 'use client';
 
 import React from 'react';
-import { RegistrationEntity } from './registration.entity';
-import { RegistrationViewProps } from './interfaces/registration.view-props';
+import { RegistrationFormProps } from './interfaces/registration-form-props';
 import { serializeForm } from '../common/utils';
-
-export interface RegistrationFormProps {
-    action: string;
-    viewProps: RegistrationViewProps<RegistrationEntity>;
-}
 
 export function ActivationClient(props: RegistrationFormProps) {
     const { viewProps } = props;

@@ -153,7 +153,7 @@ export function getPageNumber(pagerMode: PagerMode, requestContext: Transferable
                         let numberSegmentMatches = segments.map(x => x.match(new RegExp(pattern))).filter(x => x);
 
                         if (numberSegmentMatches?.length === 1) {
-                            pageNumber = parseInt(numberSegmentMatches[0]![1]);
+                            pageNumber = parseInt(numberSegmentMatches[0]![1], 10);
                             const segmentIndex = requestContext.layout.UrlParameters?.findIndex(x => x === numberSegmentMatches[0]![0]);
                             requestContext.layout.UrlParameters?.splice(segmentIndex, 1);
                         }

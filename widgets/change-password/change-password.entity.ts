@@ -1,9 +1,21 @@
-import { Attributes, Category, Choice, ConditionalVisibility, Content, ContentSection, DataType, DefaultValue, KnownFieldTypes, Margins, PropertyCategory, ViewSelector, WidgetEntity, WidgetLabel } from '@progress/sitefinity-widget-designers-sdk';
 import { MixedContentContext } from '../../editor/widget-framework/mixed-content-context';
 import { OffsetStyle } from '../styling/offset-style';
 import { PostPasswordChangeAction } from './interfaces/post-password-change-action';
-import { DisplayName } from '@progress/sitefinity-widget-designers-sdk';
 import { RestSdkTypes } from '../../rest-sdk/rest-client';
+import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
+import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
+import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
+import { Margins } from '@progress/sitefinity-widget-designers-sdk/decorators/margins';
+import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
+import { Category, PropertyCategory } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
+import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
 
 @WidgetEntity('SitefinityChangePassword', 'Change password')
 export class ChangePasswordEntity {

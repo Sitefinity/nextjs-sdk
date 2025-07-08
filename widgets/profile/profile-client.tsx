@@ -144,7 +144,7 @@ export function ProfileClient(props: ProfileClientProps) {
         Array.from(form.elements).forEach((element) => {
             const input = (element as HTMLInputElement);
 
-            if (!input.value && input.required) {
+            if (!input.value && input.required && !viewProps.readOnlyFields?.includes(input.name)) {
                 invalidateElement(emptyInputs, input);
                 setInvalidInputs(emptyInputs);
                 isValid = false;

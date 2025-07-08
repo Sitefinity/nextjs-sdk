@@ -1,4 +1,3 @@
-
 import { RenderWidgetService } from '../services/render-widget-service';
 import { RequestContext } from '../editor/request-context';
 import { RestClient } from '../rest-sdk/rest-client';
@@ -7,23 +6,26 @@ import { LayoutResponse } from '../rest-sdk/dto/layout-service.response';
 import { PageItem } from '../rest-sdk/dto/page-item';
 import { setHostServerContext } from '../services/server-context';
 import { initServerSideRestSdk } from '../rest-sdk/init';
+import { Dictionary } from '../typings/dictionary';
 import { widgetRegistry } from '@widgetregistry';
 import { initRegistry } from '../editor/widget-framework/widget-registry';
 
-export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key: string]: string } }) {
-    const hostHeader = headers().get('host') || '';
-    setHostServerContext(hostHeader);
-
+export async function RenderLazyWidgets({ searchParams }: { searchParams: Dictionary | Promise<Dictionary> }) {
     if (!RenderWidgetService.widgetRegistry) {
       RenderWidgetService.widgetRegistry = initRegistry(widgetRegistry);
     }
 
-    const pageUrl = searchParams['pageUrl'];
-    let cookie = cookies().toString();
+    const hostHeader = (await headers()).get('host') || '';
+    const queryParams = searchParams instanceof Promise ? await searchParams : searchParams;
+    setHostServerContext(hostHeader);
+
+    const pageUrl = queryParams['pageUrl'];
+    const cookie = (await cookies()).toString();
+
     const lazyWidgets = await RestClient.getLazyWidgets({
         url: pageUrl,
-        correlationId: searchParams['correlationId'],
-        referrer: searchParams['referrer'],
+        correlationId: queryParams['correlationId'],
+        referrer: queryParams['referrer'],
         cookie: cookie
     });
 
@@ -37,7 +39,7 @@ export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key
         query = pageUrl.substring(questionMarkIndex);
     }
 
-    let params = new URLSearchParams(query);
+    const params = new URLSearchParams(query);
     const paramsAsObject = Object.fromEntries(params);
 
     const layoutResponse = await RestClient.getPageLayout({
@@ -52,7 +54,7 @@ export async function RenderLazyWidgets({ searchParams }: { searchParams: { [key
 
     const requestContext: RequestContext = {
         layout: layout,
-        searchParams: searchParams,
+        searchParams: queryParams,
         isEdit: false,
         isPreview: false,
         isLive: true,

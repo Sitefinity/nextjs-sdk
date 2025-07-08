@@ -1,5 +1,17 @@
-import { Category, ComplexType, ConditionalVisibility, ContentSection, ContentSectionTitles, DataModel, DataType, DefaultValue, Description, DisplayName, Group, KnownFieldTypes, Model, Placeholder, PropertyCategory, RegularExpression, Required, SectionsOrder, TableView, ViewSelector } from '@progress/sitefinity-widget-designers-sdk';
 import { ChoiceOption, ChoiceOptionModel } from '../common/choice-option';
+import { ComplexType, ContentSectionTitles, KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { ContentSection } from '@progress/sitefinity-widget-designers-sdk/decorators/content-section';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { Description } from '@progress/sitefinity-widget-designers-sdk/decorators/description';
+import { DisplayName } from '@progress/sitefinity-widget-designers-sdk/decorators/display-name';
+import { DataModel, DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { Group } from '@progress/sitefinity-widget-designers-sdk/decorators/group';
+import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
+import { Category, PropertyCategory } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
+import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
+import { Model, SectionsOrder } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/table-view';
+import { Browsable } from '@progress/sitefinity-widget-designers-sdk/decorators/browsable';
 
 @Model()
 @SectionsOrder([ContentSectionTitles.LabelsAndContent, ContentSectionTitles.DisplaySettings])
@@ -48,6 +60,9 @@ export class ChoiceEntityBase {
       @DisplayName('CSS class')
       CssClass: string | null = null;
 
+      @Browsable(false)
       SfFieldType?: string;
+      
+      @Browsable(false)
       SfFieldName?: string;
 }

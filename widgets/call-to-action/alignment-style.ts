@@ -1,4 +1,9 @@
-import { Choice, DataType, DefaultValue, DisplayName, KnownFieldTypes, Model } from '@progress/sitefinity-widget-designers-sdk';
+import { KnownFieldTypes } from '@progress/sitefinity-widget-designers-sdk/common';
+import { Choice } from '@progress/sitefinity-widget-designers-sdk/decorators/choice';
+import { DataType } from '@progress/sitefinity-widget-designers-sdk/decorators/data-type';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
+import { Model } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
+
 
 @Model()
 export class AlignmentStyle {

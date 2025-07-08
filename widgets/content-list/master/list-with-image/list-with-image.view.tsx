@@ -30,7 +30,8 @@ export function ListWithImageView(props: ListWithImageViewProps<ContentListEntit
                             requestContext={props.widgetContext.requestContext}
                             className="btn btn-primary"
                             item={item}
-                            text={'Learn more'} />}
+                            text={'Learn more'}
+                            type={props.type} />}
                         </div>
                       </div>
                     </Fragment>

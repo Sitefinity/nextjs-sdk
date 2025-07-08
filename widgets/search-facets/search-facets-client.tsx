@@ -91,6 +91,7 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
             setHasAnyFacetElements(hasAnyFacetElements);
             setInitialSelectedFacets(searchFacets);
         });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {

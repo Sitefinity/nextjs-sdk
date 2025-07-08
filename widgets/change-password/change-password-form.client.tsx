@@ -208,7 +208,8 @@ export function ChangePasswordFormClient(props: ChangePasswordViewProps<ChangePa
         return formElement;
     }
 
-    const externalProviderElement = (<div>{`${labels.externalProviderMessageFormat}${externalProviderName}`}</div>);
+    const externalProviderMessage = labels.externalProviderMessageFormat?.replace('{0}', externalProviderName);
+    const externalProviderElement = (<div>{`${externalProviderMessage}`}</div>);
     const notLoggedUserElement = (<div className="alert alert-danger my-3">{labels.loginFirstMessage}</div>);
 
     if (isUserLoaded === true) {
