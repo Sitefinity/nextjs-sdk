@@ -32,6 +32,7 @@ export async function SearchFacets(props: WidgetContext<SearchFacetsEntity>) {
         isShowMoreLessButtonActive: entity.IsShowMoreLessButtonActive,
         displayItemCount: entity.DisplayItemCount,
         isEdit: props.requestContext.isEdit,
+        webserviceApiKey: props.requestContext.webserviceApiKey,
         attributes: {...dataAttributes, ...customAttributes},
         widgetContext: getMinimumWidgetContext(props)
     };

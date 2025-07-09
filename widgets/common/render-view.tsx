@@ -3,6 +3,7 @@ import { RenderWidgetService } from '../../services/render-widget-service';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { ViewPropsBase } from './view-props-base';
 import { RenderViewClient } from './render-view-client';
+import { isReactClientComponent } from './utils';
 
 /**
  * If there is custom view it will be rendered. If there is not the children of this component will be rendered
@@ -36,7 +37,7 @@ export function RenderView({viewName, widgetKey, children, viewProps, traceSpan}
           widgetViewFunction = viewFunction;
         }
 
-        if ((widgetViewFunction as any).$$typeof) {
+        if (isReactClientComponent(widgetViewFunction)) {
           renderClient = true;
         } else {
           widgetView = widgetViewFunction(viewProps);

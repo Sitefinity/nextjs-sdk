@@ -54,4 +54,5 @@ export interface ProfileViewProps<T extends ProfileEntity> extends ViewPropsBase
     activationMethod?: string;
     visibilityClasses?: { [key: string]: string };
     invalidClass?: string;
+    webserviceApiKey?: string;
 }

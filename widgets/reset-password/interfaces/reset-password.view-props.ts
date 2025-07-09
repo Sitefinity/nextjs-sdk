@@ -33,5 +33,6 @@ export interface ResetPasswordViewProps<T extends ResetPasswordEntity> extends V
         forgottenPasswordLabel: string;
         invalidEmailFormatMessage: string;
         fieldIsRequiredMessage: string;
-    }
+    };
+    webserviceApiKey?: string;
 }

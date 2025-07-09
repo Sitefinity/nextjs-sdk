@@ -89,6 +89,7 @@ function populateViewProps(entity: ResetPasswordEntity, widgetContext: WidgetCon
       invalidEmailFormatMessage: entity.InvalidEmailFormatMessage,
       fieldIsRequiredMessage: entity.FieldIsRequiredMessage
     },
+    webserviceApiKey: widgetContext.requestContext.webserviceApiKey,
     attributes: { ...dataAttributes, ...customAttributes },
     widgetContext: getMinimumWidgetContext(widgetContext)
   };

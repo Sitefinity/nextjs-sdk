@@ -21,6 +21,8 @@ import { getQueryParams } from '../common/query-params';
 import { TransferableRequestContext } from '../../editor/request-context';
 import { FormViewProps, getFormRulesViewProps, getFormHiddenFields } from './form.view-props';
 import { ErrorCodeException } from '../../rest-sdk/errors/error-code.exception';
+import { Dictionary } from '../../typings/dictionary';
+import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
 
 export function FormCSR(props: WidgetContext<FormEntity>) {
     const entity = props.model.Properties;
@@ -45,16 +47,21 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
     });
     const [error, setError] = useState<string>('');
 
+    const additionalHeaders: Dictionary = {};
+    if (props.requestContext.webserviceApiKey) {
+        additionalHeaders[SF_WEBSERVICE_API_KEY_HEADER] = props.requestContext.webserviceApiKey;
+    }
+
     const getFormModel = (formDto: FormDto) => {
         const currentQueryParams: {[key: string]: string} = {...queryParams};
         if (queryParams && queryParams['sf-content-action']) {
             currentQueryParams['sf-content-action'] = encodeURIComponent(queryParams['sf-content-action']);
         }
-        return RestClient.getFormLayout({ id: formDto.Id, queryParams: currentQueryParams }).then(formModel => {
+        return RestClient.getFormLayout({ id: formDto.Id, queryParams: currentQueryParams, additionalHeaders }).then(formModel => {
             return formModel;
         }).catch(err => {
             if (context.isEdit) {
-                return RestClient.getFormLayout({ id: formDto.Id, queryParams: Object.assign({}, currentQueryParams, {[QueryParamNames.Action]: 'edit'})}).then(formModel => {
+                return RestClient.getFormLayout({ id: formDto.Id, queryParams: Object.assign({}, currentQueryParams, {[QueryParamNames.Action]: 'edit'}), additionalHeaders}).then(formModel => {
                     setViewProps(currentProps => Object.assign<any, FormViewProps, Partial<FormViewProps>>({}, currentProps, {
                         warning: 'This form is a Draft and will not be displayed on the site until you publish the form.'
                     }));
@@ -68,7 +75,7 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
 
     useEffect(() => {
         if (entity.SelectedItems && entity.SelectedItems.ItemIdsOrdered && entity.SelectedItems.ItemIdsOrdered.length > 0) {
-            RestClientForContext.getItem<FormDto>(entity.SelectedItems!, { type: RestSdkTypes.Form }).then(formDto => {
+            RestClientForContext.getItem<FormDto>(entity.SelectedItems!, { type: RestSdkTypes.Form, additionalHeaders }).then(formDto => {
                 return getFormModel(formDto).then(formModel => {
                     setViewProps(currentProps => Object.assign<any, FormViewProps, Partial<FormViewProps>>({}, currentProps, {
                         formModel: formModel,
@@ -78,7 +85,7 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
                     }));
 
                     if (entity.FormSubmitAction === FormSubmitAction.Redirect && entity.RedirectPage) {
-                        return RestClientForContext.getItem<PageItem>(entity.RedirectPage, { type: RestSdkTypes.Pages }).then(redirectPage => {
+                        return RestClientForContext.getItem<PageItem>(entity.RedirectPage, { type: RestSdkTypes.Pages, additionalHeaders }).then(redirectPage => {
                             if (redirectPage) {
                                 setViewProps(currentProps => Object.assign<any, FormViewProps, Partial<FormViewProps>>({}, currentProps, {
                                     customSubmitAction: true,

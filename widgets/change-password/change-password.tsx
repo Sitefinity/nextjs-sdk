@@ -48,6 +48,7 @@ export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>)
           externalProviderMessageFormat: entity.ExternalProviderMessageFormat
         },
         isLive: props.requestContext.isLive,
+        webserviceApiKey: props.requestContext.webserviceApiKey,
         attributes: {...dataAttributes, ...getCustomAttributes(entity.Attributes, 'ChangePassword'), ...widgetAttributes},
         widgetContext: getMinimumWidgetContext(props)
     };

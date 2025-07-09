@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { VisibilityStyle } from '../styling/visibility-style';
-import { invalidDataAttr, invalidateElement, serializeForm } from '../common/utils';
+import { SF_WEBSERVICE_API_KEY_HEADER, invalidDataAttr, invalidateElement, serializeForm } from '../common/utils';
 import { classNames } from '../../editor/utils/classNames';
 import { ResetPasswordViewProps } from './interfaces/reset-password.view-props';
 import { ResetPasswordEntity } from './reset-password.entity';
@@ -33,14 +33,17 @@ export function ResetPasswordFormClient (props: ResetPasswordViewProps<ResetPass
 
         let model = { model: serializeForm(formRef.current!) };
         let submitUrl = (formRef.current!.attributes as any)['action'].value;
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (props.webserviceApiKey) {
+            headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
+        }
+
         window.fetch(
             submitUrl,
             {
                 method: 'POST',
                 body: JSON.stringify(model),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers
             })
             .then((response) => {
                 let status = response.status;

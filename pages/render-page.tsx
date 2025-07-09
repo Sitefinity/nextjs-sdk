@@ -25,8 +25,9 @@ import { WidgetModel } from '../editor/widget-framework/widget-model';
 import { JSX } from 'react';
 import { UrlParams } from './page-params';
 import { env } from 'process';
-import { WidgetMetadata } from '../editor/widget-framework/widget-metadata';
+import { WidgetMetadata, WidgetViewsRegistration } from '../editor/widget-framework/widget-metadata';
 import { widgetRegistry } from '@widgetregistry';
+import { isReactClientComponent, SF_WEBSERVICE_API_KEY } from '../widgets/common/utils';
 
 export async function RenderPage({ params, searchParams, relatedFields, templates }: { params: UrlParams | Promise<UrlParams>, searchParams: Dictionary | Promise<Dictionary>, relatedFields?: string[], templates?: TemplateRegistry }) {
     const host = (await headers()).get('host') || '';
@@ -105,7 +106,8 @@ export async function RenderPage({ params, searchParams, relatedFields, template
             isPreview,
             isLive,
             url: pageParams?.slug.join('/'),
-            pageNode: layout.Fields as PageItem
+            pageNode: layout.Fields as PageItem,
+            webserviceApiKey: process.env[SF_WEBSERVICE_API_KEY]
         },
         widgets: layout.ComponentContext.Components
     };
@@ -152,16 +154,53 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         });
     }
 
-    const registryForFrontent: WidgetRegistry = {
-        widgets: Object.fromEntries(Object.entries(RenderWidgetService.widgetRegistry.widgets).filter(([key, registration]) => {
-            return !registration.ssr;
-        }))
+    // The registry for the frontend should only contain widgets that have client-side views.
+    const registryForFrontend: WidgetRegistry = {
+        widgets: Object.fromEntries(Object.entries(RenderWidgetService.widgetRegistry.widgets).map(([key, registration]) => {
+            if (!registration.ssr) {
+                return [key, registration];
+            }
+
+            const hasClientView = hasClientSideView(registration.views);
+
+            if (hasClientView) {
+                return [key, {
+                    views: Object.fromEntries(Object.entries(registration.views || {}).map(([viewName, view]) => {
+                        if (viewHasClientComponent(view)) {
+                            return [viewName, view];
+                        }
+
+                        return [viewName, null];
+                    }))
+                }];
+            }
+
+            return [key, null];
+        }).filter(([key, value]) => value != null)) // filter out widgets without client-side views
     };
 
+    // The registry for edit mode should contain all widgets, but only those with client-side views will be rendered.
     const registryForEdit: WidgetRegistry = {
         widgets: Object.fromEntries(Object.entries(RenderWidgetService.widgetRegistry.widgets).map(([key, registration]) => {
             if (!registration.ssr) {
                 return [key, registration];
+            }
+
+            const hasClientView = hasClientSideView(registration.views);
+
+            if (hasClientView) {
+                return [key, {
+                    designerMetadata: registration.designerMetadata,
+                    editorMetadata: registration.editorMetadata,
+                    ssr: registration.ssr,
+                    views: Object.fromEntries(Object.entries(registration.views || {}).map(([viewName, view]) => {
+                        if (viewHasClientComponent(view)) {
+                            return [viewName, view];
+                        }
+
+                        return [viewName, null];
+                    }))
+                }];
             }
 
             const reg: WidgetMetadata = {
@@ -181,11 +220,11 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache}
           taxonomies={ServiceMetadata.taxonomies}
           additionalQueryParams={{ sf_culture: layout.Culture, sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''}}
-          registry={registryForFrontent}/>
+          registry={registryForFrontend}/>
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} /> }
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} /> }
         {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} registry={registryForEdit} />}
-        {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} registry={registryForFrontent} />}
+        {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} registry={registryForFrontend} />}
         {pageTemplate}
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyBottom} /> }
         {Tracer.endSpan(span)}
@@ -201,4 +240,12 @@ function flattenWidgets(widgets: WidgetModel[]) {
 
                 return acc.concat([widget]);
             }, []);
+}
+
+function hasClientSideView(views: WidgetViewsRegistration | undefined): boolean {
+    return Object.values(views || {}).some(viewHasClientComponent);
+}
+
+function viewHasClientComponent(view: any): boolean {
+    return isReactClientComponent(view) || isReactClientComponent(view?.ViewFunction);
 }

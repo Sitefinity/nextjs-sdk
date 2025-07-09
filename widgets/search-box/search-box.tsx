@@ -37,7 +37,7 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
             if (searchResultsPage) {
                 searchResultsPageUrl = searchResultsPage['ViewUrl'];
             }
-            
+
         } catch (error) {/* empty */}
     }
 
@@ -57,6 +57,7 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
         searchAutocompleteItemClass: StylingConfig.SearchAutocompleteItemClass,
         showResultsForAllIndexedSites: entity.ShowResultsForAllIndexedSites || 0,
         isEdit: requestContext.isEdit,
+        webserviceApiKey: requestContext.webserviceApiKey,
         attributes: {...dataAttributes, ...customAttributes},
         widgetContext: getMinimumWidgetContext(props)
     };

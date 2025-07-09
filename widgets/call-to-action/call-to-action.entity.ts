@@ -14,6 +14,7 @@ import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/
 import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
 import { Category } from '@progress/sitefinity-widget-designers-sdk/decorators/category';
 import { Attributes, KeysValues } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
+import { DefaultValue } from '@progress/sitefinity-widget-designers-sdk/decorators/default-value';
 
 @WidgetEntity('SitefinityButton', 'Call to action')
 export class CallToActionEntity {
@@ -41,7 +42,8 @@ export class CallToActionEntity {
     @ContentSection(ContentSectionTitles.DisplaySettings)
     @DataModel(ButtonStyle)
     @LengthDependsOn({ ExtraRecords: '[{\"Name\": \"Primary\", \"Title\": \"Primary\"}, {\"Name\": \"Secondary\", \"Title\": \"Secondary\"}]', DisplayName: '', DisplayTitle: '', PropertyName: null})
-    Style?: { [key: string]: ButtonStyle };
+    @DefaultValue(JSON.stringify({ Primary: { DisplayStyle: 'Primary' }, Secondary: { DisplayStyle: 'Secondary' }}))
+    Style?: { [key: string]: ButtonStyle } ;
 
     @DataType(ComplexType.Dictionary)
     @ContentSection(ContentSectionTitles.DisplaySettings)

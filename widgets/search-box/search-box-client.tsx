@@ -7,6 +7,7 @@ import { SearchBoxViewProps } from './search-box.view-props';
 import { getSearchBoxParams, getSearchUrl } from './utils';
 import { SearchBoxEntity } from './search-box.entity';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
 
 const dataSfItemAttribute = 'data-sfitem';
 const activeAttribute = 'data-sf-active';
@@ -62,7 +63,12 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
             requestUrl += '&resultsForAllSites=False';
         }
 
-        fetch(requestUrl).then(function (res) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (props.webserviceApiKey) {
+            headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
+        }
+
+        fetch(requestUrl, { headers }).then(function (res) {
             res.json().then((suggestions: { value: string[] }) => {
                 handleOnSearch(suggestions.value);
                 setSuggestions(suggestions.value);

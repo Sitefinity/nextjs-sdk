@@ -4,8 +4,9 @@ import { SearchResultsSorting } from './interfaces/search-results-sorting';
 import { ContentListSettings } from '../../editor/widget-framework/content-list-settings';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
+import { Dictionary } from '../../typings/dictionary';
 
-export async function performSearch(entity: SearchResultsEntity, searchParams: SearchParams, traceContext?: any) {
+export async function performSearch(entity: SearchResultsEntity, searchParams: SearchParams, traceContext?: any, additionalHeaders?: Dictionary) {
     if (searchParams.searchQuery) {
         let orderByClause = searchParams.orderBy || entity.Sorting;
 
@@ -31,22 +32,23 @@ export async function performSearch(entity: SearchResultsEntity, searchParams: S
         }
 
         try {
-          const searchResults = await RestClient.performSearch({
-            indexCatalogue: searchParams.indexCatalogue,
-            searchQuery: searchParams.searchQuery,
-            wordsMode: searchParams.wordsMode,
-            orderBy: orderByClause,
-            culture: searchParams['sf_culture'],
-            skip: skip,
-            take: take,
-            searchFields: entity.SearchFields as string,
-            highlightedFields: entity.HighlightedFields as string,
-            scoringInfo: searchParams.scoringInfo,
-            resultsForAllSites: searchParams.resultsForAllSites === 'True',
-            filter: searchParams.filter,
-            indexFields: entity.AdditionalResultFields,
-            traceContext
-          });
+            const searchResults = await RestClient.performSearch({
+                indexCatalogue: searchParams.indexCatalogue,
+                searchQuery: searchParams.searchQuery,
+                wordsMode: searchParams.wordsMode,
+                orderBy: orderByClause,
+                culture: searchParams['sf_culture'],
+                skip: skip,
+                take: take,
+                searchFields: entity.SearchFields as string,
+                highlightedFields: entity.HighlightedFields as string,
+                scoringInfo: searchParams.scoringInfo,
+                resultsForAllSites: searchParams.resultsForAllSites === 'True',
+                filter: searchParams.filter,
+                indexFields: entity.AdditionalResultFields,
+                additionalHeaders,
+                traceContext
+            });
 
             return searchResults;
         } catch (_) {

@@ -40,6 +40,7 @@ export async function SearchResults(props: WidgetContext<SearchResultsEntity>) {
         sorting: entity.Sorting.toString(),
         sortByLabel: entity.SortByLabel,
         totalCount: 0,
+        webserviceApiKey: props.requestContext.webserviceApiKey,
         attributes: {...dataAttributes, ...customAttributes},
         widgetContext: getMinimumWidgetContext(props)
     };

@@ -30,7 +30,7 @@ export class ChoiceEntityBase {
       @TableView({ Selectable: true, Reorderable: true })
       @DataType(ComplexType.Enumerable)
       @DataModel(ChoiceOptionModel)
-      Choices: ChoiceOption[] | null = null;
+      Choices: ChoiceOption[] | null = [{ Name: 'First choice', Value: '1' }, { Name: 'Second choice', Value: '2' }, { Name: 'Third choice', Value: '3' }];
 
       @ContentSection(ContentSectionTitles.LabelsAndContent, 5)
       @DisplayName('Required field')
@@ -62,7 +62,7 @@ export class ChoiceEntityBase {
 
       @Browsable(false)
       SfFieldType?: string;
-      
+
       @Browsable(false)
       SfFieldName?: string;
 }

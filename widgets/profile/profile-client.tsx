@@ -5,7 +5,7 @@ import { ProfileViewProps } from './interfaces/profile.view-props';
 import { ProfileEntity } from './profile.entity';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { classNames } from '../../editor/utils/classNames';
-import { invalidateElement, isValidEmail } from '../common/utils';
+import { invalidateElement, isValidEmail, SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
 import { SecurityService } from '../../services/security-service';
 import { ProfileViewMode } from './interfaces/profile-view-mode';
 import { ActivationMethod } from '../../rest-sdk/dto/registration-settings';
@@ -24,11 +24,11 @@ export interface ProfileClientProps {
 }
 
 export function ProfileClient(props: ProfileClientProps) {
-    const { 
-        viewProps, 
-        successMessage, 
-        setSuccessMessage, 
-        formData, 
+    const {
+        viewProps,
+        successMessage,
+        setSuccessMessage,
+        formData,
         setFormData,
         initialEmail,
         setInitialEmail
@@ -188,7 +188,7 @@ export function ProfileClient(props: ProfileClientProps) {
                 }
                 continue;
             }
-            
+
             result.append(key, value);
         }
 
@@ -205,9 +205,15 @@ export function ProfileClient(props: ProfileClientProps) {
 
         const requestBody = serializeForm(form);
 
+        const headers: Record<string, string> = {};
+        if (props.viewProps.webserviceApiKey) {
+            headers[SF_WEBSERVICE_API_KEY_HEADER] = props.viewProps.webserviceApiKey;
+        }
+
         window.fetch(url, {
             method: 'POST',
-            body: requestBody
+            body: requestBody,
+            headers
         }).then((response) => {
             let status = response.status;
             if (status === 0 || (status >= 200 && status < 400)) {
@@ -243,10 +249,10 @@ export function ProfileClient(props: ProfileClientProps) {
             switch (viewProps.viewMode) {
                 case ProfileViewMode.Edit:{
                     action = viewProps.editModeAction;
-                    if (viewProps.editModeRedirectUrl) { 
+                    if (viewProps.editModeRedirectUrl) {
                         redirectUrl = viewProps.editModeRedirectUrl;
                     }
-                    
+
                     break;
                 }
                 case ProfileViewMode.ReadEdit:{
@@ -254,13 +260,13 @@ export function ProfileClient(props: ProfileClientProps) {
                     if (viewProps.readEditModeRedirectUrl) {
                         redirectUrl = viewProps.readEditModeRedirectUrl;
                     }
-                    
+
                     break;
                 }
                 default:
                     break;
             }
-            
+
             switch (action) {
                 case ProfilePostUpdateAction.ViewMessage:{
                     response.json().then((res) => {
@@ -296,7 +302,7 @@ export function ProfileClient(props: ProfileClientProps) {
 
         const invalidInputs = {};
         let fieldErrors = [];
-        
+
         if (errorMessage) {
             fieldErrors.push(errorMessage);
         }
@@ -340,10 +346,10 @@ export function ProfileClient(props: ProfileClientProps) {
                 <h2 className="mb-0">{formData.FirstName} {formData.LastName}</h2>
                 <p className="text-muted mb-3">{formData.Email}</p>
                 {viewProps.viewMode === ProfileViewMode.ReadEdit &&
-                  <a 
+                  <a
                     data-sf-role="editProfileLink"
-                    href="#" 
-                    onClick={() => setShowEdit(true)} 
+                    href="#"
+                    onClick={() => setShowEdit(true)}
                     style={{textDecoration: 'none'}}>
                     {labels.editProfileLink}
                   </a>

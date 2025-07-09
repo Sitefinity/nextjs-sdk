@@ -135,6 +135,7 @@ function populateViewProps(entity: ProfileEntity, widgetContext: WidgetContext<P
         readEditModeAction: entity.ReadEditModeAction,
         visibilityClasses: StylingConfig.VisibilityClasses,
         invalidClass: StylingConfig.InvalidClass,
+        webserviceApiKey: widgetContext.requestContext.webserviceApiKey,
         attributes: { ...dataAttributes, ...customAttributes },
         widgetContext: getMinimumWidgetContext(widgetContext)
     };

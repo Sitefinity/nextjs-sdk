@@ -119,6 +119,7 @@ function populateViewProps(entity: RegistrationEntity, widgetContext: WidgetCont
         },
         visibilityClasses: StylingConfig.VisibilityClasses,
         invalidClass: StylingConfig.InvalidClass,
+        webserviceApiKey: widgetContext.requestContext.webserviceApiKey,
         attributes: { ...dataAttributes, ...customAttributes, ...widgetAttributes },
         widgetContext: getMinimumWidgetContext(widgetContext)
     };

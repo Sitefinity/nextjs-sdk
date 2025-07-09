@@ -8,6 +8,8 @@ import { ProfileClient } from './profile-client';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
 import { SecurityService } from '../../services/security-service';
+import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
+import { Dictionary } from '../../typings/dictionary';
 
 const EncryptedParam = 'qs';
 export function ProfileDefaultView(props: ProfileViewProps<ProfileEntity>) {
@@ -26,7 +28,7 @@ export function ProfileDefaultView(props: ProfileViewProps<ProfileEntity>) {
     const [errorObj, setErrorObj] = useState<{ [key: string]: string }>({});
     const [successMessage, setSuccessMessage] = useState<boolean>(false);
     const [propsClone, setPropsClone] = useState<ProfileViewProps<ProfileEntity>>(JSON.parse(JSON.stringify(props)));
-    
+
     const [formData, setFormData] = useState<{ [key: string]: any }>({
         FirstName: props?.firstName,
         LastName: props?.lastName,
@@ -51,8 +53,13 @@ export function ProfileDefaultView(props: ProfileViewProps<ProfileEntity>) {
         }
     }, [context?.isLive, confirmEmailChangeParam]);
 
+    const additionalHeaders: Dictionary = {};
+    if (props.webserviceApiKey) {
+        additionalHeaders[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
+    }
+
     const getUserData = async () => {
-        const user = await RestClient.getCurrentUser().then((user) => {
+        const user = await RestClient.getCurrentUser({ additionalHeaders }).then((user) => {
             const hasUser = (user && user.IsAuthenticated);
             if (hasUser) {
                 return user;
@@ -99,12 +106,18 @@ export function ProfileDefaultView(props: ProfileViewProps<ProfileEntity>) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const headers: Record<string, string> = {};
+    if (props.webserviceApiKey) {
+        headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
+    }
+
     const handleEmailChange = (confirmEmailChangeParam: string) => {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/users/changeEmail${RestClient.buildQueryParams({ qs: encodeURIComponent(confirmEmailChangeParam) })}`;
 
         window.fetch(wholeUrl, {
-            method: 'GET'
+            method: 'GET',
+            headers
         }).then((response) => {
             const status = response.status;
             if (status === 0 || (status >= 200 && status < 400)) {
@@ -142,7 +155,8 @@ export function ProfileDefaultView(props: ProfileViewProps<ProfileEntity>) {
         SecurityService.setAntiForgeryTokens().then(() => {
             window.fetch(sendAgainActivationLinkUrl, {
                 method: 'POST',
-                body: requestBody
+                body: requestBody,
+                headers
             });
         });
 

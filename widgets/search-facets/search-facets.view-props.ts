@@ -11,4 +11,5 @@ export interface SearchFacetsViewProps<T extends SearchFacetsEntity> extends Vie
     isShowMoreLessButtonActive: boolean;
     displayItemCount: boolean;
     isEdit: boolean;
+    webserviceApiKey?: string;
 }

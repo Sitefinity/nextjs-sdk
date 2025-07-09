@@ -57,6 +57,7 @@ import { GetSharedContentArgs } from './args/get-shared-content.args';
 import { GetTemplatesStatisticsArgs } from './args/get-templates-statistics-args';
 import { SearchMetadataDto } from './dto/search-metadata-dto';
 import { getFilteredServerSideHeaders } from '../server-side-headers';
+import { SF_WEBSERVICE_API_KEY, SF_WEBSERVICE_API_KEY_HEADER } from '../widgets/common/utils';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
@@ -89,11 +90,11 @@ export class RestClient {
         return this.sendRequest<{ value: SdkItem[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then(x => x.value as TaxonDto[]);
     }
 
-    public static getSearchMetadata() {
+    public static getSearchMetadata(args: RequestArgs) {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.GetSearchMetadata()`;
 
-        return this.sendRequest<SearchMetadataDto>({url: wholeUrl});
+        return this.sendRequest<SearchMetadataDto>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, headers: args.additionalHeaders, traceContext: args.traceContext });
     }
 
     public static getItemWithStatus<T extends SdkItem>(args: ItemArgs): Promise<T> {
@@ -478,11 +479,11 @@ export class RestClient {
         return RestClient.sendRequest<{ value: FacetFlatResponseDto[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then(x => x.value);
     }
 
-    public static getResetPasswordModel(token: string, traceContext?: any): Promise<RegistrationSettingsDto> {
+    public static getResetPasswordModel(token: string, traceContext?: any, headers?: Dictionary): Promise<RegistrationSettingsDto> {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.GetResetPasswordModel()`;
 
-        return RestClient.sendRequest<RegistrationSettingsDto>({ url: wholeUrl, data: { securityToken: token }, method: 'POST', traceContext });
+        return RestClient.sendRequest<RegistrationSettingsDto>({ url: wholeUrl, data: { securityToken: token }, method: 'POST', traceContext, headers });
     }
 
     public static getRegistrationSettings(args: RequestArgs): Promise<RegistrationSettingsDto> {
@@ -492,11 +493,11 @@ export class RestClient {
         return RestClient.sendRequest<RegistrationSettingsDto>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders });
     }
 
-    public static activateAccount(encryptedParam: string, traceContext?: any): Promise<void> {
+    public static activateAccount(encryptedParam: string, traceContext?: any, headers?: Dictionary): Promise<void> {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/Default.AccountActivation()${RestClient.buildQueryParams({ qs: encodeURIComponent(encryptedParam) })}`;
 
-        return RestClient.sendRequest({ url: wholeUrl, traceContext }, true);
+        return RestClient.sendRequest({ url: wholeUrl, traceContext, headers }, true);
     }
 
     public static getExternalProviders(args: RequestArgs): Promise<ExternalProvider[]> {
@@ -704,9 +705,7 @@ export class RestClient {
         const pagePath = args.pagePath;
 
         let headers: { [key: string]: string } = args.additionalHeaders || {};
-        if (args.cookie) {
-            headers['Cookie'] = args.cookie;
-        }
+        RestClient.addAuthHeaders(args.cookie, headers);
 
         const serverSideHeaders = await getFilteredServerSideHeaders();
         if (serverSideHeaders) {
@@ -963,10 +962,14 @@ export class RestClient {
     }
 
     public static addAuthHeaders(cookie: string | undefined, headers: {[key: string]: string}) {
-        if (!!cookie) {
+        if (!!cookie && process.env.NODE_ENV !== 'test') {
             headers['Cookie'] = cookie;
         } else if (process.env['SF_ACCESS_KEY']) {
             headers['X-SF-Access-Key'] = process.env['SF_ACCESS_KEY'];
+        }
+
+        if (process.env[SF_WEBSERVICE_API_KEY]) {
+            headers[SF_WEBSERVICE_API_KEY_HEADER] = process.env[SF_WEBSERVICE_API_KEY];
         }
     }
 
@@ -1026,14 +1029,8 @@ export class RestClient {
             });
         }
 
-        if (process.env.NODE_ENV === 'test') {
-            RestClient.addAuthHeaders(undefined, headers);
-        }
-
-        if (typeof window === 'undefined') {
-            const cookie = await getServerSideCookie();
-            RestClient.addAuthHeaders(cookie, headers);
-        }
+        const cookie = await getServerSideCookie();
+        RestClient.addAuthHeaders(cookie, headers);
 
         request.method = request.method || 'GET';
         let args: RequestInit = { headers, method: request.method };

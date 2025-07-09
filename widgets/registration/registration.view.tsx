@@ -9,6 +9,8 @@ import { RestClient } from '../../rest-sdk/rest-client';
 import { RegistrationViewProps } from './interfaces/registration.view-props';
 import { ErrorCodeException } from '../../rest-sdk/errors/error-code.exception';
 import { ActivationClient } from './activation.client';
+import { Dictionary } from '../../typings/dictionary';
+import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
 
 const EncryptedParam = 'qs';
 export function RegistrationDefaultView(props: RegistrationViewProps<RegistrationEntity>) {
@@ -40,7 +42,12 @@ export function RegistrationDefaultView(props: RegistrationViewProps<Registratio
   const [isActivationExpired, setIsActivationExpired] = useState<boolean>(false);
   useEffect(() => {
     if (isAccountActivationRequest) {
-      RestClient.activateAccount(queryParams[EncryptedParam]).then(() => {
+      const headers: Dictionary = {};
+      if (props.webserviceApiKey) {
+          headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
+      }
+
+      RestClient.activateAccount(queryParams[EncryptedParam], undefined, headers).then(() => {
         setActivationTitle(entity.ActivationMessage);
       }).catch((error) => {
         if (error instanceof ErrorCodeException && error.code === 'Gone') {

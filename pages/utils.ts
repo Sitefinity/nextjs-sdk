@@ -2,9 +2,8 @@ import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 
 import { PageParams } from './page-params';
-import { RenderWidgetService } from '../services/render-widget-service';
 import { RestClient } from '../rest-sdk/rest-client';
-import { initRegistry, WidgetRegistry } from '../editor/widget-framework/widget-registry';
+import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { LayoutResponse } from '../rest-sdk/dto/layout-service.response';
 import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 import { GetPageLayoutArgs } from '../rest-sdk/args/get-page-layout.args';
@@ -21,11 +20,6 @@ export async function pageLayout({ params, searchParams, relatedFields, traceCon
             relatedFields,
             traceContext
         };
-
-        // adding X-SF-Access-Key header so the layout service can return responce in edit
-        if ((!args.cookie || process.env.NODE_ENV === 'test') && process.env['SF_ACCESS_KEY']) {
-            args.additionalHeaders = {'X-SF-Access-Key': process.env['SF_ACCESS_KEY']};
-        }
 
         const layout = await RestClient.getPageLayout(args);
         return layout;

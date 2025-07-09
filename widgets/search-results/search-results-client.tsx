@@ -18,6 +18,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { getPageNumber } from '../pager/pager-view-model';
 import { getUniqueId } from '../../editor/utils/getUniqueId';
 import { getQueryParams } from '../common/query-params';
+import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
+import { Dictionary } from '../../typings/dictionary';
 
 export function SearchResultsClient(props: SearchResultsViewProps<SearchResultsEntity>) {
     const searchParamsNext = useSearchParams();
@@ -47,7 +49,12 @@ export function SearchResultsClient(props: SearchResultsViewProps<SearchResultsE
     const [resultsHeader, setResultsHeader] = useState<string>(initialHeader);
 
     const loadResults = async (newSearchParams: SearchParams) => {
-      const searchResponse = await performSearch(entity, newSearchParams);
+      const headers: Dictionary = {};
+      if (props.webserviceApiKey) {
+          headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
+      }
+
+      const searchResponse = await performSearch(entity, newSearchParams, undefined, headers);
       setSearchResults(searchResponse);
       if (searchResponse && searchResponse.totalCount === 0 && entity.NoResultsHeader) {
         setResultsHeader(entity.NoResultsHeader.replace('{0}', searchParams.searchQuery));

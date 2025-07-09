@@ -2,13 +2,14 @@
 
 import React, { useEffect } from 'react';
 import { VisibilityStyle } from '../styling/visibility-style';
-import { invalidDataAttr, invalidateElement, serializeForm } from '../common/utils';
+import { SF_WEBSERVICE_API_KEY_HEADER, invalidDataAttr, invalidateElement, serializeForm } from '../common/utils';
 import { ChangePasswordViewProps } from './interfaces/change-password.view-props';
 import { classNames } from '../../editor/utils/classNames';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { SecurityService } from '../../services/security-service';
 import { ChangePasswordEntity } from './change-password.entity';
 import { getUniqueId } from '../../editor/utils/getUniqueId';
+import { Dictionary } from '../../typings/dictionary';
 
 export function ChangePasswordFormClient(props: ChangePasswordViewProps<ChangePasswordEntity>) {
     const oldPasswordInputId = getUniqueId('sf-old-password-', props.widgetContext.model.Id);
@@ -29,7 +30,12 @@ export function ChangePasswordFormClient(props: ChangePasswordViewProps<ChangePa
     const [externalProviderName, setExternalProviderName] = React.useState<string>('');
 
     useEffect(() => {
-        RestClient.getCurrentUser().then((user) => {
+        const headers: Dictionary = {};
+        if (props.webserviceApiKey) {
+            headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
+        }
+
+        RestClient.getCurrentUser({ additionalHeaders: headers}).then((user) => {
             const hasUser = (user && user.IsAuthenticated);
             setIsUserLoaded(true);
             setHasUser(hasUser);
@@ -47,7 +53,11 @@ export function ChangePasswordFormClient(props: ChangePasswordViewProps<ChangePa
         SecurityService.setAntiForgeryTokens().then(() => {
             const model = { model: serializeForm(formRef.current!) };
             const submitUrl = (formRef.current!.attributes as any)['action'].value;
-            window.fetch(submitUrl, { method: 'POST', body: JSON.stringify(model), headers: { 'Content-Type': 'application/json' } })
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (props.webserviceApiKey) {
+                headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
+            }
+            window.fetch(submitUrl, { method: 'POST', body: JSON.stringify(model), headers })
                 .then((response) => {
                     const status = response.status;
                     if (status === 0 || (status >= 200 && status < 400)) {

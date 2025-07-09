@@ -49,3 +49,20 @@ export const getWhiteListSearchParams = (
     });
     return filteredQueryCollection;
 };
+
+/**
+ * Checks if a React component is a client component by examining the $$typeof property.
+ * React uses the $$typeof property as a security measure and component type identifier.
+ *
+ * Possible values for $$typeof:
+ * - Symbol.for('react.client.reference') - Client components (Next.js 13+ App Router)
+ * - Symbol.for('react.server.reference') - Server components (Next.js 13+ App Router)
+ */
+
+export function isReactClientComponent(component: any): boolean {
+    const typeOf = component?.$$typeof || {};
+    return typeOf.toString().includes('react.client.reference');
+}
+
+export const SF_WEBSERVICE_API_KEY_HEADER = 'X-SF-APIKEY';
+export const SF_WEBSERVICE_API_KEY = 'SF_WEBSERVICE_API_KEY';
