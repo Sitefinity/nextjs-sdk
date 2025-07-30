@@ -58,6 +58,9 @@ import { GetTemplatesStatisticsArgs } from './args/get-templates-statistics-args
 import { SearchMetadataDto } from './dto/search-metadata-dto';
 import { getFilteredServerSideHeaders } from '../server-side-headers';
 import { SF_WEBSERVICE_API_KEY, SF_WEBSERVICE_API_KEY_HEADER } from '../widgets/common/utils';
+import { ChangeTemplateArgs } from './args/change-template-args';
+import { EMTPY_GUID } from '../editor/utils/guid';
+import { State } from './dto/state';
 
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
@@ -811,6 +814,22 @@ export class RestClient {
     public static async getTemplates(args: GetTemplatesArgs): Promise<PageTemplateCategoryDto[]> {
         const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/${args.type}/Default.GetPageTemplates(selectedPages=[${args.selectedPages.map(x => `'${x}'`).join(',')}])${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
         return RestClient.sendRequest<{ value: PageTemplateCategoryDto[] } >({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData }).then(x => x.value);
+    }
+
+    public static async getState(args: ItemArgs): Promise<State> {
+        const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.GetState()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+        return RestClient.sendRequest<State>({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData });
+    }
+
+    public static async changeTemplate(args: ChangeTemplateArgs): Promise<void> {
+        const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/${ServiceMetadata.getSetNameFromType(args.type)}/Default.ChangePageTemplate()${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+        const data = {
+            selectedPages: args.selectedPages,
+            templateId: args.templateId ?? EMTPY_GUID,
+            templateName: args.templateName
+        };
+
+        return RestClient.sendRequest({ url: wholeUrl, method: 'POST', data, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData });
     }
 
     public static async getTemplatesStatistics(args: GetTemplatesStatisticsArgs): Promise<PageTemplateStatisticsDto[]> {

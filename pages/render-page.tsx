@@ -1,6 +1,5 @@
 import { RenderPageClient } from './render-page-client';
 import { pageLayout } from './utils';
-import { AppState } from './app-state';
 import { RenderWidgetService } from '../services/render-widget-service';
 import { RenderLazyWidgetsClient } from './render-lazy-widgets.client';
 import { RenderPageScripts } from './render-page-scripts';
@@ -28,6 +27,7 @@ import { env } from 'process';
 import { WidgetMetadata, WidgetViewsRegistration } from '../editor/widget-framework/widget-metadata';
 import { widgetRegistry } from '@widgetregistry';
 import { isReactClientComponent, SF_WEBSERVICE_API_KEY } from '../widgets/common/utils';
+import { RequestContext } from '../editor/request-context';
 
 export async function RenderPage({ params, searchParams, relatedFields, templates }: { params: UrlParams | Promise<UrlParams>, searchParams: Dictionary | Promise<Dictionary>, relatedFields?: string[], templates?: TemplateRegistry }) {
     const host = (await headers()).get('host') || '';
@@ -96,20 +96,17 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         }
     });
 
-    const appState : AppState = {
-        requestContext: {
-            layout: layout,
-            searchParams: queryParams,
-            detailItem: layout.DetailItem,
-            culture: layout.Culture,
-            isEdit,
-            isPreview,
-            isLive,
-            url: pageParams?.slug.join('/'),
-            pageNode: layout.Fields as PageItem,
-            webserviceApiKey: process.env[SF_WEBSERVICE_API_KEY]
-        },
-        widgets: layout.ComponentContext.Components
+    const requestContext : RequestContext = {
+        layout: layout,
+        searchParams: queryParams,
+        detailItem: layout.DetailItem,
+        culture: layout.Culture,
+        isEdit,
+        isPreview,
+        isLive,
+        url: pageParams?.slug.join('/'),
+        pageNode: layout.Fields as PageItem,
+        webserviceApiKey: process.env[SF_WEBSERVICE_API_KEY]
     };
 
     // get all list widgets
@@ -117,10 +114,10 @@ export async function RenderPage({ params, searchParams, relatedFields, template
     allWidgets.filter(x => x.Name === 'SitefinityContentList' || x.Name === 'SitefinityDocumentList').forEach(x => {
         // try to resolve pagers
         const entity: ContentListEntityBase = x.Properties as ContentListEntityBase;
-        getPageNumber(entity.PagerMode, appState.requestContext, entity.PagerQueryTemplate, entity.PagerTemplate);
+        getPageNumber(entity.PagerMode, requestContext, entity.PagerQueryTemplate, entity.PagerTemplate);
 
         // try to resolve classifications
-        ContentListsCommonRestService.getClassificationSegment(appState.requestContext);
+        ContentListsCommonRestService.getClassificationSegment(requestContext);
     });
 
     // if not resolved urls => 404
@@ -135,22 +132,40 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         let template = templates[layout.TemplateName];
         if (template && template.templateFunction) {
             const sortedWidgets: {[key: string]: (JSX.Element | null) [] } = {};
-            appState.widgets.forEach(widget => {
+            layout.ComponentContext.Components.forEach(widget => {
                 const placeholder = widget.PlaceHolder;
                 if (!sortedWidgets[placeholder]) {
                     sortedWidgets[placeholder] = [];
                 }
 
-                sortedWidgets[placeholder].push(RenderWidgetService.createComponent(widget, appState.requestContext, ctx));
+                sortedWidgets[placeholder].push(RenderWidgetService.createComponent(widget, requestContext, ctx));
             });
 
-            pageTemplate = template.templateFunction({ widgets: sortedWidgets, requestContext: appState.requestContext });
+            if (isEdit) {
+                layout.ComponentContext.OrphanedControls.forEach(widget => {
+                    const placeholder = 'Body';
+                    if (!sortedWidgets[placeholder]) {
+                        sortedWidgets[placeholder] = [];
+                    }
+
+                    widget.Orphaned = true;
+                    sortedWidgets[placeholder].push(RenderWidgetService.createComponent(widget, requestContext, ctx));
+                });
+            }
+
+            pageTemplate = template.templateFunction({ widgets: sortedWidgets, requestContext: requestContext });
         }
     }
 
     if (!pageTemplate) {
-        pageTemplate = appState.widgets.map((child) => {
-            return RenderWidgetService.createComponent(child, appState.requestContext, ctx);
+        const widgets = layout.ComponentContext.Components;
+        if (isEdit) {
+            layout.ComponentContext.OrphanedControls.forEach(widget => widget.Orphaned = true);
+            widgets.push(...layout.ComponentContext.OrphanedControls);
+        }
+
+        pageTemplate = widgets.map((child) => {
+            return RenderWidgetService.createComponent(child, requestContext, ctx);
         });
     }
 
@@ -223,8 +238,8 @@ export async function RenderPage({ params, searchParams, relatedFields, template
           registry={registryForFrontend}/>
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} /> }
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} /> }
-        {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={appState.requestContext} registry={registryForEdit} />}
-        {!isEdit && appState.requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} registry={registryForFrontend} />}
+        {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={requestContext} registry={registryForEdit} />}
+        {!isEdit && requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} registry={registryForFrontend} />}
         {pageTemplate}
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyBottom} /> }
         {Tracer.endSpan(span)}

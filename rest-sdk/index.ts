@@ -59,3 +59,9 @@ export * from './dto/page-template-category.dto';
 export * from './dto/user-item';
 export * from './dto/site-item';
 
+export * from './filters/combined-filter';
+export * from './filters/date-offset-period';
+export * from './filters/filter-clause';
+export * from './filters/filter-types';
+export * from './filters/orderby';
+export * from './filters/relation-filter';

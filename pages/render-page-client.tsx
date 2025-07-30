@@ -19,11 +19,16 @@ export function RenderPageClient({ layout, metadata, taxonomies, context, regist
         const start = new Date().getTime();
         const handle = window.setInterval(() => {
             document.body.setAttribute('data-sfcontainer', 'Body');
+            if (layout.ComponentContext.OrphanedControls.length > 0) {
+                document.body.setAttribute('data-sforphans', 'true');
+            }
+
             // we do not know the exact time when react has finished the rendering process.
             // thus we check every 100ms for dom changes. A proper check would be to see if every single
             // component is rendered
             const timePassed = new Date().getTime() - start;
-            if ((layout.ComponentContext.Components.length > 0 && timePassed > timeout) || layout.ComponentContext.Components.length === 0) {
+            const allWidgetsCount = layout.ComponentContext.Components.length + layout.ComponentContext.OrphanedControls.length;
+            if ((allWidgetsCount > 0 && timePassed > timeout) || allWidgetsCount === 0) {
                 window.clearInterval(handle);
 
                 (window as any)['rendererContract'] = new RendererContractImpl();

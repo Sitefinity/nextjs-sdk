@@ -4,6 +4,7 @@ export interface WidgetModel<T extends {[key: string]: any} = {[key: string]: an
     Caption: string;
 
     Lazy: boolean;
+    Orphaned: boolean;
     PlaceHolder: string;
     Properties: T;
     Children: WidgetModel[];

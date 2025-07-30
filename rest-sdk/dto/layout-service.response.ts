@@ -42,4 +42,5 @@ export interface LayoutResponse {
 export interface ComponentContext {
     Components: WidgetModel[];
     HasLazyComponents: boolean;
+    OrphanedControls: WidgetModel[];
 }
