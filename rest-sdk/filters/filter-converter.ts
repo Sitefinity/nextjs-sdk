@@ -36,7 +36,7 @@ export class FilterConverterService {
         return filter;
     }
 
-    public static parseComplexFilter(filter: any): CombinedFilter | FilterClause | RelationFilter {
+    public static parseComplexFilter(filter: FilterClause | CombinedFilter | RelationFilter | DateOffsetPeriod): CombinedFilter | FilterClause | RelationFilter {
         if (filter.hasOwnProperty('FieldName') && filter.hasOwnProperty('FieldValue')) {
             const filterClause = <FilterClause>filter;
             return filterClause;

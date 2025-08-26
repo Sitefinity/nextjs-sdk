@@ -1,3 +1,6 @@
+/**
+ * Represents the metadata of the widget in the Page editor.
+ */
 export interface EditorMetadata {
     Title?: string;
     Name?: string;

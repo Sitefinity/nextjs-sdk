@@ -62,6 +62,7 @@ export * from './dto/site-item';
 export * from './filters/combined-filter';
 export * from './filters/date-offset-period';
 export * from './filters/filter-clause';
+export * from './filters/filter-converter';
 export * from './filters/filter-types';
 export * from './filters/orderby';
 export * from './filters/relation-filter';

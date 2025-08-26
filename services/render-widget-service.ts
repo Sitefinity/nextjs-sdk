@@ -11,9 +11,21 @@ import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { ErrorBoundaryCustom } from '../pages/error-boundary';
 import { WidgetExecutionError } from '../widgets/error/widget-execution-error-component';
 
+/**
+ * RenderWidgetService is a class that provides methods to render widgets in the Sitefinity Next.js framework.
+ * It is responsible for rendering the widget components and handling their properties and context. Both server-side and client-side rendering are supported.
+ * The class uses the WidgetRegistry to find the appropriate widget component and its metadata.
+ */
 export class RenderWidgetService {
     public static widgetRegistry: WidgetRegistry;
 
+    /**
+     * 
+     * @param {WidgetModel} widgetModel The widget model containing the widget's metadata and properties.
+     * @param {TransferableRequestContext} requestContext A {RequestContext} object containing the request context for the current page render. The request context contains information about the current request, such as the layout, search parameters, and culture.
+     * @param {any} [traceContext] Optional OpenTelemetry Context trace context for logging and diagnostics. If needed, the parent trace context can be passed to the widget in order to wrap the current trace data in the passed parent context. 
+     * @returns {React.ReactElement} The rendered widget component as a React element. If the widget is not found in the registry, an error message is returned. If the widget is in edit mode and an error occurs during rendering, an error component is returned instead. If the widget is not found and not in edit mode, no error is returned and null will be rendered.
+     */
     public static createComponent(widgetModel: WidgetModel, requestContext: TransferableRequestContext, traceContext?: any) {
         Tracer.logEvent(`render widget start: ${widgetModel.Caption || widgetModel.Name}`);
         const registeredType = RenderWidgetService.widgetRegistry.widgets[widgetModel.Name];

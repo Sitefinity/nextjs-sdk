@@ -62,9 +62,22 @@ import { ChangeTemplateArgs } from './args/change-template-args';
 import { EMTPY_GUID } from '../editor/utils/guid';
 import { State } from './dto/state';
 
+/**
+ * Provides implementation for communicating with the Sitefinity REST API services.
+ * This class is used to perform CRUD operations on items, search for items, and manage content in Sitefinity.
+ */
 export class RestClient {
     public static contextQueryParams: { [key: string]: string };
 
+    /**
+     * Gets a media item with extended properties by type and id.
+     * @param {ItemArgs} args The arguments for the request.
+        *@param {string} args.type The type name of the item to retrieve.
+        *@param {string} args.id The id of the item to retrieve.
+        *@param {string} [args.culture] The culture for the request.
+        *@param {string} [args.provider] The provider for the item if it is a part of non-default provider for the site and type.
+     * @returns {Promise<T>} The requested item.
+     */
     public static getItemWithFallback<T extends SdkItem>(args: ItemArgs): Promise<T> {
         let queryParams: Dictionary = {
             sf_fallback_prop_names: '*',
@@ -75,6 +88,17 @@ export class RestClient {
         return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }, true);
     }
 
+    /**
+     * Gets a collection of taxons based on request arguments.
+     * @param {GetTaxonArgs}args The arguments for the request.
+        * @param {string} args.taxonomyId The taxonomy type id to retrieve taxons from.
+        * @param {string[]} args.taxaIds The ids of the taxons to retrieve. Used when selection mode is "Selected" or "UnderParent".
+        * @param {'All' | 'TopLevel' | 'UnderParent' | 'Selected' | 'ByContentType'} args.selectionMode The selection mode for the taxons.
+        * @param {string} args.contentType Filter taxons that refer a specific content type. Used when selection mode is "ByContentType".
+        * @param {boolean} args.showEmpty Whether to show taxons that have no related content items.
+        * @param {string} args.orderBy The order by clause for the taxons.
+     * @returns {Promise<Array<TaxonDto>>} A collection of matching taxons.
+     */
     public static getTaxons(args: GetTaxonArgs): Promise<TaxonDto[]> {
         const queryParams = {
             'showEmpty': args.showEmpty.toString(),
@@ -110,6 +134,20 @@ export class RestClient {
         return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders });
     }
 
+    /**
+     * Gets a content item by type and id.
+     * @param {ItemArgs} args The arguments for the request.
+        * @param {string} args.type The type name of the item to retrieve.
+        * @param {string} args.id The id of the item to retrieve.
+        * @param {string} [args.culture] The culture for the request.
+        * @param {string[]} [args.fields] The fields to include in the response. By default the '*' wildcard is used and related fields are excluded.
+        * @param {string} [args.provider] The provider for the item if it is a part of non-default provider for the site and type.
+        * @param {Dictionary} [args.additionalQueryParams] Additional query parameters to include in the request.
+        * @param {Dictionary} [args.additionalHeaders] Additional headers to include in the request.
+        * @param {any} [args.additionalFetchData] Additional fetch data to include in the request.
+        * @param {any} [args.traceContext] The current OpenTelemetry trace context for the request if such is available. It could be found in the WidgetContext.
+     * @returns {Promise<T>} The requested item.
+     */
     public static getItem<T extends SdkItem>(args: ItemArgs): Promise<T> {
         const filteredSimpleFields = this.getSimpleFields(args.type, args.fields || ['*']);
         const filteredRelatedFields = this.getRelatedFields(args.type, args.fields || []);
@@ -123,6 +161,13 @@ export class RestClient {
         return this.sendRequest<T>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders });
     }
 
+    /**
+     * Gets a shared content block by id.
+     * @param args The arguments for the request.
+        * @param {string} args.id The id of the shared content block to retrieve.
+        * @param {string} [args.cultureName] The culture for the request and the version of the shared content block content to retrieve.
+     * @returns {Promise<GenericContentItem>} The requested content block.
+     */
     public static getSharedContent(args: GetSharedContentArgs): Promise<GenericContentItem> {
         let queryParams: {[key: string]: string} = {
             sf_fallback_prop_names: 'Content'
@@ -136,8 +181,25 @@ export class RestClient {
         return this.sendRequest<GenericContentItem>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }, true);
     }
 
+    /**
+     * Gets a collection of items based on the provided arguments.
+     * @param {GetAllArgs}args The get multiple items args.
+        * @param {string} args.type The type name of the items to retrieve.
+        * @param {number} [args.skip] The number of items to skip in the response.
+        * @param {number} [args.take] The maximum number of items to return in the response.
+        * @param {OrderBy} [args.orderBy] The order by clause to apply to the request.
+        * @param {string} [args.provider] The provider for the items if they are part of a non-default provider for the site and type.
+        * @param {string} [args.culture] The culture for the request.
+        * @param {string[]} [args.fields] The fields to include in the response. By default the '*' wildcard is used and related fields are excluded.
+        * @param {FilterClause | CombinedFilter | RelationFilter | DateOffsetPeriod | null} [args.filter] The filter to apply to the collection request.
+        * @param {boolean} [args.count] Whether to include the total count of items in the response.
+        * @param {Dictionary} [args.additionalQueryParams] Additional query parameters to include in the request.
+        * @param {Dictionary} [args.additionalHeaders] Additional headers to include in the request.
+        * @param {any} [args.additionalFetchData] Additional fetch data to include in the request.
+        * @param {any} [args.traceContext] The current OpenTelemetry trace context for the request if such is available. It could be found in the WidgetContext.
+     * @returns {Promise<CollectionResponse>} The wrepper object with a collection of the matched items if such exist. Otherwise an empty collection.
+     */
     public static getItems<T extends SdkItem>(args: GetAllArgs): Promise<CollectionResponse<T>> {
-
         const filteredSimpleFields = this.getSimpleFields(args.type, args.fields || []);
         const filteredRelatedFields = this.getRelatedFields(args.type, args.fields || []);
 

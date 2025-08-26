@@ -1,4 +1,5 @@
 import { CombinedFilter } from '../filters/combined-filter';
+import { DateOffsetPeriod } from '../filters/date-offset-period';
 import { FilterClause, FilterOperators, StringOperators } from '../filters/filter-clause';
 import { RelationFilter } from '../filters/relation-filter';
 import { FieldType, ServiceMetadata } from '../service-metadata';
@@ -12,11 +13,11 @@ export class ODataFilterSerializer {
     }
 
     serialize(filterContext: FilterContext): string | null {
-        if (filterContext.Filter.hasOwnProperty('ChildFilters')) {
+        if (filterContext.Filter?.hasOwnProperty('ChildFilters')) {
             return this.serializeCombinedFilter(<any>filterContext.Filter, filterContext);
-        } else if (filterContext.Filter.hasOwnProperty('FieldName')) {
+        } else if (filterContext.Filter?.hasOwnProperty('FieldName')) {
             return this.serializeFilterClause(<any>filterContext.Filter, filterContext);
-        } else if (filterContext.Filter.hasOwnProperty('Name')) {
+        } else if (filterContext.Filter?.hasOwnProperty('Name')) {
             return this.serializeRelationFilter(<any>filterContext.Filter, filterContext);
         }
 
@@ -187,6 +188,6 @@ export class ODataFilterSerializer {
 
 
 interface FilterContext {
-    Filter: FilterClause | CombinedFilter | RelationFilter;
+    Filter: FilterClause | CombinedFilter | RelationFilter | DateOffsetPeriod | null;
     Type: string;
 }

@@ -7,7 +7,17 @@ import { FilterConverterService } from '../rest-sdk/filters/filter-converter';
 import { RestClient } from '../rest-sdk/rest-client';
 import { ErrorCodeException } from '../rest-sdk/errors/error-code.exception';
 
+/**
+ * RestClientForContext is a class that provides methods to retrieve content items from the value of a property from type {MixedContentContext}.
+ * It is used when working with properties of type {MixedContentContext} in the entity of a widget.
+ */
 export class RestClientForContext {
+    /**
+     * Retrieves a single item of type T defined by the value of a MixedContentContext object.
+     * @param {MixedContentContext} contentContext - The context containing the content data describing the item to be retrieved.
+     * @param {Partial<CommonArgs>} [externalArgs] - Optional external arguments to customize the request. 
+     * @returns {Promise<T>} A Promise of the requested item of type T if such is found, otherwise throws a "NotFound" error.
+     */
     public static async getItem<T extends SdkItem>(contentContext: MixedContentContext, externalArgs?: Partial<CommonArgs>): Promise<T> {
         return this.getItems<T>(contentContext, {
             ...externalArgs,
@@ -24,6 +34,12 @@ export class RestClientForContext {
         });
     }
 
+    /**
+     * Retrieves a collection of items of type T defined by the value of a MixedContentContext object.
+     * @param {MixedContentContext} contentContext - The context containing the content data describing the item to be retrieved.
+     * @param {Partial<CommonArgs>} [externalArgs] - Optional external arguments to customize the request. 
+     * @returns {Promise<CollectionResponse<T>>} A promise of the collection of the requested items of type T if such mach the criteria, otherwise an empty collection.
+     */
     public static async getItems<T extends SdkItem>(contentContext: MixedContentContext, externalArgs?: Partial<GetAllArgs>): Promise<CollectionResponse<T>> {
         if (!contentContext ||
             !contentContext.Content ||
