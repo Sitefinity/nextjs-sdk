@@ -111,7 +111,7 @@ export class RestClient {
             throw `The taxonomy with id ${args.taxonomyId} does not exist`;
         }
 
-        const action = `Default.GetTaxons(taxonomyId=${args.taxonomyId},selectedTaxaIds=@param,selectionMode='${args.selectionMode}',contentType='${args.contentType}')`;
+        const action = `Default.GetTaxons(taxonomyId=${args.taxonomyId},selectedTaxaIds=@param,selectionMode='${args.selectionMode}',contentType='${args.contentType || ''}')`;
         const wholeUrl = `${RestClient.buildItemBaseUrl(taxonomy['TaxaUrl'])}/${action}${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
 
         return this.sendRequest<{ value: SdkItem[] }>({ url: wholeUrl, additionalFetchData: args.additionalFetchData, traceContext: args.traceContext, headers: args.additionalHeaders }).then(x => x.value as TaxonDto[]);

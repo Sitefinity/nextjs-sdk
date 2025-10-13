@@ -39,7 +39,7 @@ export class SanitizerService {
 
             DOMPurify.addHook('afterSanitizeAttributes', (node) => {
                 if (node.nodeName.toLowerCase() === 'iframe' && !node.hasAttribute('sandbox')) {
-                    node.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-popups');
+                    node.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox');
                 }
             });
         }
