@@ -77,7 +77,7 @@ export class RendererContractImpl implements RendererContract {
         });
     }
 
-    getWidgets(args: GetWidgetsArgs): Promise<TotalCountResult<WidgetSection[]>> {
+    async getWidgets(args: GetWidgetsArgs): Promise<TotalCountResult<WidgetSection[]>> {
         const filteredWidgetsByToolBox: WidgetMetadata[] = [];
 
         Object.keys(RenderWidgetService.widgetRegistry.widgets).forEach((key) => {
@@ -128,9 +128,11 @@ export class RendererContractImpl implements RendererContract {
 
             filteredWidgetsBySearch.push(widgetEntry);
         });
+        
+        const filteredWidgetsByFilterRegistry = await this.applyRegistryFiltersAsync(filteredWidgetsBySearch, args);
 
         const widgetsBySection: { [key: string]: WidgetMetadata[] } = {};
-        filteredWidgetsBySearch.forEach((widget) => {
+        filteredWidgetsByFilterRegistry.forEach((widget) => {
             const sectionName = widget.editorMetadata?.Section || '';
             const widgetSectionArray = widgetsBySection[sectionName] || [];
             widgetSectionArray.push(widget);
@@ -190,5 +192,38 @@ export class RendererContractImpl implements RendererContract {
         } else {
             return Promise.resolve(['Content', 'Layout']);
         }
+    }
+
+    /**
+     * Applies all registered widget filters to the provided widgets collection.
+     * @param widgets The widgets to filter
+     * @param args The GetWidgetsArgs containing toolbox, category, search criteria
+     * @returns Promise<WidgetMetadata[]> Filtered widgets that passed all filters
+     */
+    private async applyRegistryFiltersAsync(widgets: WidgetMetadata[], args: GetWidgetsArgs): Promise<WidgetMetadata[]> {
+        const filteredWidgets: WidgetMetadata[] = [];
+        
+        // Apply all registered widget filters
+        for (const widgetEntry of widgets) {
+            let shouldIncludeWidget = true;
+            
+            // Check all registered filters
+            if (RenderWidgetService.widgetRegistry.filters) {
+                for (const filterFunction of RenderWidgetService.widgetRegistry.filters) {
+                    // Call the filter function directly
+                    const filterResult = await filterFunction(widgetEntry, args);
+                    if (!filterResult) {
+                        shouldIncludeWidget = false;
+                        break; // If any filter excludes the widget, skip it
+                    }
+                }
+            }
+            
+            if (shouldIncludeWidget) {
+                filteredWidgets.push(widgetEntry);
+            }
+        }
+
+        return filteredWidgets;
     }
 }

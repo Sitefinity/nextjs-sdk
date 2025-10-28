@@ -20,6 +20,7 @@ export * from './editor/widget-framework/widget-metadata';
 export * from './editor/widget-framework/widget-model';
 export * from './editor/widget-framework/widget-context';
 export * from './editor/widget-framework/widget-registry';
+export * from './editor/widget-framework/widget-filter';
 
 export * from './editor/detail-item';
 export * from './editor/renderer-contract-interfaces';

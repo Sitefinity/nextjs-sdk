@@ -225,7 +225,8 @@ export async function RenderPage({ params, searchParams, relatedFields, template
                 componentType: null
             };
             return [key, reg];
-        }))
+        })),
+        filters: RenderWidgetService.widgetRegistry.filters
     };
 
     const isTesting = process.env.NODE_ENV === 'test';

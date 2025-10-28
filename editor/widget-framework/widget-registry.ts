@@ -1,10 +1,12 @@
 import { EntityMetadataGenerator, MetadataModel, PropertyModel } from '@progress/sitefinity-widget-designers-sdk/metadata';
 import { WidgetMetadata, WidgetViewsRegistration } from './widget-metadata';
+import { WidgetFilter } from './widget-filter';
 
 export interface WidgetRegistry {
     widgets: {
         [key: string]: WidgetMetadata
-    }
+    },
+    filters?: WidgetFilter[]
 }
 
 /**
@@ -25,8 +27,8 @@ export function initRegistry(widgetRegistry: WidgetRegistry) {
         }
 
         const metadata: MetadataModel = widgetRegistration.entity ? EntityMetadataGenerator.extractMetadata(widgetRegistration.entity) : widgetRegistration.designerMetadata;
-        const sectionsDifferentFromQuickEdit = metadata.PropertyMetadata.map(x => x.Name).filter(x => x !== 'QuickEdit');
-        if (sectionsDifferentFromQuickEdit.length === 0 && widgetRegistration.editorMetadata) {
+        const widgetHasDesigner = hasDesigner(widgetRegistration.entity);
+        if (!widgetHasDesigner && widgetRegistration.editorMetadata) {
             widgetRegistration.editorMetadata.IsEmptyEntity = true;
         }
 
@@ -147,4 +149,30 @@ function getUniqueViewChoices(choices: { Value: string }[]) {
     });
 
     return uniqueViews;
+}
+
+function hasDesigner(entity: any): boolean {
+    if (!entity || !entity.prototype) {
+        return true;
+    }
+
+    const modelMetadata = entity?.prototype['model-metadata'];
+    if (!modelMetadata || typeof modelMetadata !== 'object') {
+        return true;
+    }
+
+    for (const [key, value] of Object.entries(modelMetadata)) {
+        // properties that are not objects should not be ones that are visualized as fields in widget designer
+        if (typeof value !== 'object') {
+            continue;
+        }
+
+        // Found a property that does not have "QuickEdit" as its category or does not have a category at all
+        if ((value as any).CategoryName == null || (value as any).CategoryName !== 'QuickEdit') {
+            return true;
+        }
+    }
+
+    // No designer UI representation
+    return false;
 }

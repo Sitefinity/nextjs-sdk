@@ -169,3 +169,10 @@ export * from './section/section-holder';
 export * from './section/section.entity';
 export * from './section/column-holder';
 export * from './section/label-model';
+
+export * from './sitefinity-assistant/assistant-api-constants';
+export * from './sitefinity-assistant/sitefinity-assistant-api-client';
+export * from './sitefinity-assistant/sitefinity-assistant-config';
+export * from './sitefinity-assistant/sitefinity-assistant-widget-filter';
+export * from './sitefinity-assistant/sitefinity-assistant.entity';
+export * from './sitefinity-assistant/sitefinity-assistant';

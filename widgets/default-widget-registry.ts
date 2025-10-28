@@ -16,6 +16,8 @@ import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { DocumentList } from './document-list/document-list';
 import { SearchResults } from './search-results/search-results';
 import { SearchFacets } from './search-facets/search-facets';
+import { SitefinityAssistant } from './sitefinity-assistant/sitefinity-assistant';
+import { filterSitefinityAssistantWidget } from './sitefinity-assistant/sitefinity-assistant-widget-filter';
 import { ClassificationEntity } from './classification/classification-entity';
 import { ContentListEntity } from './content-list/content-list-entity';
 import { SectionEntity } from './section/section.entity';
@@ -32,6 +34,7 @@ import { ChangePasswordEntity } from './change-password/change-password.entity';
 import { SearchResultsEntity } from './search-results/search-results.entity';
 import { SearchBoxEntity } from './search-box/search-box.entity';
 import { CallToActionEntity } from './call-to-action/call-to-action.entity';
+import { SitefinityAssistantEntity } from './sitefinity-assistant/sitefinity-assistant.entity';
 import { BlogPostDetailView } from './content-list/detail/content-list-detail.blog-post.view';
 import { DynamicDetailView } from './content-list/detail/content-list-detail.dynamic.view';
 import { EventDetailView } from './content-list/detail/content-list-detail.event.view';
@@ -350,6 +353,19 @@ export const defaultWidgetRegistry: WidgetRegistry = {
             },
             ssr: true
         },
+        'SitefinityAssistant': {
+            entity: SitefinityAssistantEntity,
+            componentType: SitefinityAssistant,
+            editorMetadata: {
+                Title: 'AI assistant',
+                Category: 'Content',
+                Section: 'Marketing',
+                EmptyIconText: 'Select an AI assistant',
+                EmptyIcon: 'pencil',
+                IconName: 'chat'
+            },
+            ssr: true
+        },
         'SitefinitySection': {
             entity: SectionEntity,
             componentType: Section,
@@ -365,5 +381,8 @@ export const defaultWidgetRegistry: WidgetRegistry = {
             ssr: true
         },
         ...SSRFormComponents
-    }
+    },
+    filters: [
+        filterSitefinityAssistantWidget
+    ]
 };
