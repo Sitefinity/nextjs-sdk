@@ -1,5 +1,5 @@
 import { classNames } from '../../editor/utils/classNames';
-import { getCustomAttributes, htmlAttributes } from '../../editor/widget-framework/attributes';
+import { getCustomAttributes, htmlAttributes, setWarning } from '../../editor/widget-framework/attributes';
 import { WidgetContext, getMinimumWidgetContext } from '../../editor/widget-framework/widget-context';
 import { PageItem } from '../../rest-sdk/dto/page-item';
 import { RestClient, RestSdkTypes } from '../../rest-sdk/rest-client';
@@ -10,67 +10,73 @@ import { LanguageSelectorDefaultView } from './language-selector.view';
 import { RenderView } from '../common/render-view';
 import { LanguageSelectorViewProps } from './interfaces/language-selector.view-props';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { LanguageSelectorDisplayFormat } from './interfaces/language-selector-language-format';
+import { TransferableRequestContext } from '../../editor/request-context';
+
+const PREVIEW_ACTION_QUERY_PARAM_STRING = 'sfaction=preview';
+
+// In legacy MVC pages a Path is used
+const PREVIEW_ACTION_PATH_STRING = '/Action/Preview';
 
 export async function LanguageSelector(props: WidgetContext<LanguageSelectorEntity>) {
     const { span, ctx } = Tracer.traceWidget(props, true);
     const properties = props.model.Properties;
+
     const dataAttributes = htmlAttributes(props);
     const defaultClass = properties.CssClass;
     const marginClass = properties.Margins && StyleGenerator.getMarginClasses(properties.Margins);
     dataAttributes['className'] = classNames(defaultClass, marginClass, 'qu-dropdown-selector', 'dropdown d-flex');
+    const context = props.requestContext;
+
+    if (!isPageRequest(props)) {
+        setWarning(dataAttributes, 'Language selector is visible when you are on a particular page.');
+        return (
+          <span {...dataAttributes} />
+        );
+    }
 
     const customAttributes = getCustomAttributes(properties.Attributes, 'Language selector');
-
-    const context = props.requestContext;
     const cultures = context.layout.Site.Cultures;
+    const currentPageCultures = context.layout.Fields['AvailableLanguages'] ?? cultures;
     const layoutId = context.layout.Id;
-    let pageItems: PageItem[] = [];
+    let pageByCulture: { [culture: string]: PageItem } = {};
     let languages: LanguageEntry[] = [];
 
-    if (!props.requestContext.url.includes('Sitefinity/Template')) {
-        const allBatches = cultures.map((culture: string) => {
-            return RestClient.getItem({
-                type: RestSdkTypes.Pages,
-                id: layoutId,
-                culture: culture
-            });
+    const currentPageRequests = currentPageCultures.map((culture: string) => {
+        return RestClient.getItem<PageItem>({
+            type: RestSdkTypes.Pages,
+            id: layoutId,
+            culture: culture
+        }).then(r => {
+            pageByCulture[culture] = r;
+        }, (err) => {
+            console.error(err);
         });
+    });
 
-        pageItems = await Promise.all(allBatches);
+    await Promise.all(currentPageRequests);
 
-        const languageNames = new Intl.DisplayNames(['en'], {
-            type: 'language'
-        });
+    for (let culture of cultures) {
+        const currentCulturePage = pageByCulture[culture];
+        const pageUrl = currentCulturePage ? currentCulturePage.ViewUrl : '';
+        const isTranslated = currentCulturePage &&
+            currentCulturePage.AvailableLanguages.includes(culture) &&
+            !currentCulturePage.ViewUrl.includes(PREVIEW_ACTION_QUERY_PARAM_STRING);
 
-        const homePageId = (await RestClient.getCurrentSite()).HomePageId;
-        for (let index = 0; index < cultures.length; index++) {
-            const culture = cultures[index];
-            const pageUrl = pageItems[index] ? pageItems[index].ViewUrl : '';
-            const queryParamsString = getPreservedQueryParamsString(pageUrl, context.searchParams);
-            const isTranslated = pageItems[index] ? pageItems[index].AvailableLanguages.includes(culture) && !pageItems[index].ViewUrl.includes('sfaction=preview') : false;
-            let localizaedHomePageUrl = '/';
+        const queryParamsString = getPreservedQueryParamsString(pageUrl, context.searchParams);
+        let localizaedHomePageUrl = await getLocalizedHomePageUrl(ctx, properties, isTranslated, culture);
+        let detailItemUrlPart = await getDetailItemUrlPart(ctx, context, isTranslated, culture);
 
-            if (!isTranslated && properties.LanguageSelectorLinkAction === LanguageSelectorLinkAction.RedirectToHomePage) {
-                const localizedHomePage = await RestClient.getItem<PageItem>({
-                    type: RestSdkTypes.Pages,
-                    id: homePageId,
-                    traceContext: ctx,
-                    culture: culture
-                });
-                localizaedHomePageUrl = localizedHomePage?.ViewUrl.replace('&sfaction=preview', '');
-            }
+        const entry: LanguageEntry = {
+            Name: getLanguageName(culture, properties.LanguageSelectorDisplayFormat) || culture,
+            Value: culture,
+            Selected: culture === context.layout.Culture,
+            PageUrl: pageUrl ? `${pageUrl}${detailItemUrlPart}${queryParamsString}` : '',
+            IsTranslated: isTranslated,
+            LocalizedHomePageUrl: localizaedHomePageUrl
+        };
 
-            const entry: LanguageEntry = {
-                Name: languageNames.of(culture) || culture,
-                Value: culture,
-                Selected: culture === context.layout.Culture,
-                PageUrl: pageUrl ? `${pageUrl}${queryParamsString}` : '',
-                IsTranslated: isTranslated,
-                LocalizedHomePageUrl: localizaedHomePageUrl
-            };
-
-            languages.push(entry);
-        }
+        languages.push(entry);
     }
 
     const viewProps: LanguageSelectorViewProps<LanguageSelectorEntity> = {
@@ -91,6 +97,55 @@ export async function LanguageSelector(props: WidgetContext<LanguageSelectorEnti
     );
 }
 
+async function getDetailItemUrlPart(traceContext: any, context: TransferableRequestContext, isTranslated: boolean, culture: any) {
+    let detailItemUrlPart = '';
+    if (isTranslated && context.detailItem) {
+        try {
+            let detailItemForCulture = await RestClient.getItem({
+                type: context.detailItem.ItemType,
+                id: context.detailItem.Id,
+                culture: culture,
+                provider: context.detailItem.ProviderName,
+                traceContext: traceContext
+            });
+
+            if (detailItemForCulture?.ItemDefaultUrl) {
+                detailItemUrlPart = detailItemForCulture.ItemDefaultUrl;
+            }
+        } catch (error) {
+            // Ignore: Item not translated to culture
+        }
+    }
+
+    return detailItemUrlPart;
+}
+
+let homePageId: string;
+async function getLocalizedHomePageUrl(traceContext: any, properties: LanguageSelectorEntity, isTranslated: boolean, culture: any) {
+    let localizedHomePageUrl = '/';
+
+    if (!isTranslated && properties.LanguageSelectorLinkAction === LanguageSelectorLinkAction.RedirectToHomePage) {
+        if (!homePageId) {
+            homePageId = (await RestClient.getCurrentSite()).HomePageId;
+        }
+
+        const localizedHomePage = await RestClient.getItem<PageItem>({
+            type: RestSdkTypes.Pages,
+            id: homePageId,
+            traceContext: traceContext,
+            culture: culture
+        });
+
+        if (localizedHomePage.AvailableLanguages.includes(culture) &&
+            !localizedHomePage.ViewUrl.includes(PREVIEW_ACTION_QUERY_PARAM_STRING) &&
+            !localizedHomePage.ViewUrl.includes(PREVIEW_ACTION_PATH_STRING)) {
+            localizedHomePageUrl = localizedHomePage?.ViewUrl;
+        }
+    }
+
+    return localizedHomePageUrl;
+}
+
 function getPreservedQueryParamsString(pageUrl: string, searchParams: { [key: string]: string }) {
     let queryParams = new URLSearchParams();
     const questionmarkIndex = pageUrl.indexOf('?');
@@ -106,6 +161,33 @@ function getPreservedQueryParamsString(pageUrl: string, searchParams: { [key: st
     const queryParamsString = queryParams.size > 0 ? `?${queryParams.toString()}` : '';
 
     return queryParamsString;
+}
+
+function getLanguageName(code: string, format: LanguageSelectorDisplayFormat): string {
+    let name: string;
+    switch (format) {
+        case LanguageSelectorDisplayFormat.English:
+            name = new Intl.DisplayNames(['en'], { type: 'language' }).of(code) ?? code;
+            break;
+
+        case LanguageSelectorDisplayFormat.Native:
+            name = new Intl.DisplayNames([code], { type: 'language' }).of(code) ?? code;
+            break;
+
+        case LanguageSelectorDisplayFormat.NativeCapitalized:
+            name = new Intl.DisplayNames([code], { type: 'language' }).of(code) ?? code;
+            name = name.charAt(0).toLocaleUpperCase(code) + name.slice(1);
+            break;
+
+        default:
+            name = code;
+    }
+
+    return name;
+}
+
+function isPageRequest(props: WidgetContext<LanguageSelectorEntity>): boolean {
+    return !!props.requestContext.layout.Fields;
 }
 
 export interface LanguageEntry {

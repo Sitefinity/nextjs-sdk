@@ -6,7 +6,7 @@ import { RestClient } from '../../rest-sdk/rest-client';
 import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
 import { Dictionary } from '../../typings/dictionary';
 
-export async function performSearch(entity: SearchResultsEntity, searchParams: SearchParams, traceContext?: any, additionalHeaders?: Dictionary) {
+export async function performSearch(entity: SearchResultsEntity, searchParams: SearchParams, traceContext?: any, additionalHeaders?: Dictionary, webServicePath?: string) {
     if (searchParams.searchQuery) {
         let orderByClause = searchParams.orderBy || entity.Sorting;
 
@@ -47,7 +47,8 @@ export async function performSearch(entity: SearchResultsEntity, searchParams: S
                 filter: searchParams.filter,
                 indexFields: entity.AdditionalResultFields,
                 additionalHeaders,
-                traceContext
+                traceContext,
+                webServicePath: webServicePath
             });
 
             return searchResults;

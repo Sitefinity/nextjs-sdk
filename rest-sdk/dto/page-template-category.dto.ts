@@ -8,6 +8,7 @@ export interface PageTemplateCategoryDto {
         Title: string;
         Name: string;
         ThumbnailUrl: string;
+        Renderer: string;
         UsedByNumberOfPages: number;
         Framework : number
     }[]

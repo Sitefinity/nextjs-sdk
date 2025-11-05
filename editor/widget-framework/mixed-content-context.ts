@@ -1,6 +1,12 @@
 export interface MixedContentContext {
     ItemIdsOrdered?: string[] | null,
-    Content: ContentContext[]
+    Content: ContentContext[],
+    ManualSelectionItems?: {
+        Index: number,
+        Item: {
+            [key: string]: any;
+        }
+    }[]
 }
 
 export interface ContentContext {

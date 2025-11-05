@@ -27,7 +27,7 @@ export class SearchBoxEntity {
     @Placeholder('Select search index')
     @Required('Please select a search index')
     @DataType(KnownFieldTypes.Choices)
-    @Choice({ ServiceUrl: '/Default.GetSearchIndexes', ServiceWarningMessage: 'No search indexes have been created.' })
+    @Choice({ ServiceUrl: 'Default.GetSearchIndexes', ServiceWarningMessage: 'No search indexes have been created.' })
     @Description('[{"Type":1,"Chunks":[{"Value":"Use search indexes to define different sets","Presentation":[]}, {"Value":"of content visitors can search by using the","Presentation":[2]}, {"Value":"internal search of the your site.","Presentation":[2]}]},{"Type":1,"Chunks":[{"Value":"Manage search indexes in","Presentation":[]},{"Value":"Administration > Search indexes","Presentation":[2,3]}]}]')
     SearchIndex: string | null = null;
 

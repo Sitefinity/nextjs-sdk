@@ -14,4 +14,5 @@ export interface SearchArgs extends RequestArgs {
     resultsForAllSites: boolean | null;
     filter: string;
     indexFields: string;
+    webServicePath?: string;
 }

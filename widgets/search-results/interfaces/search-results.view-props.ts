@@ -10,5 +10,6 @@ export interface SearchResultsViewProps<T extends SearchResultsEntity> extends V
     sorting: string;
     sortByLabel: string | null;
     totalCount: number;
+    webServicePath: string;
     webserviceApiKey?: string;
 }

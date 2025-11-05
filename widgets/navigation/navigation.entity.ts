@@ -11,10 +11,28 @@ import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorato
 import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
 import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
 import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
-import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
+import { Content, KnownContentTypes } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
 import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
 import { Margins } from '@progress/sitefinity-widget-designers-sdk/decorators/margins';
 import { IsNullable } from '@progress/sitefinity-widget-designers-sdk/decorators/is-nullable';
+
+export class ExternalUrlsEntity {
+    @DisplayName('Title')
+    Title: string = '';
+
+    @DisplayName('Url')
+    Url: string = '';
+
+    @DisplayName('Open link in a new window')
+    @DefaultValue(false)
+    @DataType(KnownFieldTypes.ChipChoice)
+    @Choice({Choices: [
+            { Name: 'Yes', Value: true },
+            { Name: 'No', Value: false }
+        ]
+    })
+    OpenInNewWindow: boolean = false;
+}
 
 @WidgetEntity('SitefinityNavigation', 'Navigation')
 export class NavigationEntity {
@@ -31,14 +49,14 @@ export class NavigationEntity {
         { Title: 'Custom selection of pages...', Value: 'SelectedPages' }])
     SelectionMode?: string;
 
-    @Content({ Type: 'Telerik.Sitefinity.Pages.Model.PageNode', AllowMultipleItemsSelection: false })
+    @Content({ Type: KnownContentTypes.Pages, AllowMultipleItemsSelection: false })
     @ContentSection('Select pages')
     @DisplayName('')
     @ConditionalVisibility('{\u0022conditions\u0022:[{\u0022fieldName\u0022:\u0022SelectionMode\u0022,\u0022operator\u0022:\u0022Equals\u0022,\u0022value\u0022:\u0022SelectedPageChildren\u0022}],\u0022inline\u0022:\u0022true\u0022}')
     SelectedPage?: MixedContentContext;
 
     @ContentSection('Select pages')
-    @Content({ Type: 'Telerik.Sitefinity.Pages.Model.PageNode', OpenMultipleItemsSelection: true })
+    @Content({ Type: KnownContentTypes.Pages, OpenMultipleItemsSelection: true, ManualSelection: { MainFieldName: 'Title', BreadcrumbText: 'External URL', IconClass: 'redirecting-page', TabTitle: 'External URLs', ManualSelectionEntityType: ExternalUrlsEntity } })
     @DisplayName('')
     @ConditionalVisibility('{\u0022conditions\u0022:[{\u0022fieldName\u0022:\u0022SelectionMode\u0022,\u0022operator\u0022:\u0022Equals\u0022,\u0022value\u0022:\u0022SelectedPages\u0022}],\u0022inline\u0022:\u0022true\u0022}')
     CustomSelectedPages?: MixedContentContext;
@@ -49,7 +67,7 @@ export class NavigationEntity {
     @DataType(KnownFieldTypes.ChipChoice)
     @Choice({
         Choices: [
-            { Title: '1 level', Name: '1', Value:  1 },
+            { Title: '1 level', Name: '1', Value: 1 },
             { Title: '2 levels', Name: '2', Value: 2 },
             { Title: '3 levels', Name: '3', Value: 3 },
             { Title: '4 levels', Name: '4', Value: 4 },
@@ -69,10 +87,10 @@ export class NavigationEntity {
     @DisplayName('View')
     @DefaultValue('Horizontal')
     @ViewSelector([
-        { Value: 'Accordion'},
-        { Value: 'Horizontal'},
-        { Value: 'Tabs'},
-        { Value: 'Vertical'}
+        { Value: 'Accordion' },
+        { Value: 'Horizontal' },
+        { Value: 'Tabs' },
+        { Value: 'Vertical' }
     ])
     SfViewName?: string;
 
@@ -93,5 +111,5 @@ export class NavigationEntity {
 
     @Category('Advanced')
     @Attributes('Navigation')
-    Attributes?: { [key: string]: Array<{ Key: string, Value: string}> };
+    Attributes?: { [key: string]: Array<{ Key: string, Value: string }> };
 }

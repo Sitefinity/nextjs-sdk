@@ -10,6 +10,7 @@ import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
 import { convertToBoolean } from './utils';
 import { RenderView } from '../common/render-view';
 import { SearchResultsDefaultView } from './search-results.view';
+import { RootUrlService } from '../../rest-sdk/root-url.service';
 
 export async function SearchResults(props: WidgetContext<SearchResultsEntity>) {
     const {span, ctx} = Tracer.traceWidget(props, true);
@@ -40,6 +41,7 @@ export async function SearchResults(props: WidgetContext<SearchResultsEntity>) {
         sorting: entity.Sorting.toString(),
         sortByLabel: entity.SortByLabel,
         totalCount: 0,
+        webServicePath: `${RootUrlService.getClientCmsUrl()}/${RootUrlService.getSearchWebServicePath()}`,
         webserviceApiKey: props.requestContext.webserviceApiKey,
         attributes: {...dataAttributes, ...customAttributes},
         widgetContext: getMinimumWidgetContext(props)

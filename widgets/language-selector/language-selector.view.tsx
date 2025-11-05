@@ -34,7 +34,7 @@ function languageSelectorLink(idx: number, item: LanguageEntry, href: string) {
     return (<li key={idx}>
       <a className={classNames('dropdown-item', {
             'active': item.Selected
-        })} href={href} target="_self">
+        })} href={href} target="_self" hrefLang={item.Value}>
         {item.Name}
       </a>
     </li>);

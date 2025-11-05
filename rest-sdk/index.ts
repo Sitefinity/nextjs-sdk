@@ -4,6 +4,7 @@ export * from './rest-client';
 export * from './service-metadata';
 export * from './root-url.service';
 export * from './init';
+export * from './query-params-names';
 
 export * from './args/common.args';
 export * from './args/create-widget.args';

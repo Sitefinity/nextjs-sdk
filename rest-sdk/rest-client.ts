@@ -458,7 +458,7 @@ export class RestClient {
             }
         }
 
-        const serviceUrl = RootUrlService.getServerCmsServiceUrl();
+        const serviceUrl = args.webServicePath ?? `${RootUrlService.getServerCmsUrl() || ''}/${RootUrlService.getSearchWebServicePath()}`;
         const wholeUrl = `${serviceUrl}/Default.PerformSearch()${RestClient.buildQueryParams(RestClient.getQueryParams(args, query))}`;
         const searchResultsDocumentsDefaultKeys = ['HighLighterResult', 'Language', 'Provider', 'Link', 'Title', 'ContentType', 'Id', 'ThumbnailUrl'];
 
@@ -620,7 +620,7 @@ export class RestClient {
             'showParentPage': args.showParentPage ? args.showParentPage.toString() : undefined,
             'sf_page_node': args.currentPage,
             'selectedPages': args.selectedPages && args.selectedPages.length > 0 ? JSON.stringify(args.selectedPages) : undefined,
-            'levelsToInclude': args.levelsToInclude ? args.levelsToInclude.toString() : 'all',
+            'levelsToInclude': args.levelsToInclude ? args.levelsToInclude.toString() : null,
             'selectedPageId': args.selectedPageId
         };
 
@@ -767,9 +767,10 @@ export class RestClient {
     }
 
     public static async getPageLayout(args: GetPageLayoutArgs): Promise<LayoutResponse> {
-        const pagePath = args.pagePath;
+        let layoutResponse: LayoutServiceResponse;
 
         let headers: { [key: string]: string } = args.additionalHeaders || {};
+
         RestClient.addAuthHeaders(args.cookie, headers);
 
         const serverSideHeaders = await getFilteredServerSideHeaders();
@@ -779,11 +780,14 @@ export class RestClient {
             });
         }
 
+        const headerKeys = Object.keys(headers).map(x => x.toLowerCase());
         if (typeof window === 'undefined' || process.env.NODE_ENV === 'test') {
             const host = getHostServerContext();
             const proxyHeaders = getProxyHeaders(host!);
-            Object.keys(proxyHeaders).forEach((header) => {
-                headers[header] = proxyHeaders[header];
+            Object.entries(proxyHeaders).forEach(([headerKey, headerValue]) => {
+                if (!headerKeys.includes(headerKey.toLowerCase())) {
+                    headers[headerKey] = headerValue;
+                }
             });
         }
 
@@ -792,14 +796,24 @@ export class RestClient {
             queryParams['$expand'] = args.relatedFields.join(',');
         }
 
-        let sysParamsQueryString = RestClient.buildQueryParams(queryParams);
-        let url = `${pagePath}${sysParamsQueryString}`;
-        if (!pagePath.includes('http') && !pagePath.includes('https')) {
-            if (!url.startsWith('/')) {
+        const sysParamsQueryString = RestClient.buildQueryParams(queryParams);
+        let url = `${args.pagePath}${sysParamsQueryString}`;
+        if (process.env.SF_NEXT_GEN === 'true' || process.env.SF_NEXT_GEN === '1') {
+            if (url[0] !== '/') {
                 url = '/' + url;
             }
 
-            url = RootUrlService.getServerCmsUrl() + url;
+            const encodedUrl = `'${encodeURIComponent(url)}'`;
+            const queryParams = Object.assign({ '@param': encodedUrl });
+            url = `${RootUrlService.getServerCmsServiceUrl()}/Default.Model(url=@param)${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
+        } else {
+            if (!args.pagePath.includes('http') && !args.pagePath.includes('https')) {
+                if (!url.startsWith('/')) {
+                    url = '/' + url;
+                }
+
+                url = RootUrlService.getServerCmsUrl() + url;
+            }
         }
 
         let requestData: RequestData = { url: url, headers: headers, method: 'GET' };
@@ -823,7 +837,7 @@ export class RestClient {
             }
 
             if (error instanceof ErrorCodeException && error.code === 'Unauthorized') {
-                throw `Could not authorize fetching layout for url '${pagePath}'. Contact your system administator or check your access token.`;
+                throw `Could not authorize fetching layout for url '${args.pagePath}'. Contact your system administator or check your access token.`;
             }
         }
 
@@ -840,7 +854,11 @@ export class RestClient {
         }
 
         if ((httpLayoutResponse.status === 301 || httpLayoutResponse.status === 302)) {
-            const location = httpLayoutResponse.headers.get('location') as string;
+            let location = httpLayoutResponse.headers.get('location') as string;
+            if (location.startsWith('/')) {
+                location = location.substring(1);
+            }
+
             if (!args.followRedirects) {
                 return {
                     isRedirect: true,
@@ -860,7 +878,7 @@ export class RestClient {
             throw new ErrorCodeException('NotFound', 'page not found');
         }
 
-        const layoutResponse = await RestClient.handleApiResponse<LayoutServiceResponse>(httpLayoutResponse, requestData, true);
+        layoutResponse = await RestClient.handleApiResponse<LayoutServiceResponse>(httpLayoutResponse, requestData, true);
 
         const cacheControl = httpLayoutResponse.headers.get('Cache-Control');
         if (cacheControl && layoutResponse) {
@@ -874,7 +892,17 @@ export class RestClient {
     }
 
     public static async getTemplates(args: GetTemplatesArgs): Promise<PageTemplateCategoryDto[]> {
-        const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/${args.type}/Default.GetPageTemplates(selectedPages=[${args.selectedPages.map(x => `'${x}'`).join(',')}])${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+        const apiPath = RestClient.getSystemRoutePath();
+        const wholeUrl = `${RootUrlService.getServerCmsUrl()}/${apiPath}/${args.type}/Default.GetPageTemplates(selectedPages=[${args.selectedPages.map(x => `'${x}'`).join(',')}])${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+
+        if (process.env.NODE_ENV === 'test') {
+            const additionalHeaders: {[key: string]: string} = {
+                'X-SFRENDERER-PROXY': 'true',
+                'X-SFRENDERER-PROXY-NAME': RENDERER_NAME
+            };
+            args.additionalHeaders = Object.assign(args.additionalHeaders || {}, additionalHeaders);
+        }
+
         return RestClient.sendRequest<{ value: PageTemplateCategoryDto[] } >({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData }).then(x => x.value);
     }
 
@@ -895,9 +923,10 @@ export class RestClient {
     }
 
     public static async getTemplatesStatistics(args: GetTemplatesStatisticsArgs): Promise<PageTemplateStatisticsDto[]> {
+        const apiPath = RestClient.getSystemRoutePath();
         args.additionalQueryParams = args.additionalQueryParams || {};
         args.additionalQueryParams['@param'] = `[${args.templateNames.map(x => `'${x}'`).join(',')}]`;
-        const wholeUrl = `${RootUrlService.getServerCmsUrl()}/sf/system/pages/Default.GetTemplateStatistics(templateNames=@param, renderer='${RENDERER_NAME}')${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
+        const wholeUrl = `${RootUrlService.getServerCmsUrl()}/${apiPath}/pages/Default.GetTemplateStatistics(templateNames=@param, renderer='${RENDERER_NAME}')${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
         return RestClient.sendRequest<{ value: PageTemplateStatisticsDto[] } >({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData }).then(x => x.value);
     }
 
@@ -1102,11 +1131,14 @@ export class RestClient {
 
     public static async sendRequest<T>(request: RequestData, throwErrorAsJson?: boolean): Promise<T> {
         const headers = this.buildHeaders(request);
+        const headerKeys = Object.keys(headers).map(x => x.toLowerCase());
 
         const serverSideHeaders = await getFilteredServerSideHeaders();
         if (serverSideHeaders) {
             Object.entries(serverSideHeaders).forEach(([headerKey, headerValue]) => {
-                headers[headerKey] = headerValue;
+                if (!headerKeys.includes(headerKey.toLowerCase())) {
+                    headers[headerKey] = headerValue;
+                }
             });
         }
 
@@ -1206,6 +1238,15 @@ export class RestClient {
         }
 
         return Promise.resolve<any>(undefined);
+    }
+
+    private static getSystemRoutePath() {
+        let apiPath = 'sf/system';
+        if (process.env.SF_NEXT_GEN === 'true' || process.env.SF_NEXT_GEN === '1') {
+            apiPath = 'sf/cms/api/v1/system';
+        }
+
+        return apiPath;
     }
 }
 

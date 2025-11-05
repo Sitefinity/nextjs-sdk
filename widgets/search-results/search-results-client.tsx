@@ -54,7 +54,7 @@ export function SearchResultsClient(props: SearchResultsViewProps<SearchResultsE
           headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
       }
 
-      const searchResponse = await performSearch(entity, newSearchParams, undefined, headers);
+      const searchResponse = await performSearch(entity, newSearchParams, undefined, headers, props.webServicePath);
       setSearchResults(searchResponse);
       if (searchResponse && searchResponse.totalCount === 0 && entity.NoResultsHeader) {
         setResultsHeader(entity.NoResultsHeader.replace('{0}', searchParams.searchQuery));
@@ -91,15 +91,6 @@ export function SearchResultsClient(props: SearchResultsViewProps<SearchResultsE
           </div>
           <div>
             <h4>{searchResults?.totalCount} {props.resultsNumberLabel}</h4>
-            <Suspense fallback={<LoadingIndicator/>}>
-              <p>
-                {props.languagesLabel + ' '}
-                <LanguagesList
-                  queryParams={searchParams}
-                  languages={props.languages}
-                  searchParams={searchParams as SearchParams} />
-              </p>
-            </Suspense>
           </div>
           <Suspense fallback={<LoadingIndicator/>}>
             <div className="mt-4">

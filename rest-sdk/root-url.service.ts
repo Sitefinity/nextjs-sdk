@@ -26,10 +26,27 @@ export class RootUrlService {
     }
 
     public static getWebServicePath() {
-        return process?.env?.SF_WEBSERVICE_PATH ?
-            process.env.SF_WEBSERVICE_PATH.trim()[0] === '/' ?
-            process.env.SF_WEBSERVICE_PATH.trim().substring(1) :
-            process.env.SF_WEBSERVICE_PATH.trim() :
-            'api/default';
+        let webServicePath = process?.env?.SF_WEBSERVICE_PATH;
+        if (!webServicePath) {
+            webServicePath = 'api/default';
+        } else {
+            // removes any leading and trailing slashes from the end of the string.
+            webServicePath = webServicePath.replace(/^\/+|\/+$/g, '');
+        }
+
+        return webServicePath;
+    }
+
+    public static getSearchWebServicePath() {
+        let searchWebServicePath = process.env.SF_SEARCH_WEBSERVICE_PATH;
+        if (searchWebServicePath) {
+            searchWebServicePath = searchWebServicePath.trim();
+
+            // removes any trailing slashes from the end of the string.
+            const trimmed = searchWebServicePath.replace(/\/+$/, '');
+            return trimmed;
+        }
+
+        return this.getWebServicePath();
     }
 }

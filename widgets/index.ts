@@ -73,6 +73,7 @@ export * from './image/interfaces/image.view-props';
 
 export * from './language-selector/language-selector';
 export * from './language-selector/interfaces/language-selector-link-action';
+export * from './language-selector/interfaces/language-selector-language-format';
 export * from './language-selector/language-selector-entity';
 export * from './language-selector/interfaces/language-selector.view-props';
 export * from './language-selector/language-selector.view';

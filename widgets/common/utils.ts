@@ -50,6 +50,7 @@ export const getWhiteListSearchParams = (
     return filteredQueryCollection;
 };
 
+
 /**
  * Checks if a React component is a client component by examining the $$typeof property.
  * React uses the $$typeof property as a security measure and component type identifier.
@@ -66,3 +67,4 @@ export function isReactClientComponent(component: any): boolean {
 
 export const SF_WEBSERVICE_API_KEY_HEADER = 'X-SF-APIKEY';
 export const SF_WEBSERVICE_API_KEY = 'SF_WEBSERVICE_API_KEY';
+

@@ -49,7 +49,7 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
         searchBoxPlaceholder: entity.SearchBoxPlaceholder,
         searchButtonLabel: entity.SearchButtonLabel,
         searchIndex: entity.SearchIndex,
-        webServicePath: `${RootUrlService.getClientServiceUrl()}/`,
+        webServicePath: `${RootUrlService.getClientCmsUrl()}/${RootUrlService.getSearchWebServicePath()}/`,
         siteId: requestContext.layout.SiteId,
         suggestionFields: entity.SuggestionFields,
         searchResultsPageUrl: searchResultsPageUrl,

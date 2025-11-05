@@ -15,6 +15,7 @@ import { TableView } from '@progress/sitefinity-widget-designers-sdk/decorators/
 import { WidgetLabel } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-label';
 import { Attributes } from '@progress/sitefinity-widget-designers-sdk/decorators/attributes';
 import { ListDisplayMode } from '../../editor/widget-framework/list-display-mode';
+import { Browsable } from '@progress/sitefinity-widget-designers-sdk';
 
 @Model()
 export class ExtendedContentListSettings extends ContentListSettings {
@@ -111,6 +112,7 @@ export class SearchResultsEntity {
     @ContentSection('Labels and messages', 0)
     @DisplayName('Languages label')
     @DefaultValue('Show results in')
+    @Browsable(false)
     LanguagesLabel: string | null = null;
 
     @Category('Advanced')
