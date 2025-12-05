@@ -8,15 +8,16 @@ import { getSearchBoxParams, getSearchUrl } from './utils';
 import { SearchBoxEntity } from './search-box.entity';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
+import { RestClient } from '../../rest-sdk/rest-client';
 
 const dataSfItemAttribute = 'data-sfitem';
 const activeAttribute = 'data-sf-active';
 
 export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
-    const [ searchItems, setSearchItems ] = React.useState<string[]>([]);
-    const [ dropDownWidth, setDropDownWidth ] = React.useState<number | undefined>(undefined);
-    const [ dropDownShow, setDropDownShow ] = React.useState<boolean>(false);
-    const [ suggestions, setSuggestions ] = React.useState<string[]>([]);
+    const [searchItems, setSearchItems] = React.useState<string[]>([]);
+    const [dropDownWidth, setDropDownWidth] = React.useState<number | undefined>(undefined);
+    const [dropDownShow, setDropDownShow] = React.useState<boolean>(false);
+    const [suggestions, setSuggestions] = React.useState<string[]>([]);
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -27,7 +28,7 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
 
     const activeClass = props.activeClass;
 
-    const handleOnSearch =(suggestions: string[])=>{
+    const handleOnSearch = (suggestions: string[]) => {
         const items = Array.isArray(suggestions) ? suggestions : [];
 
         setSearchItems(items);
@@ -40,7 +41,7 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
     };
 
     const handleHideDropdown = (clear: boolean = true) => {
-        if (clear){
+        if (clear) {
             handleOnSearch([]);
         }
         setDropDownWidth(undefined);
@@ -49,32 +50,27 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
 
     const getSuggestions = (input: HTMLInputElement) => {
         const data = getSearchBoxParams(props, searchParams.get('orderby') || '');
-        let requestUrl = data.servicePath +
-            '/Default.GetSuggestions()' +
-            '?indexName=' + data.catalogue +
-            '&sf_culture=' + data.culture +
-            '&siteId=' + data.siteId +
-            '&scoringInfo=' + data.scoringSetting +
-            '&suggestionFields=' + data.suggestionFields +
-            '&searchQuery=' + encodeURIComponent(input.value)?.toLowerCase();
+
+        let resultsForAllSites: boolean | null = null;
         if (data.resultsForAllSites === 1) {
-            requestUrl += '&resultsForAllSites=True';
+            resultsForAllSites = true;
         } else if (data.resultsForAllSites === 2) {
-            requestUrl += '&resultsForAllSites=False';
+            resultsForAllSites = false;
         }
 
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (props.webserviceApiKey) {
-            headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
-        }
-
-        fetch(requestUrl, { headers }).then(function (res) {
-            res.json().then((suggestions: { value: string[] }) => {
-                handleOnSearch(suggestions.value);
-                setSuggestions(suggestions.value);
-                handleShowDropdown();
-            });
-        }).catch(function () {
+        RestClient.getSearchSuggestions({
+            indexCatalogue: data.catalogue || '',
+            searchQuery: input.value,
+            culture: data.culture,
+            siteId: data.siteId,
+            scoringInfo: data.scoringSetting,
+            suggestionFields: data.suggestionFields || '',
+            resultsForAllSites: resultsForAllSites
+        }).then((suggestions) => {
+            handleOnSearch(suggestions.value);
+            setSuggestions(suggestions.value);
+            handleShowDropdown();
+        }).catch(() => {
             handleHideDropdown();
         });
     };
@@ -104,7 +100,7 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
             e.code !== 'Escape' &&
             keyCode !== 13) {
 
-            const searchText =  (e.target as HTMLInputElement).value.trim();
+            const searchText = (e.target as HTMLInputElement).value.trim();
             const config = getSearchBoxParams(props, searchParams.get('orderby') || '');
 
             if (config.minSuggestionLength && searchText.length >= config.minSuggestionLength) {
@@ -133,7 +129,7 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
         }
     };
 
-    const handleDropDownClick = (e: MouseEvent) =>{
+    const handleDropDownClick = (e: MouseEvent) => {
         const target = e.target as any;
         const content = target.innerText;
         inputRef.current!.value = content;
@@ -147,7 +143,7 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
         }
     };
 
-    const handleDropDownKeyUp =  (e: React.KeyboardEvent) => {
+    const handleDropDownKeyUp = (e: React.KeyboardEvent) => {
         const dropdown = dropdownRef.current;
 
         const key = e.keyCode || e.charCode;
@@ -181,7 +177,7 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
     const firstItemFocus = () => {
         const dropdown = dropdownRef.current;
         if (dropdown && dropdown.children.length) {
-            const item =dropdown!.children[0].querySelector(`[${dataSfItemAttribute}]`);
+            const item = dropdown!.children[0].querySelector(`[${dataSfItemAttribute}]`);
             focusItem(item?.parentElement);
         }
     };
@@ -221,21 +217,21 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
           </button>
         </div>
         {
-           props.suggestionsTriggerCharCount != null && props.suggestionsTriggerCharCount >= 2 &&
+                props.suggestionsTriggerCharCount != null && props.suggestionsTriggerCharCount >= 2 &&
                 (
-                <ul role="listbox" onClick={handleDropDownClick} onKeyUp={handleDropDownKeyUp} onBlur={handleDropDownBlur} style={{ width:dropDownWidth }}
-                  ref={dropdownRef} className={classNames('border bg-body list-unstyled position-absolute', { [props.visibilityClassHidden]: !dropDownShow})}>
+                <ul role="listbox" onClick={handleDropDownClick} onKeyUp={handleDropDownKeyUp} onBlur={handleDropDownBlur} style={{ width: dropDownWidth }}
+                  ref={dropdownRef} className={classNames('border bg-body list-unstyled position-absolute', { [props.visibilityClassHidden]: !dropDownShow })}>
                   {
-                    searchItems.map((item: string, idx: number)=>{
-                        return  (item && <li key={idx} role={'option'} aria-selected={false}>
-                          <button role="presentation" className="dropdown-item text-truncate" data-sfitem="" title={item} tabIndex={-1}>{item}</button>
-                        </li>);
-                    })
-                  }
+                            searchItems.map((item: string, idx: number) => {
+                                return (item && <li key={idx} role={'option'} aria-selected={false}>
+                                  <button role="presentation" className="dropdown-item text-truncate" data-sfitem="" title={item} tabIndex={-1}>{item}</button>
+                                </li>);
+                            })
+                        }
 
                 </ul>
                 )
-        }
+            }
       </div>
     );
 }

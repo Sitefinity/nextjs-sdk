@@ -3,6 +3,8 @@ import { CheckboxesCSR } from './form-widgets/checkboxes/checkboxes.csr';
 import { CheckboxesEntity } from './form-widgets/checkboxes/checkboxes.entity';
 import { FormContentBlockCSR } from './form-widgets/content-block/content-block.csr';
 import { FormContentBlockEntity } from './form-widgets/content-block/content-block.entity';
+import { DateTimeFieldCSR } from './form-widgets/date-time/date-time-field.csr';
+import { DateTimeFieldEntity } from './form-widgets/date-time/date-time-field.entity';
 import { DropdownCSR } from './form-widgets/dropdown/dropdown.csr';
 import { DropdownEntity } from './form-widgets/dropdown/dropdown.entity';
 import { DynamicListCSR } from './form-widgets/dynamic-list/dynamic-list.csr';
@@ -11,6 +13,8 @@ import { FileUploadCSR } from './form-widgets/file-upload/file-upload.csr';
 import { FileUploadEntity } from './form-widgets/file-upload/file-upload.entity';
 import { MultipleChoiceCSR } from './form-widgets/multiple-choice/multiple-choice.csr';
 import { MultipleChoiceEntity } from './form-widgets/multiple-choice/multiple-choice.entity';
+import { NumberFieldCSR } from './form-widgets/number/number-field.csr';
+import { NumberFieldEntity } from './form-widgets/number/number-field.entity';
 import { ParagraphCSR } from './form-widgets/paragraph/paragraph.csr';
 import { ParagraphEntity } from './form-widgets/paragraph/paragraph.entity';
 import { FormSectionCSR } from './form-widgets/section/section.csr';
@@ -22,7 +26,7 @@ import { TextFieldCSR } from './form-widgets/textfield/textfield.csr';
 import { FormCSR } from './form/form.csr';
 import { FormEntity } from './form/form.entity';
 
-export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
+export const CSRFormComponents: { [key: string]: WidgetMetadata } = {
     'SitefinityForm': {
         entity: FormEntity,
         componentType: FormCSR,
@@ -78,6 +82,21 @@ export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
             InitialProperties: {
                 SfFieldType: 'Paragraph'
             }
+        },
+        ssr: false
+    },
+        'SitefinityNumberField': {
+        entity: NumberFieldEntity,
+        componentType: NumberFieldCSR,
+        editorMetadata: {
+            Title: 'Number',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'Number'
+            },
+            IconName: 'number'
         },
         ssr: false
     },
@@ -162,6 +181,21 @@ export const CSRFormComponents: {[key: string]: WidgetMetadata} = {
             InitialProperties: {
                 SfFieldType: 'File'
             }
+        },
+        ssr: false
+    },
+    'SitefinityDateTimeField': {
+        entity: DateTimeFieldEntity,
+        componentType: DateTimeFieldCSR,
+        editorMetadata: {
+            Title: 'Date and time',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'DateTime'
+            },
+            IconName: 'date-time'
         },
         ssr: false
     },

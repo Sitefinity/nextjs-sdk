@@ -450,12 +450,8 @@ export class RestClient {
             ['indexFields']: args.indexFields
         };
 
-        if (!!args.resultsForAllSites) {
-            if (args.resultsForAllSites === true) {
-                query['resultsForAllSites'] = '1';
-            } else {
-                query['resultsForAllSites'] = '2';
-            }
+        if (args.resultsForAllSites != null) {
+            query['resultsForAllSites'] = args.resultsForAllSites ? '1' : '2';
         }
 
         const serviceUrl = args.webServicePath ?? `${RootUrlService.getServerCmsUrl() || ''}/${RootUrlService.getSearchWebServicePath()}`;
@@ -506,12 +502,8 @@ export class RestClient {
             ['resultsForAllSites']: ''
         };
 
-        if (!!args.resultsForAllSites) {
-            if (args.resultsForAllSites === true) {
-                query['resultsForAllSites'] = 'True';
-            } else {
-                query['resultsForAllSites'] = 'False';
-            }
+        if (args.resultsForAllSites !== null) {
+            query['resultsForAllSites'] = args.resultsForAllSites ? 'True' : 'False';
         }
 
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
@@ -798,7 +790,7 @@ export class RestClient {
 
         const sysParamsQueryString = RestClient.buildQueryParams(queryParams);
         let url = `${args.pagePath}${sysParamsQueryString}`;
-        if (process.env.SF_NEXT_GEN === 'true' || process.env.SF_NEXT_GEN === '1') {
+        if (process.env.NEXT_PUBLIC_SF_NEXT_GEN === 'true' || process.env.NEXT_PUBLIC_SF_NEXT_GEN === '1') {
             if (url[0] !== '/') {
                 url = '/' + url;
             }
@@ -1242,7 +1234,7 @@ export class RestClient {
 
     private static getSystemRoutePath() {
         let apiPath = 'sf/system';
-        if (process.env.SF_NEXT_GEN === 'true' || process.env.SF_NEXT_GEN === '1') {
+        if (process.env.NEXT_PUBLIC_SF_NEXT_GEN === 'true' || process.env.NEXT_PUBLIC_SF_NEXT_GEN === '1') {
             apiPath = 'sf/cms/api/v1/system';
         }
 

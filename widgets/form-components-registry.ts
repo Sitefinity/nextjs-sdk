@@ -21,8 +21,12 @@ import { TextFieldEntity } from './form-widgets/textfield/text-field.entity';
 import { TextField } from './form-widgets/textfield/textfield';
 import { Form } from './form/form';
 import { FormEntity } from './form/form.entity';
+import { NumberFieldEntity } from './form-widgets/number/number-field.entity';
+import { NumberField } from './form-widgets/number/number-field';
+import { DateTimeFieldEntity } from './form-widgets/date-time/date-time-field.entity';
+import { DateTimeField } from './form-widgets/date-time/date-time-field';
 
-export const SSRFormComponents: {[key: string]: WidgetMetadata} = {
+export const SSRFormComponents: { [key: string]: WidgetMetadata } = {
     'SitefinityForm': {
         entity: FormEntity,
         componentType: Form,
@@ -82,6 +86,21 @@ export const SSRFormComponents: {[key: string]: WidgetMetadata} = {
                 SfFieldType: 'Paragraph'
             },
             IconName: 'paragraph'
+        },
+        ssr: true
+    },
+        'SitefinityNumberField': {
+        entity: NumberFieldEntity,
+        componentType: NumberField,
+        editorMetadata: {
+            Title: 'Number',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Basic',
+            InitialProperties: {
+                SfFieldType: 'Number'
+            },
+            IconName: 'number'
         },
         ssr: true
     },
@@ -171,6 +190,21 @@ export const SSRFormComponents: {[key: string]: WidgetMetadata} = {
                 SfFieldType: 'File'
             },
             IconName: 'file-upload'
+        },
+        ssr: true
+    },
+    'SitefinityDateTimeField': {
+        entity: DateTimeFieldEntity,
+        componentType: DateTimeField,
+        editorMetadata: {
+            Title: 'Date and time',
+            Toolbox: 'Forms',
+            Category: 'Content',
+            Section: 'Other',
+            InitialProperties: {
+                SfFieldType: 'DateTime'
+            },
+            IconName: 'date-time'
         },
         ssr: true
     },

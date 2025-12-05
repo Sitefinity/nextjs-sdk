@@ -38,7 +38,7 @@ export class RootUrlService {
     }
 
     public static getSearchWebServicePath() {
-        let searchWebServicePath = process.env.SF_SEARCH_WEBSERVICE_PATH;
+        let searchWebServicePath = process.env.NEXT_PUBLIC_SF_SEARCH_WEBSERVICE_PATH;
         if (searchWebServicePath) {
             searchWebServicePath = searchWebServicePath.trim();
 

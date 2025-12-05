@@ -73,6 +73,7 @@ export const StylingConfig = {
     },
     FieldSizeClasses: {
         'WidthNONE': '',
+        'WidthXS': 'w-25',
         'WidthS': 'w-50',
         'WidthM': 'w-75',
         'WidthL': 'w-100'

@@ -12,6 +12,7 @@ import { Category, PropertyCategory } from '@progress/sitefinity-widget-designer
 import { WidgetEntity } from '@progress/sitefinity-widget-designers-sdk/decorators/widget-entity';
 import { ViewSelector } from '@progress/sitefinity-widget-designers-sdk/decorators/view-selector';
 import { Browsable } from '@progress/sitefinity-widget-designers-sdk/decorators/browsable';
+import { Required } from '@progress/sitefinity-widget-designers-sdk';
 
 @WidgetEntity('SitefinityFileField', 'File upload')
 export class FileUploadEntity {
@@ -60,13 +61,14 @@ export class FileUploadEntity {
     @DataType(KnownFieldTypes.FileTypes)
     @DisplayName('File types')
     @DataModel(FileTypes)
+    @Required()
     FileTypes: FileTypes | null = null;
 
     @ContentSection(ContentSectionTitles.Limitations)
     @DisplayName('Error message if file type is not allowed')
     @ConditionalVisibility('{"conditions":[{"fieldName":"FileTypes","operator":"NotEquals","value":null}]}')
     FileTypeViolationMessage: string = 'File type is not allowed to upload';
-    
+
     @ViewSelector([{Value: 'Default'}])
     @ContentSection(ContentSectionTitles.DisplaySettings)
     @DisplayName('Template')
@@ -79,7 +81,7 @@ export class FileUploadEntity {
 
     @Browsable(false)
     SfFieldType?: string;
-    
+
     @Browsable(false)
     SfFieldName?: string;
 }

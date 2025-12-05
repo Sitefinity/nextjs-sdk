@@ -23,6 +23,10 @@ const getAcceptedFileTypes = (entity: FileUploadEntity): string[] | null => {
     const types = fileTypes.Type.split(',').map(x => x.trim());
 
     for (const type of types) {
+        if (type === 'All') {
+            return null;
+        }
+
         if (predefinedAcceptValues[type]) {
             parsedArray.push(...predefinedAcceptValues[type]);
         }

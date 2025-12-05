@@ -33,7 +33,7 @@ export async function filterSitefinityAssistantWidget(widgetMetadata: WidgetMeta
         return false;
     }
 }
-    
+
 
 /**
  * Reads the assistant module information from Sitefinity API.

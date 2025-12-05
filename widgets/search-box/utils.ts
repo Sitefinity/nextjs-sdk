@@ -22,7 +22,7 @@ export function getSearchBoxParams(searchModel: SearchBoxViewProps<SearchBoxEnti
         suggestionFields: searchModel.suggestionFields,
         servicePath: searchModel.webServicePath,
         orderBy,
-        resultsForAllSites: searchModel.showResultsForAllIndexedSites
+        resultsForAllSites: +searchModel.showResultsForAllIndexedSites
     };
 };
 

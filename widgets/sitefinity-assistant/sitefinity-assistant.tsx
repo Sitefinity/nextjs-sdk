@@ -114,41 +114,56 @@ export async function SitefinityAssistant(props: WidgetContext<SitefinityAssista
 
     return (
       <div {...dataAttributes}>
-        {/* Load CSS first */}
-        <link rel="stylesheet" type="text/css" href={cdnUrls.widgetCssUrl} />
-        
-        {/* Edit mode placeholder for modal display - match .NET Core exactly */}
-        {props.requestContext.isEdit && entity.AssistantApiKey && entity.DisplayMode === DisplayMode.Modal && (
+        {/* Handle edit mode placeholder for empty API key */}
+        {props.requestContext.isEdit && !entity.AssistantApiKey && (
           <div style={{border: '1px dashed #ccc', height: '10px', width: '100%', fontSize: '0px'}}>###placeholder###</div>
         )}
 
-        {/* Custom CSS if provided */}
-        {entity.CustomCss && (
-          <link rel="stylesheet" type="text/css" href={entity.CustomCss} />
+        {/* Handle edit mode placeholder for non-empty API key */}
+        {props.requestContext.isEdit && entity.AssistantApiKey && (
+          <div style={{padding: '10px'}}>
+            <div style={{backgroundColor:'#dcecf5', padding: '10px'}}>
+              <p style={{margin: 0}}>AI assistant is configured.</p>
+              <p style={{margin: 0}}>Use "Preview" to check assistant's display on the page.</p>
+            </div>
+          </div>
         )}
 
-        <Script src={cdnUrls.jqueryUrl} strategy="afterInteractive" />
-        <Script src={cdnUrls.markedUrl} strategy="afterInteractive" />
-        <Script src={cdnUrls.chatJsUrl} strategy="afterInteractive" />
-        <Script src={cdnUrls.chatServiceUrl} strategy="afterInteractive" />
-        <Script src={cdnUrls.widgetJsUrl} strategy="afterInteractive" />
+        {/* Normal rendering when AssistantApiKey is provided */}
+        {!props.requestContext.isEdit && entity.AssistantApiKey && (
+          <>
+            {/* Load CSS first */}
+            <link rel="stylesheet" type="text/css" href={cdnUrls.widgetCssUrl} />
+            
+            {/* Custom CSS if provided */}
+            {entity.CustomCss && (
+              <link rel="stylesheet" type="text/css" href={entity.CustomCss} />
+            )}
 
-        {/* Widget configuration JSON - same for both modes */}
-        <script
-          type="application/json"
-          className="sf-assistant-widget-data"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(widgetConfig)
-          }}
-        />
+            <Script src={cdnUrls.jqueryUrl} strategy="afterInteractive" />
+            <Script src={cdnUrls.markedUrl} strategy="afterInteractive" />
+            <Script src={cdnUrls.chatJsUrl} strategy="afterInteractive" />
+            <Script src={cdnUrls.chatServiceUrl} strategy="afterInteractive" />
+            <Script src={cdnUrls.widgetJsUrl} strategy="afterInteractive" />
 
-        {/* Container div only for inline mode */}
-        {entity.DisplayMode === DisplayMode.Inline && (
-          <div
-            id={entity.ContainerId}
-            {...customAttributes}
-            className={entity.CssClass || ''}
-          />
+            {/* Widget configuration JSON - same for both modes */}
+            <script
+              type="application/json"
+              className="sf-assistant-widget-data"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify(widgetConfig)
+              }}
+            />
+
+            {/* Container div only for inline mode */}
+            {entity.DisplayMode === DisplayMode.Inline && (
+              <div
+                id={entity.ContainerId}
+                {...customAttributes}
+                className={entity.CssClass || ''}
+              />
+            )}
+          </>
         )}
 
         {Tracer.endSpan(span)}

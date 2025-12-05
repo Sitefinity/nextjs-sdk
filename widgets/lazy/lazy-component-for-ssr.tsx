@@ -58,15 +58,45 @@ function extractAttributes(attributes: NamedNodeMap) {
 
     for (const attr of attributes) {
         let attrName = attr.name;
+        let attrValue: any = attr.value;
+
         switch (attrName) {
             case 'class': attrName = 'className'; break;
             case 'novalidate': attrName = 'noValidate'; break;
             case 'for': attrName = 'htmlFor'; break;
+            case 'style':
+                // Convert style string to object
+                attrValue = parseStyleString(attr.value);
+                break;
             default: break;
         }
 
-        attrObj[attrName] = attr.value;
+        attrObj[attrName] = attrValue;
     }
 
     return attrObj;
+}
+
+function parseStyleString(styleStr: string): {[key: string]: string} {
+    const styleObj: {[key: string]: string} = {};
+
+    if (!styleStr) {
+        return styleObj;
+    }
+
+    styleStr.split(';').forEach(rule => {
+        const [property, value] = rule.split(':').map(s => s.trim());
+        if (property && value) {
+            // Handle CSS custom properties (variables) that start with --
+            if (property.startsWith('--')) {
+                styleObj[property] = value;
+            } else {
+                // Convert kebab-case to camelCase for React
+                const camelProperty = property.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+                styleObj[camelProperty] = value;
+            }
+        }
+    });
+
+    return styleObj;
 }

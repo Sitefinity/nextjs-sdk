@@ -43,7 +43,7 @@ export async function performSearch(entity: SearchResultsEntity, searchParams: S
                 searchFields: entity.SearchFields as string,
                 highlightedFields: entity.HighlightedFields as string,
                 scoringInfo: searchParams.scoringInfo,
-                resultsForAllSites: searchParams.resultsForAllSites === 'True',
+                resultsForAllSites: searchParams.resultsForAllSites !== 'False',
                 filter: searchParams.filter,
                 indexFields: entity.AdditionalResultFields,
                 additionalHeaders,

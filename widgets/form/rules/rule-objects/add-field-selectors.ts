@@ -2,6 +2,8 @@ import { FormRulesSettings } from '../form-rules-settings';
 
 export const addFieldSelectors = (ruleSettings: FormRulesSettings) => {
     ruleSettings.addFieldSelector('text-field-container', '[data-sf-role=\'text-field-input\']');
+    ruleSettings.addFieldSelector('number-field-container', '[data-sf-role=\'number-field-input\']');
+    ruleSettings.addFieldSelector('date-time-field-container', '[data-sf-role=\'date-time-field-input\']');
     ruleSettings.addFieldSelector('email-text-field-container', '[data-sf-role=\'email-text-field-input\']');
     ruleSettings.addFieldSelector('multiple-choice-field-container', '[data-sf-role=\'multiple-choice-field-input\']', ':checked');
     ruleSettings.addFieldSelector('checkboxes-field-container', '[data-sf-role=\'checkboxes-field-input\']', ':checked');
