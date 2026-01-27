@@ -29,8 +29,8 @@ async function getSingleSelectedImageUrlAsync(image: any | null | undefined): Pr
         });
     } catch {
         imageItem = null;
-    }    
-    
+    }
+
     if (imageItem && imageItem.Id === image.ItemIdsOrdered[0]) {
         return imageItem.Url || null;
     }
@@ -44,14 +44,16 @@ export async function SitefinityAssistant(props: WidgetContext<SitefinityAssista
     let dataAttributes = htmlAttributes(props);
 
     // Get version information from Sitefinity Assistant admin API
-    const versionInfo = await SitefinityAssistantApiClient.getVersionInfoAsync();
-    const version = versionInfo?.productVersion;
-    
+    const versionInfo = await SitefinityAssistantApiClient.getVersionInfoAsync(entity.AssistantType);
+    const version = versionInfo?.ProductVersion;
+
     const cdnUrls = {
         jqueryUrl: SitefinityAssistantConfig.getCdnUrl('jquery.min.js', version),
         markedUrl: SitefinityAssistantConfig.getCdnUrl('marked.min.js', version),
         chatJsUrl: SitefinityAssistantConfig.getCdnUrl('sf-assistant-chat.js', version),
-        chatServiceUrl: SitefinityAssistantConfig.getCdnUrl('azure-assistant-chat-service.js', version),
+        chatServiceUrl: SitefinityAssistantConfig.getCdnUrl(entity.AssistantType === 'PARAG' ?
+                'parag-chat-service.js' :
+                'azure-assistant-chat-service.js', version),
         widgetCssUrl: SitefinityAssistantConfig.getCdnUrl('sf-assistant-chat-widget.min.css', version),
         widgetJsUrl: SitefinityAssistantConfig.getCdnUrl('sf-assistant-widget.js', version)
     };
@@ -102,27 +104,32 @@ export async function SitefinityAssistant(props: WidgetContext<SitefinityAssista
                     supportsMultilineText: true,
                     placeholder: entity.PlaceholderText
                 },
-                notice: entity.Notice
+                notice: entity.Notice,
+                css: entity.CustomCss
             },
             serviceSettings: {
-                serviceType: 'AzureAssistantChatService',
+                serviceType: entity.AssistantType === 'PARAG' ?
+                    'ProgressARAGChatService' :
+                    'AzureAssistantChatService',
                 greetingsMessage: entity.GreetingMessage,
-                endpoint: SitefinityAssistantConfig.getChatServiceUrl(),
-                assistantApiKey: entity.AssistantApiKey
+                endpoint: SitefinityAssistantConfig.getChatServiceUrl(entity.AssistantType),
+                assistantApiKey: entity.AssistantApiKey,
+                knowledgeBoxName: entity.KnowledgeBoxName,
+                configurationName: entity.ConfigurationName,
+                showFeedbackButtons: entity.ShowFeedback,
+                showSources: entity.ShowSources,
+                additionalQueryParams: {
+                    sf_site: props.requestContext.layout.SiteId
+                }
             }
         };
 
     return (
       <div {...dataAttributes}>
-        {/* Handle edit mode placeholder for empty API key */}
-        {props.requestContext.isEdit && !entity.AssistantApiKey && (
-          <div style={{border: '1px dashed #ccc', height: '10px', width: '100%', fontSize: '0px'}}>###placeholder###</div>
-        )}
-
         {/* Handle edit mode placeholder for non-empty API key */}
-        {props.requestContext.isEdit && entity.AssistantApiKey && (
+        {props.requestContext.isEdit && (entity.AssistantApiKey || entity.KnowledgeBoxName) && (
           <div style={{padding: '10px'}}>
-            <div style={{backgroundColor:'#dcecf5', padding: '10px'}}>
+            <div style={{backgroundColor:'#dcecf5', padding: '10px', borderRadius: '5px'}}>
               <p style={{margin: 0}}>AI assistant is configured.</p>
               <p style={{margin: 0}}>Use "Preview" to check assistant's display on the page.</p>
             </div>
@@ -130,21 +137,21 @@ export async function SitefinityAssistant(props: WidgetContext<SitefinityAssista
         )}
 
         {/* Normal rendering when AssistantApiKey is provided */}
-        {!props.requestContext.isEdit && entity.AssistantApiKey && (
+        {!props.requestContext.isEdit && (entity.AssistantApiKey || entity.KnowledgeBoxName) && (
           <>
             {/* Load CSS first */}
             <link rel="stylesheet" type="text/css" href={cdnUrls.widgetCssUrl} />
-            
+
             {/* Custom CSS if provided */}
             {entity.CustomCss && (
               <link rel="stylesheet" type="text/css" href={entity.CustomCss} />
             )}
 
-            <Script src={cdnUrls.jqueryUrl} strategy="afterInteractive" />
-            <Script src={cdnUrls.markedUrl} strategy="afterInteractive" />
-            <Script src={cdnUrls.chatJsUrl} strategy="afterInteractive" />
-            <Script src={cdnUrls.chatServiceUrl} strategy="afterInteractive" />
-            <Script src={cdnUrls.widgetJsUrl} strategy="afterInteractive" />
+            <Script src={cdnUrls.jqueryUrl} strategy="lazyOnload" async={false} />
+            <Script src={cdnUrls.markedUrl} strategy="lazyOnload" async={false} />
+            <Script src={cdnUrls.chatJsUrl} strategy="lazyOnload" async={false} />
+            <Script src={cdnUrls.chatServiceUrl} strategy="lazyOnload" async={false} />
+            <Script src={cdnUrls.widgetJsUrl} strategy="lazyOnload" async={false} />
 
             {/* Widget configuration JSON - same for both modes */}
             <script

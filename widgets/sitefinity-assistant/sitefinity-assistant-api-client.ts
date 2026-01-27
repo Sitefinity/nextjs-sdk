@@ -1,11 +1,11 @@
 import { AssistantApiConstants } from './assistant-api-constants';
-import { SitefinityAssistantConfig } from './sitefinity-assistant-config';
+import { RestClient, RootUrlService } from '@progress/sitefinity-nextjs-sdk/rest-sdk';
 
 /**
- * DTO for version information from Sitefinity Assistant admin API
+ * DTO for version information from Sitefinity Assistant API
  */
 export interface VersionInfoDto {
-    productVersion: string;
+    ProductVersion: string;
 }
 
 /**
@@ -15,23 +15,21 @@ export interface VersionInfoDto {
  */
 export class SitefinityAssistantApiClient {
     /**
-     * Gets version information from Sitefinity Assistant admin API
-     * Uses direct fetch since this is not an OData endpoint - calls your custom admin API
+     * Gets version information from Sitefinity Assistant API
+     * Calls the Sitefinity OData unbound function to get version info
      * @returns Promise with version info or null if API call fails
      */
-    static async getVersionInfoAsync(): Promise<VersionInfoDto | null> {
+    static async getVersionInfoAsync(assistantType: string | null): Promise<VersionInfoDto | null> {
         try {
-            const adminApiBaseUrl = SitefinityAssistantConfig.getAdminApiBaseUrl();
-            const versionEndpoint = `${adminApiBaseUrl}${AssistantApiConstants.VersionInfoEndpoint}`;
-            
-            const response = await fetch(versionEndpoint);
-            
-            if (!response.ok) {
-                return null;
-            }
-            
-            const versionInfo: VersionInfoDto = await response.json();
-            return versionInfo;
+            const serviceUrl = RootUrlService.getServerCmsServiceUrl();
+            const functionUrl = `${serviceUrl}/${assistantType === 'PARAG' ? AssistantApiConstants.SitefinityGetPARAGAssistantVersionInfoFunctionName : AssistantApiConstants.SitefinityGetAssistantVersionInfoFunctionName}`;
+
+            const response = await RestClient.sendRequest<VersionInfoDto>({
+                url: functionUrl,
+                method: 'GET'
+            });
+
+            return response;
         } catch (error) {
             return null;
         }

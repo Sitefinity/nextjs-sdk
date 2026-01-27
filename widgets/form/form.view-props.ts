@@ -45,9 +45,22 @@ export function getFormRulesViewProps(form: FormDto): string {
 }
 
 export function getFormHiddenFields(formModel: LayoutServiceResponse) {
-    const hiddenFields = formModel.ComponentContext.Components
-        .filter((x: WidgetModel<any>) => x.Properties.Hidden === 'True' || x.Properties.Hidden === 'true')
-        .map((x: WidgetModel<any>) => x.Properties.SfFieldName);
-
+    const hiddenFields: string[] = [];
+    collectHiddenFields(formModel.ComponentContext.Components, hiddenFields);
     return hiddenFields;
+}
+
+function collectHiddenFields(components: WidgetModel<any>[], hiddenFields: string[]) {
+    for (const component of components) {
+        if (component.Properties.Hidden === 'True' || component.Properties.Hidden === 'true') {
+            if (component.Properties.SfFieldName) {
+                hiddenFields.push(component.Properties.SfFieldName);
+            }
+        }
+
+        // Recursively check children (for fields inside layouts/sections)
+        if (component.Children && component.Children.length > 0) {
+            collectHiddenFields(component.Children, hiddenFields);
+        }
+    }
 }

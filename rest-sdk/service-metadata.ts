@@ -388,6 +388,23 @@ export class ServiceMetadata {
 
         return FieldType.TextField;
     }
+
+    /**
+     * Checks if a module is enabled in the service metadata.
+     * @param moduleName The name of the module to check.
+     * @returns True if the module is enabled, false otherwise.
+     */
+    public static isModuleEnabled(moduleName: string): boolean {
+        const modules = ServiceMetadata.serviceMetadataCache?.modules;
+        if (modules != null) {
+            const moduleState = modules[moduleName];
+            if (moduleState != null && typeof moduleState === 'boolean') {
+                return moduleState;
+            }
+        }
+
+        return false;
+    }
     
     private static getEntityDefinition(itemType : string) {
         const mainEntitySet = ServiceMetadata.serviceMetadataCache.entityContainer.entitySets[itemType];
@@ -425,6 +442,7 @@ export interface ServiceMetadataDefinition {
     entityContainer: {
         entitySets: { [key: string] : any }
     };
+    modules?: { [key: string]: boolean };
 }
 
 /**
