@@ -50,6 +50,11 @@ import { LanguageSelectorEntity } from './language-selector/language-selector-en
 import { ProfileEntity } from './profile/profile.entity';
 import { Profile } from './profile/profile';
 import { SSRFormComponents } from './form-components-registry';
+import { IntentBox } from './indent-driven/intent-box/intent-box';
+import { IntentBoxEntity } from './indent-driven/intent-box/intent-box.entity';
+import { IntentDrivenContent } from './indent-driven/intent-driven-content/intent-driven-content';
+import { IntentDrivenContentEntity } from './indent-driven/intent-driven-content/intent-driven-content.entity';
+import { filterDynamicExperienceWidgets } from './indent-driven/intent-driven-content-widget-filter';
 
 export const defaultWidgetRegistry: WidgetRegistry = {
     widgets: {
@@ -165,6 +170,45 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                     ViewFunction: DocumentDetailItemView
                 }
             }
+        },
+        'SitefinityIntentBox': {
+            componentType: IntentBox,
+            entity: IntentBoxEntity,
+            ssr: true,
+            editorMetadata: {
+                Name: 'SitefinityIntentBox',
+                Title: 'Intent box',
+                Category: 'Content',
+                Section: 'Dynamic experiences',
+                EmptyIcon: 'form',
+                IconName: 'form'
+            }
+        },
+        'SitefinityIntentDrivenContent': {
+            componentType: IntentDrivenContent,
+            entity: IntentDrivenContentEntity,
+            ssr: false,
+            editorMetadata: {
+                Name: 'SitefinityIntentDrivenContent',
+                Title: 'Intent-driven content',
+                Category: 'Content',
+                Section: 'Dynamic experiences',
+                EmptyIconText: 'Set up content',
+                EmptyIcon: 'magic-wand'
+            }
+        },
+        'SitefinityAssistant': {
+            entity: SitefinityAssistantEntity,
+            componentType: SitefinityAssistant,
+            editorMetadata: {
+                Title: 'AI assistant',
+                Category: 'Content',
+                Section: 'Marketing',
+                EmptyIconText: 'Select an AI assistant',
+                EmptyIcon: 'pencil',
+                IconName: 'chat'
+            },
+            ssr: true
         },
         'SitefinityNavigation': {
             entity: NavigationEntity,
@@ -353,19 +397,6 @@ export const defaultWidgetRegistry: WidgetRegistry = {
             },
             ssr: true
         },
-        'SitefinityAssistant': {
-            entity: SitefinityAssistantEntity,
-            componentType: SitefinityAssistant,
-            editorMetadata: {
-                Title: 'AI assistant',
-                Category: 'Content',
-                Section: 'Marketing',
-                EmptyIconText: 'Select an AI assistant',
-                EmptyIcon: 'pencil',
-                IconName: 'chat'
-            },
-            ssr: true
-        },
         'SitefinitySection': {
             entity: SectionEntity,
             componentType: Section,
@@ -383,6 +414,7 @@ export const defaultWidgetRegistry: WidgetRegistry = {
         ...SSRFormComponents
     },
     filters: [
-        filterSitefinityAssistantWidget
+        filterSitefinityAssistantWidget,
+        filterDynamicExperienceWidgets
     ]
 };

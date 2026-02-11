@@ -125,8 +125,12 @@ export class RestClient {
     }
 
     public static getItemWithStatus<T extends SdkItem>(args: ItemArgs): Promise<T> {
+        const filteredSimpleFields = this.getSimpleFields(args.type, args.fields || ['*']);
+        const filteredRelatedFields = this.getRelatedFields(args.type, args.fields || ['*']);
+
         let queryParams = {
-            $select: '*'
+            $select: filteredSimpleFields.join(','),
+            $expand: filteredRelatedFields.join(',')
         };
 
         const wholeUrl = `${RestClient.buildItemBaseUrl(args.type)}(${args.id})/Default.GetItemWithStatus()${RestClient.buildQueryParams(RestClient.getQueryParams(args, queryParams))}`;
