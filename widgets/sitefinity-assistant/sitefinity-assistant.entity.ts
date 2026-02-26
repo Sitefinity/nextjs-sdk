@@ -26,15 +26,15 @@ export class SitefinityAssistantEntity {
     @DataType(KnownFieldTypes.Choices)
     @Choice({ ServiceUrl: '/Default.GetAvailableAssistantModules()', ServiceWarningMessage: 'No AI assistants are found.' })
     @Placeholder('Select assistant type')
-    @Description('[{"Type":1,"Chunks":[{"Value":"Sitefinity AI Assistant: ","Presentation":[0]},{"Value":"Answers from your site\'s published content only.","Presentation":[]}]},{"Type":1,"Chunks":[{"Value":"Progress Agentic RAG: ","Presentation":[0]},{"Value":"Answers from the selected knowledge box.","Presentation":[]}]}]')
+    @Description('[{"Type":1,"Chunks":[{"Value":"Sitefinity AI Assistant: ","Presentation":[0]},{"Value":"Answers from your site\'s published content only.","Presentation":[]}]},{"Type":1,"Chunks":[{"Value":"Progress Agentic RAG: ","Presentation":[0]},{"Value":"Answers from the selected Agentic RAG connection.","Presentation":[]}]}]')
     AssistantType: string | null = null;
 
     @ContentSection('AI assistant', 1)
-    @DisplayName('Knowledge box')
-    @Description('A knowledge box is a separate collection of content in Progress Agentic RAG. Select which collection the assistant should use to answer questions.')
+    @DisplayName('Agentic RAG connection')
+    @Description('A connection to a specific knowledge box in Progress Agentic RAG. Select which connection this widget should use to answer questions.')
     @DataType(KnownFieldTypes.Choices)
-    @Choice({ ServiceUrl: '/Default.GetConfiguredKnowledgeBoxes()', ServiceWarningMessage: 'No PARAG knowledge boxes are found.' })
-    @Placeholder('Select knowledge box')
+    @Choice({ ServiceUrl: '/Default.GetConfiguredKnowledgeBoxes()', ServiceWarningMessage: 'No Agentic RAG connections are found.' })
+    @Placeholder('Select connection')
     @ConditionalVisibility('{"conditions":[{"fieldName":"AssistantType","operator":"Equals","value":"PARAG"}]}')
     KnowledgeBoxName: string | null = null;
 
@@ -89,7 +89,7 @@ export class SitefinityAssistantEntity {
 
     @ContentSection('AI assistant', 6)
     @DisplayName('Enable visitor feedback')
-    @Description('If enabled, site visitors can provide feedback on the assistant answers in the chat window.')
+    @Description('If enabled, site visitors can provide feedback on the assistant\'s answer in the chat window.')
     @DefaultValue(true)
     @DataType(KnownFieldTypes.ChipChoice)
     @Choice('[{"Title":"Yes","Name":"Yes","Value":"True","Icon":null},{"Title":"No","Name":"No","Value":"False","Icon":null}]')

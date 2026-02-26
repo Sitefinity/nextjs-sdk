@@ -22,7 +22,7 @@ export class SitefinityAssistantApiClient {
     static async getVersionInfoAsync(assistantType: string | null): Promise<VersionInfoDto | null> {
         try {
             const serviceUrl = RootUrlService.getServerCmsServiceUrl();
-            const functionUrl = `${serviceUrl}/${assistantType === 'PARAG' ? AssistantApiConstants.SitefinityGetPARAGAssistantVersionInfoFunctionName : AssistantApiConstants.SitefinityGetAssistantVersionInfoFunctionName}`;
+            const functionUrl = `${serviceUrl}/${assistantType === AssistantApiConstants.PARAG ? AssistantApiConstants.SitefinityGetPARAGAssistantVersionInfoFunctionName : AssistantApiConstants.SitefinityGetAssistantVersionInfoFunctionName}`;
 
             const response = await RestClient.sendRequest<VersionInfoDto>({
                 url: functionUrl,

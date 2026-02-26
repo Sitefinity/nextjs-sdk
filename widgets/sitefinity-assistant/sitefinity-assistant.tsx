@@ -6,6 +6,7 @@ import { SitefinityAssistantConfig } from './sitefinity-assistant-config';
 import { SitefinityAssistantApiClient } from './sitefinity-assistant-api-client';
 import { RestClient } from '@progress/sitefinity-nextjs-sdk/rest-sdk';
 import Script from 'next/script';
+import { AssistantApiConstants } from './assistant-api-constants';
 
 // Re-export DisplayMode for use in other components
 export { DisplayMode } from './sitefinity-assistant.entity';
@@ -51,7 +52,7 @@ export async function SitefinityAssistant(props: WidgetContext<SitefinityAssista
         jqueryUrl: SitefinityAssistantConfig.getCdnUrl('jquery.min.js', version),
         markedUrl: SitefinityAssistantConfig.getCdnUrl('marked.min.js', version),
         chatJsUrl: SitefinityAssistantConfig.getCdnUrl('sf-assistant-chat.js', version),
-        chatServiceUrl: SitefinityAssistantConfig.getCdnUrl(entity.AssistantType === 'PARAG' ?
+        chatServiceUrl: SitefinityAssistantConfig.getCdnUrl(entity.AssistantType === AssistantApiConstants.PARAG ?
                 'parag-chat-service.js' :
                 'azure-assistant-chat-service.js', version),
         widgetCssUrl: SitefinityAssistantConfig.getCdnUrl('sf-assistant-chat-widget.min.css', version),
@@ -108,7 +109,7 @@ export async function SitefinityAssistant(props: WidgetContext<SitefinityAssista
                 css: entity.CustomCss
             },
             serviceSettings: {
-                serviceType: entity.AssistantType === 'PARAG' ?
+                serviceType: entity.AssistantType === AssistantApiConstants.PARAG ?
                     'ProgressARAGChatService' :
                     'AzureAssistantChatService',
                 greetingsMessage: entity.GreetingMessage,

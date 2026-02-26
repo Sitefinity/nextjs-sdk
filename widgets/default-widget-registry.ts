@@ -18,6 +18,14 @@ import { SearchResults } from './search-results/search-results';
 import { SearchFacets } from './search-facets/search-facets';
 import { SitefinityAssistant } from './sitefinity-assistant/sitefinity-assistant';
 import { filterSitefinityAssistantWidget } from './sitefinity-assistant/sitefinity-assistant-widget-filter';
+import { AskBox } from './ask-box/ask-box';
+import { Answer } from './answer/answer';
+import { Results } from './results/results';
+import { filterAskBoxWidget } from './ask-box/ask-box-widget-filter';
+import { filterAnswerWidget } from './answer/answer-widget-filter';
+import { AskBoxEntity } from './ask-box/ask-box.entity';
+import { AnswerEntity } from './answer/answer.entity';
+import { ResultsEntity } from './results/results.entity';
 import { ClassificationEntity } from './classification/classification-entity';
 import { ContentListEntity } from './content-list/content-list-entity';
 import { SectionEntity } from './section/section.entity';
@@ -55,6 +63,7 @@ import { IntentBoxEntity } from './indent-driven/intent-box/intent-box.entity';
 import { IntentDrivenContent } from './indent-driven/intent-driven-content/intent-driven-content';
 import { IntentDrivenContentEntity } from './indent-driven/intent-driven-content/intent-driven-content.entity';
 import { filterDynamicExperienceWidgets } from './indent-driven/intent-driven-content-widget-filter';
+import { filterResultsWidget } from './results/results-widget-filter';
 
 export const defaultWidgetRegistry: WidgetRegistry = {
     widgets: {
@@ -170,6 +179,44 @@ export const defaultWidgetRegistry: WidgetRegistry = {
                     ViewFunction: DocumentDetailItemView
                 }
             }
+        },
+        'SitefinityAskBox': {
+            entity: AskBoxEntity,
+            componentType: AskBox,
+            editorMetadata: {
+                Title: 'AI ask box',
+                Category: 'Content',
+                Section: 'AI search',
+                EmptyIconText: 'Set where to search',
+                EmptyIcon: 'search',
+                HasQuickEditOperation: true,
+                IconName: 'ai-search-sparkle'
+            },
+            ssr: true
+        },
+        'SitefinityAnswer': {
+            entity: AnswerEntity,
+            componentType: Answer,
+            editorMetadata: {
+                Title: 'AI answer',
+                Category: 'Content',
+                Section: 'AI search',
+                HasQuickEditOperation: true,
+                IconName: 'ai-search-sparkle'
+            },
+            ssr: true
+        },
+        'SitefinityResults': {
+            entity: ResultsEntity,
+            componentType: Results,
+            editorMetadata: {
+                Title: 'AI results',
+                Category: 'Content',
+                Section: 'AI search',
+                HasQuickEditOperation: true,
+                IconName: 'ai-search-sparkle'
+            },
+            ssr: true
         },
         'SitefinityIntentBox': {
             componentType: IntentBox,
@@ -415,6 +462,9 @@ export const defaultWidgetRegistry: WidgetRegistry = {
     },
     filters: [
         filterSitefinityAssistantWidget,
+        filterAskBoxWidget,
+        filterAnswerWidget,
+        filterResultsWidget,
         filterDynamicExperienceWidgets
     ]
 };

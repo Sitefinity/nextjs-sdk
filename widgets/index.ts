@@ -199,3 +199,21 @@ export * from './sitefinity-assistant/sitefinity-assistant-config';
 export * from './sitefinity-assistant/sitefinity-assistant-widget-filter';
 export * from './sitefinity-assistant/sitefinity-assistant.entity';
 export * from './sitefinity-assistant/sitefinity-assistant';
+
+export * from './ask-box/ask-box.entity';
+export * from './ask-box/ask-box';
+export * from './ask-box/ask-box.view';
+export * from './ask-box/ask-box.view-props';
+export * from './ask-box/ask-box-widget-filter';
+
+export * from './answer/answer.entity';
+export * from './answer/answer';
+export * from './answer/answer.view';
+export * from './answer/answer.view-props';
+export * from './answer/answer-widget-filter';
+
+export * from './results/results.entity';
+export * from './results/results';
+export * from './results/results.view';
+export * from './results/results.view-props';
+export * from './results/results-widget-filter';

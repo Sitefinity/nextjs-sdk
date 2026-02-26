@@ -1,4 +1,5 @@
 import { RootUrlService } from '@progress/sitefinity-nextjs-sdk/rest-sdk';
+import { AssistantApiConstants } from './assistant-api-constants';
 
 /**
  * Configuration service for Sitefinity Assistant widget
@@ -21,28 +22,6 @@ export class SitefinityAssistantConfig {
     }
 
     /**
-     * Gets the CDN root folder relative path
-     * Defaults to "staticfiles/" if not configured
-     */
-    static getCdnRootFolderRelativePath(): string {
-        const rootPath = process.env.SF_ASSISTANT_CDN_ROOT_FOLDER_RELATIVE_PATH;
-
-        // Default to "staticfiles/" if not configured (matching .NET Core behavior)
-        if (rootPath === null || rootPath === undefined) {
-            return 'staticfiles/';
-        }
-
-        // If explicitly set to empty string, return empty
-        if (rootPath === '') {
-            return '';
-        }
-
-        // Ensure path ends with '/' and doesn't start with '/'
-        const trimmedPath = rootPath.trim().replace(/^\/+|\/+$/g, '');
-        return trimmedPath ? `${trimmedPath}/` : '';
-    }
-
-    /**
      * Generates a full CDN URL for a given filename
      * @param filename The filename to generate URL for
      * @param version Optional version parameter
@@ -54,10 +33,9 @@ export class SitefinityAssistantConfig {
             ? hostname
             : `https://${hostname}`;
 
-        const rootPath = this.getCdnRootFolderRelativePath();
         const versionSuffix = version ? `?ver=${version}` : '';
 
-        return `${baseUrl}/${rootPath}${filename}${versionSuffix}`;
+        return `${baseUrl}/${filename}${versionSuffix}`;
     }
 
     /**
@@ -65,7 +43,7 @@ export class SitefinityAssistantConfig {
      */
     static getChatServiceUrl(assistantType: string | null): string {
         const webServicePath = RootUrlService.getWebServicePath();
-        return assistantType === 'PARAG' ?
+        return assistantType === AssistantApiConstants.PARAG ?
                 `/${webServicePath}/AgenticRag/` :
                 `/${webServicePath}/SitefinityAssistantChatService/`;
     }
