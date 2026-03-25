@@ -119,6 +119,10 @@ export async function SitefinityAssistant(props: WidgetContext<SitefinityAssista
                 configurationName: entity.ConfigurationName,
                 showFeedbackButtons: entity.ShowFeedback,
                 showSources: entity.ShowSources,
+                feedbackYesTooltipText: entity.PositiveFeedbackTooltip,
+                feedbackNoTooltipText: entity.NegativeFeedbackTooltip,
+                feedbackThanksText: entity.ThankYouMessage,
+                sourcesHeaderText: entity.SourcesHeader,
                 additionalQueryParams: {
                     sf_site: props.requestContext.layout.SiteId
                 }

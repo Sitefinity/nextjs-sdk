@@ -54,7 +54,7 @@ export class AnswerEntity {
     @Group('Include...')
     ShowNotice: boolean = true;
 
-    @ContentSection(SetupSectionName, 6)
+    @ContentSection(SetupSectionName, 5)
     @DisplayName('Enable visitor feedback')
     @Description('If enabled, site visitors can provide feedback on the generated answer.')
     @DefaultValue(true)

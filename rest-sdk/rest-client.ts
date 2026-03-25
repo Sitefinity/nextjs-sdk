@@ -851,9 +851,6 @@ export class RestClient {
 
         if ((httpLayoutResponse.status === 301 || httpLayoutResponse.status === 302)) {
             let location = httpLayoutResponse.headers.get('location') as string;
-            if (location.startsWith('/')) {
-                location = location.substring(1);
-            }
 
             if (!args.followRedirects) {
                 return {
@@ -864,6 +861,10 @@ export class RestClient {
                     }
                 };
             } else {
+                if (location.startsWith('/')) {
+                    location = location.substring(1);
+                }
+
                 args.pagePath = location;
                 const layoutRecursive = await this.getPageLayout(args);
                 return layoutRecursive;

@@ -158,6 +158,30 @@ export class SitefinityAssistantEntity {
     @DisplayName('CSS for custom design')
     @Placeholder('type URL or path to file...')
     CustomCss: string | null = null;
+    
+    @Category(PropertyCategory.Advanced)
+    @ContentSection('Labels and messages', 0)
+    @DefaultValue('Helpful')
+    @DisplayName('Positive feedback tooltip')
+    PositiveFeedbackTooltip: string = 'Helpful';
+
+    @Category(PropertyCategory.Advanced)
+    @ContentSection('Labels and messages', 1)
+    @DefaultValue('Not helpful')
+    @DisplayName('Negative feedback tooltip')
+    NegativeFeedbackTooltip: string = 'Not helpful';
+
+    @Category(PropertyCategory.Advanced)
+    @ContentSection('Labels and messages', 2)
+    @DefaultValue('Thank you for your feedback!')
+    @DisplayName('Thank you message')
+    ThankYouMessage: string = 'Thank you for your feedback!';
+
+    @Category(PropertyCategory.Advanced)
+    @ContentSection('Labels and messages', 3)
+    @DefaultValue('Sources')
+    @DisplayName('Sources header')
+    SourcesHeader: string = 'Sources';
 
     @Attributes('SitefinityAssistant')
     Attributes?: { [key: string]: Array<{ Key: string, Value: string}> };

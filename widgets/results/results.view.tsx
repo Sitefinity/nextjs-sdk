@@ -92,7 +92,6 @@ export function ResultsDefaultView(props: ResultsViewProps<ResultsEntity>) {
         {(props.widgetContext.requestContext.isEdit || props.searchResults !== null) && (
         <div
           ref={containerRef}
-          className={props.cssClass}
           data-sf-role="ai-results"
           {...props.attributes}>
           <div className="d-flex align-items-center justify-content-between my-3">

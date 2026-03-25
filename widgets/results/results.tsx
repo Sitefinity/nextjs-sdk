@@ -97,29 +97,23 @@ export async function Results(props: WidgetContext<ResultsEntity>) {
 
     let searchResults: FindResultItem[] | null = null;
     let resultsHeader = entity.NoResultsHeader.replace('{0}', searchQuery || '');
-    let totalCount = 0;
 
     if (searchQuery && knowledgeBoxName) {
-        const items = await performFind(
+        searchResults = await performFind(
             searchQuery,
             knowledgeBoxName,
             searchConfigurationName,
             ctx
         );
 
-        searchResults = items;
-        totalCount = items.length;
-
-        if (totalCount > 0) {
+        if (searchResults.length > 0) {
             resultsHeader = entity.SearchResultsHeader.replace('{0}', searchQuery);
         }
     }
 
     const viewProps: ResultsViewProps<ResultsEntity> = {
-        cssClass: entity.CssClass || undefined,
         searchResults,
         resultsHeader,
-        totalCount,
         resultsNumberLabel: entity.ResultsNumberLabel,
         pageSize: entity.PageSize ?? 20,
         attributes: { ...dataAttributes, ...customAttributes },
