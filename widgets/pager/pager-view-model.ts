@@ -100,16 +100,23 @@ export class PagerViewModel {
             return path + desiredPage + queryString;
         } else {
             const template = this.PagerQueryParameterTemplate;
-            const queryPattern = new RegExp(`${encodeURIComponent(template)}=(\\d{1,})`);
             const queryDesiredPage = `${encodeURIComponent(template)}=${pageNumber}`;
-            const value = context.searchParams[template];
 
-            if (value && value.length > 0 && parseInt( value, 10)) {
-                return path + '?' + queryString.replace(queryPattern, queryDesiredPage);
+            // Replace the page param in-place (preserving its position) to prevent duplicates
+            // when the current value is non-numeric (e.g. ?page=asdasd).
+            // If the param doesn't exist yet, append it.
+            if (Object.prototype.hasOwnProperty.call(context.searchParams, template)) {
+                const updatedParams = Object.fromEntries(
+                    Object.entries(context.searchParams).map(([key, value]) =>
+                        key === template ? [key, pageNumber.toString()] : [key, value]
+                    )
+                );
+                return path + '?' + setQueryParams(updatedParams);
             }
 
-            if (queryString){
-                return path + '?' + queryString + '&' + queryDesiredPage;
+            const baseQueryString = setQueryParams(context.searchParams);
+            if (baseQueryString) {
+                return path + '?' + baseQueryString + '&' + queryDesiredPage;
             }
 
             return path + '?' + queryDesiredPage;
@@ -128,9 +135,15 @@ export function getPageNumber(pagerMode: PagerMode, requestContext: Transferable
     if (pagerMode === PagerMode.QueryParameter) {
         const template = pagerQueryTemplate !== '' ? pagerQueryTemplate : PagerViewModel.PageNumberDefaultQueryTemplate;
         const queryParams = requestContext.searchParams;
+        const pageNumberParam = queryParams[template];
+
+        if (!pageNumberParam && pageNumberParam !== '') {
+            return 1;
+        }
+
         const pagerQueryParam = parseInt(queryParams[template], 10);
 
-        return !isNaN(pagerQueryParam) ? pagerQueryParam : 1;
+        return !isNaN(pagerQueryParam) ? pagerQueryParam : 0;
     } else {
         let pageNumber = 1;
         const url = requestContext.url;

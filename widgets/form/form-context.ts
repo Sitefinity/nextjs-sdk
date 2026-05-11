@@ -6,10 +6,13 @@ export const FormContext = createContext<{
     formViewProps: FormViewProps,
     hiddenInputs: {[key:string]: boolean},
     skippedInputs: {[key:string]: boolean},
-    formSubmitted: boolean,
     disabledSubmitButton: boolean,
+    totalFormPages: number,
+    currentFormPage: number,
+    setCurrentFormPage: (page: number) => void,
     sfFormValueChanged: ()=>void,
-    dispatchValidity: (inputKey: string, valid: boolean)=>void,
+    registerFieldValidator: (key: string, validator: () => boolean) => void,
+    validateFields: (keys: string[]) => boolean
 }>({
     formViewProps: {
         customSubmitAction: false,
@@ -17,9 +20,12 @@ export const FormContext = createContext<{
         invalidClass: StylingConfig.InvalidClass
     },
     sfFormValueChanged: ()=>{},
-    dispatchValidity: ()=>{},
+    registerFieldValidator: () => {},
+    validateFields: () => true,
     hiddenInputs: {},
-    formSubmitted: false,
     disabledSubmitButton: false,
+    totalFormPages: 0,
+    currentFormPage: 0,
+    setCurrentFormPage: () => {},
     skippedInputs: {}
 });

@@ -12,9 +12,9 @@ import { DropdownViewProps } from './interfaces/dropdown.view-props';
 export function DropdownFieldSet(props: DropdownViewProps<DropdownEntity>) {
     const dropdownUniqueId = props.sfFieldName;
     const {
-        formViewProps, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged,
         hiddenInputs, skippedInputs,
-        formSubmitted
+        registerFieldValidator
     } = React.useContext(FormContext);
     const selectRef = React.useRef<HTMLSelectElement>(null);
     const initiallySelectedItem = props.choices.find((ch: ChoiceOption) => ch.Selected);
@@ -26,9 +26,9 @@ export function DropdownFieldSet(props: DropdownViewProps<DropdownEntity>) {
     function dispatchValueChanged() {
         clearTimeout(delayTimer);
         delayTimer = setTimeout(function () {
-             sfFormValueChanged();
+            sfFormValueChanged();
         }, 300);
-     }
+    }
 
     const handleDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         handleDropdownValidation();
@@ -50,14 +50,9 @@ export function DropdownFieldSet(props: DropdownViewProps<DropdownEntity>) {
         return true;
     };
 
-    React.useEffect(()=>{
-        let isValid = false;
-        if (formSubmitted) {
-            isValid = handleDropdownValidation();
-        }
-        dispatchValidity(dropdownUniqueId, isValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formSubmitted]);
+    React.useEffect(() => {
+        registerFieldValidator(dropdownUniqueId, handleDropdownValidation);
+    }, []);
 
     const rootClass = classNames(
         'mb-3',
@@ -65,7 +60,7 @@ export function DropdownFieldSet(props: DropdownViewProps<DropdownEntity>) {
         isHidden
             ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
             : StylingConfig.VisibilityClasses[VisibilityStyle.Visible]
-        );
+    );
 
     return (
       <fieldset data-sf-role="dropdown-list-field-container" className={rootClass}
@@ -74,9 +69,9 @@ export function DropdownFieldSet(props: DropdownViewProps<DropdownEntity>) {
         <legend className="h6" id={`choice-field-label-${dropdownUniqueId}`}>{props.label}</legend>
 
         <select
-          className={classNames('form-select',{
-                [formViewProps.invalidClass!]: formViewProps.invalidClass && props.required && errorMessageText
-          })}
+          className={classNames('form-select', {
+                    [formViewProps.invalidClass!]: formViewProps.invalidClass && props.required && errorMessageText
+                })}
           ref={selectRef}
           data-sf-role="dropdown-list-field-select"
           name={dropdownUniqueId}
@@ -84,20 +79,20 @@ export function DropdownFieldSet(props: DropdownViewProps<DropdownEntity>) {
           value={selectValue}
           disabled={isHidden || isSkipped}
           onChange={handleDropdownChange}>
-          { props.choices.map((choiceOption: ChoiceOption, idx: number) => {
-            return <option key={idx} value={choiceOption.Value || ''}>{choiceOption.Name}</option>;
-            })
-           }
+          {props.choices.map((choiceOption: ChoiceOption, idx: number) => {
+                    return <option key={idx} value={choiceOption.Value || ''}>{choiceOption.Name}</option>;
+                })
+                }
         </select>
-        { props.instructionalText &&
+        {props.instructionalText &&
         <p className="text-muted small mt-1" id={`choice-field-description-${dropdownUniqueId}`}>
           {props.instructionalText}
         </p>
-        }
+            }
         {errorMessageText && <div data-sf-role="error-message" role="alert" aria-live="assertive" className="invalid-feedback" >
-          {errorMessageText}
+            {errorMessageText}
         </div>
-        }
+            }
       </fieldset>
     );
 }

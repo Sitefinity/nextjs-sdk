@@ -25,6 +25,10 @@ import { TextFieldEntity } from './form-widgets/textfield/text-field.entity';
 import { TextFieldCSR } from './form-widgets/textfield/textfield.csr';
 import { FormCSR } from './form/form.csr';
 import { FormEntity } from './form/form.entity';
+import { FormNavigationCSR } from './form-widgets/form-navigation/form-navigation.csr';
+import { FormNavigationEntity } from './form-widgets/form-navigation/form-navigation.entity';
+import { FormPageCSR } from './form-widgets/form-page/form-page.csr';
+import { FormPageEntity } from './form-widgets/form-page/form-page.entity';
 
 export const CSRFormComponents: { [key: string]: WidgetMetadata } = {
     'SitefinityForm': {
@@ -211,6 +215,33 @@ export const CSRFormComponents: { [key: string]: WidgetMetadata } = {
                 SfFieldType: 'ContentBlock'
             },
             IconName: 'content-block'
+        },
+        ssr: false
+    },
+    'SitefinityFormNavigation': {
+        entity: FormNavigationEntity,
+        componentType: FormNavigationCSR,
+        editorMetadata: {
+            Title: 'Form navigation',
+            Toolbox: 'Forms',
+            Category: 'Layout',
+            HideEmptyVisual: true,
+            InitialProperties: {
+                SfFieldType: 'FormNavigation'
+            }
+        },
+        ssr: false
+    },
+    'SitefinityFormPage': {
+        entity: FormPageEntity,
+        componentType: FormPageCSR,
+        editorMetadata: {
+            Title: 'Form page',
+            Toolbox: 'Forms',
+            Category: 'Layout',
+            InitialProperties: {
+                SfFieldType: 'FormPage'
+            }
         },
         ssr: false
     }

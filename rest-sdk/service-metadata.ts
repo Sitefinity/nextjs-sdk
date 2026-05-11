@@ -58,7 +58,7 @@ export class ServiceMetadata {
 
         return 'Title';
     }
-    
+
     /**
      * Gets the full type name for a given set name.
      * e.g. newsitems -> Telerik.Sitefinity.News.Model.NewsItem
@@ -267,16 +267,16 @@ export class ServiceMetadata {
                 }
 
                 return null;
-            } else if (propTypeString === 'boolean' && value instanceof Boolean) {
+            } else if (propTypeString === 'boolean' && (value instanceof Boolean || typeof value === 'boolean')) {
                 return value.toString();
             } else if (propTypeArray != null && propType.length > 0) {
                 if (propTypeArray.some(x => x.toString() === 'number') || propTypeArray.some(x => x.toString() === 'boolean')) {
-                    return value.ToString();
+                    return value.toString();
                 } else if (propTypeArray.some(x => x.toString() === 'string')) {
                     return `'${value}'`;
                 }
             } else if (value != null) {
-                return value.ToString();
+                return value.toString();
             }
         }
 
@@ -405,7 +405,7 @@ export class ServiceMetadata {
 
         return false;
     }
-    
+
     private static getEntityDefinition(itemType : string) {
         const mainEntitySet = ServiceMetadata.serviceMetadataCache.entityContainer.entitySets[itemType];
 

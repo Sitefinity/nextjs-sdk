@@ -1,5 +1,4 @@
-import type { Config } from 'dompurify';
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify, { Config } from 'isomorphic-dompurify';
 
 export interface SanitizerConfig {
     additionalAtributes?: string[] | undefined;

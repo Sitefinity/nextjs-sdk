@@ -26,9 +26,9 @@ export function NumberFieldClient(props: NumberFieldViewProps<NumberFieldEntity>
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [inputValue, setInputValue] = React.useState(props.predefinedValue || '');
     const {
-        formViewProps, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged,
         hiddenInputs, skippedInputs,
-        formSubmitted
+        registerFieldValidator
     } = useContext(FormContext);
 
     const isHidden = hiddenInputs[numberFieldUniqueId];
@@ -89,21 +89,15 @@ export function NumberFieldClient(props: NumberFieldViewProps<NumberFieldEntity>
         }
     };
 
-    const handleInputEvent = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInputValue((e.target as HTMLInputElement).value);
+    const handleInputEvent = (e: React.FormEvent<HTMLInputElement>) => {
+        setInputValue(e.currentTarget.value);
         handleNumberValidation();
         dispatchValueChanged();
     };
 
     React.useEffect(() => {
-        let isValid = false;
-        if (formSubmitted) {
-            isValid = handleNumberValidation();
-        }
-        dispatchValidity(numberFieldUniqueId, isValid);
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formSubmitted]);
+        registerFieldValidator(numberFieldUniqueId, handleNumberValidation);
+    }, []);
 
     const rootClass = classNames(
         'mb-3',
@@ -156,9 +150,9 @@ export function NumberFieldClient(props: NumberFieldViewProps<NumberFieldEntity>
         {errorMessageText &&
         <div id={numberFieldErrorMessageId} data-sf-role="error-message" role="alert" aria-live="assertive"
           className={classNames(
-                                'invalid-feedback', {
-                                [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: true
-                            })}>
+                        'invalid-feedback', {
+                        [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: true
+                    })}>
           {errorMessageText}
         </div>}
       </div>

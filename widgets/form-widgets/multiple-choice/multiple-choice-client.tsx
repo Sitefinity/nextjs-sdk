@@ -38,9 +38,9 @@ export function MultipleChoiceClient(props: MultipleChoiceViewProps<MultipleChoi
     const [inputValues, setInputValues] = React.useState(props.choices);
     const otherChoiceInputRef = React.useRef<HTMLInputElement>(null);
     const {
-        formViewProps, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged,
         hiddenInputs, skippedInputs,
-        formSubmitted
+        registerFieldValidator
     } = useContext(FormContext);
     const isHidden = hiddenInputs[multipleChoiceUniqueId];
     const isSkipped = skippedInputs[multipleChoiceUniqueId];
@@ -49,10 +49,10 @@ export function MultipleChoiceClient(props: MultipleChoiceViewProps<MultipleChoi
     const [showOtherInput, setShowOtherInput] = useState(false);
     let delayTimer: ReturnType<typeof setTimeout>;
     function dispatchValueChanged() {
-       clearTimeout(delayTimer);
-       delayTimer = setTimeout(function () {
+        clearTimeout(delayTimer);
+        delayTimer = setTimeout(function () {
             sfFormValueChanged();
-       }, 300);
+        }, 300);
     }
 
     function clearErrorMessage() {
@@ -61,7 +61,7 @@ export function MultipleChoiceClient(props: MultipleChoiceViewProps<MultipleChoi
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         clearErrorMessage();
-        const newInputValues = [...inputValues].map((input:ChoiceOption)=>{
+        const newInputValues = [...inputValues].map((input: ChoiceOption) => {
             return {
                 ...input,
                 Selected: event.target.value.toString() === input.Value?.toString()
@@ -73,7 +73,7 @@ export function MultipleChoiceClient(props: MultipleChoiceViewProps<MultipleChoi
     };
 
     function handleOtherChange(event: React.ChangeEvent<HTMLInputElement>) {
-        const newInputValues = [...inputValues].map(input=>{
+        const newInputValues = [...inputValues].map(input => {
             return {
                 ...input,
                 Selected: false
@@ -85,7 +85,7 @@ export function MultipleChoiceClient(props: MultipleChoiceViewProps<MultipleChoi
     }
 
     function handleOtherInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-        if (event.target.value){
+        if (event.target.value) {
             clearErrorMessage();
         } else {
             setErrorMessageText(props.requiredErrorMessage.replace('{0}', props.label));
@@ -94,13 +94,13 @@ export function MultipleChoiceClient(props: MultipleChoiceViewProps<MultipleChoi
         dispatchValueChanged();
     }
 
-    function handleOtherInputInput(event: React.ChangeEvent<HTMLInputElement>) {
-        setOtherInputText(event.target.value);
+    function handleOtherInputInput(event: React.FormEvent<HTMLInputElement>) {
+        setOtherInputText(event.currentTarget.value);
     }
 
-    const hasValueSelected = React.useMemo(()=>{
-        return inputValues.some((i: ChoiceOption)=>i.Selected);
-    },[inputValues]);
+    const hasValueSelected = React.useMemo(() => {
+        return inputValues.some((i: ChoiceOption) => i.Selected);
+    }, [inputValues]);
 
     const handleChoiceValidation = () => {
         const otherChoiceInput = otherChoiceInputRef.current;
@@ -119,79 +119,78 @@ export function MultipleChoiceClient(props: MultipleChoiceViewProps<MultipleChoi
         return true;
     };
 
-    React.useEffect(()=>{
-        let isValid = false;
-        if (formSubmitted) {
-            isValid = handleChoiceValidation();
-        }
-        dispatchValidity(multipleChoiceUniqueId, isValid);
+    const validatorRef = React.useRef(handleChoiceValidation);
+    // eslint-disable-next-line react-hooks/refs
+    validatorRef.current = handleChoiceValidation;
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[formSubmitted]);
+    React.useEffect(() => {
+        registerFieldValidator(multipleChoiceUniqueId, () => validatorRef.current());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
       <fieldset data-sf-role="multiple-choice-field-container"
         className={classNames(
-            'mb-3',
-            props.cssClass,
-            isHidden
-                ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
-                : StylingConfig.VisibilityClasses[VisibilityStyle.Visible])}
+                'mb-3',
+                props.cssClass,
+                isHidden
+                    ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
+                    : StylingConfig.VisibilityClasses[VisibilityStyle.Visible])}
         aria-labelledby={`choice-field-label-${multipleChoiceUniqueId} choice-field-description-${multipleChoiceUniqueId}`}>
         <input type="hidden" data-sf-role="required-validator" value={props.required.toString()} />
         <legend className="h6" id={`choice-field-label-${multipleChoiceUniqueId}`}>{props.label}</legend>
-        { props.instructionalText &&
-          <p className="text-muted small" id={`choice-field-description-${multipleChoiceUniqueId}`}>{props.instructionalText}</p>
-        }
+        {props.instructionalText &&
+        <p className="text-muted small" id={`choice-field-description-${multipleChoiceUniqueId}`}>{props.instructionalText}</p>
+            }
         <div className={layoutClass}>
-          { inputValues.map((choiceOption: ChoiceOption, idx: number)=>{
-                const choiceOptionId = `choiceOption-${idx}-${inputMultipleChoiceUniqueId}`;
+          {inputValues.map((choiceOption: ChoiceOption, idx: number) => {
+                    const choiceOptionId = `choiceOption-${idx}-${inputMultipleChoiceUniqueId}`;
 
-                return (<div className={`form-check ${innerColumnClass}`} key={idx}>
-                  <input className="form-check-input" type="radio" name={multipleChoiceUniqueId} id={choiceOptionId}
-                    value={choiceOption.Value || ''} data-sf-role="multiple-choice-field-input" required={props.required && !hasValueSelected}
-                    checked={choiceOption.Selected || false}
-                    disabled={isHidden || isSkipped}
-                    onChange={handleChange}
-                    />
-                  <label className="form-check-label" htmlFor={choiceOptionId}>
-                    {choiceOption.Name}
-                  </label>
-                </div>);
-            })
-        }
-          { props.hasAdditionalChoice &&
+                    return (<div className={`form-check ${innerColumnClass}`} key={idx}>
+                      <input className="form-check-input" type="radio" name={multipleChoiceUniqueId} id={choiceOptionId}
+                        value={choiceOption.Value || ''} data-sf-role="multiple-choice-field-input" required={props.required && !hasValueSelected}
+                        checked={choiceOption.Selected || false}
+                        disabled={isHidden || isSkipped}
+                        onChange={handleChange}
+                        />
+                      <label className="form-check-label" htmlFor={choiceOptionId}>
+                        {choiceOption.Name}
+                      </label>
+                    </div>);
+                })
+                }
+          {props.hasAdditionalChoice &&
             <div className={`form-check ${innerColumnClass}`}>
               <input className="form-check-input mt-1" type="radio" name={multipleChoiceUniqueId} id={otherChoiceOptionId}
                 data-sf-role="multiple-choice-field-input" required={props.required && !hasValueSelected}
                 checked={showOtherInput}
                 value={otherInputText}
-                onChange={handleOtherChange}/>
+                onChange={handleOtherChange} />
               <label className="form-check-label" htmlFor={otherChoiceOptionId}>Other</label>
               {showOtherInput && <input type="text"
                 ref={otherChoiceInputRef}
-                className={classNames('form-control',{
-                [formViewProps.invalidClass!]: formViewProps.invalidClass && props.required && !otherInputText
-            })}
+                className={classNames('form-control', {
+                                [formViewProps.invalidClass!]: formViewProps.invalidClass && props.required && !otherInputText
+                            })}
                 data-sf-role="choice-other-input"
                 value={otherInputText}
                 required={props.required}
                 onChange={handleOtherInputChange}
                 onInput={handleOtherInputInput}
-          />}
+                        />}
             </div>
-        }
+                }
         </div>
 
         {props.required && errorMessageText && <div data-sf-role="error-message" role="alert" aria-live="assertive"
           className={classNames(
-                'invalid-feedback',{
+                    'invalid-feedback', {
                     [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: true
                 })}
             >
-          {errorMessageText}
+            {errorMessageText}
         </div>
-        }
+            }
       </fieldset>
     );
 }

@@ -9,10 +9,10 @@ import { FormContext } from './form-context';
 import { FormViewProps } from './form.view-props';
 
 
-const generateHiddenFields = (fields: string[]) =>{
+const generateHiddenFields = (fields: string[]) => {
     return fields.reduce((obj: object, item: string) =>
-    Object.assign(obj, { [item]: true })
-    , {});
+        Object.assign(obj, { [item]: true })
+        , {});
 };
 
 export function FormClient(props: FromContainerProps) {
@@ -20,28 +20,40 @@ export function FormClient(props: FromContainerProps) {
     const fromElementRef = React.useRef<HTMLFormElement>(null);
     const formRef = React.useRef<HTMLDivElement>(null);
     const formRules = React.useRef<FormRulesExecutor>(null);
-    const [ disabledSubmitButton, setDisabledSubmitButton] = React.useState(false);
-    const [ showLoading, setShowLoading] = React.useState(false);
-    const [ showFields, setShowFields] = React.useState(true);
-    const [ errorMessage, setErrorMessage] = React.useState<string>();
-    const [ successMessage, setSuccessMessage] = React.useState<string>();
-    const [ formSubmitted, setFormSubmitted] = React.useState(false);
+    const [disabledSubmitButton, setDisabledSubmitButton] = React.useState(false);
+    const [currentFormPage, setCurrentFormPage] = React.useState(0);
+    const [showLoading, setShowLoading] = React.useState(false);
+    const [showFields, setShowFields] = React.useState(true);
+    const [errorMessage, setErrorMessage] = React.useState<string>();
+    const [successMessage, setSuccessMessage] = React.useState<string>();
     const splitHiddenFields = viewProps.hiddenFields?.split(',') || [];
-    const [ hiddenInputs, setHiddenInputs ] = React.useState<{[key: string]: boolean}>(generateHiddenFields(splitHiddenFields));
-    const [ skippedInputs, setSkippedInputs ] = React.useState<{[key: string]: boolean}>({});
-    const [ validatedInputs, setValidatedInputs ] = React.useState<{[key: string]: boolean}>({});
+    const [hiddenInputs, setHiddenInputs] = React.useState<{ [key: string]: boolean }>(generateHiddenFields(splitHiddenFields));
+    const [skippedInputs, setSkippedInputs] = React.useState<{ [key: string]: boolean }>({});
+    const fieldValidatorsRef = React.useRef<{ [key: string]: () => boolean }>({});
+
+    const registerFieldValidator = React.useCallback((key: string, validator: () => boolean) => {
+        fieldValidatorsRef.current[key] = validator;
+    }, []);
+
+    const validateFields = React.useCallback((keys: string[]) => {
+        let allValid = true;
+        keys.forEach(key => {
+            if (hiddenInputs[key] || skippedInputs[key]) {
+                return;
+            }
+            const validator = fieldValidatorsRef.current[key];
+            if (validator) {
+                const isValid = validator();
+                if (!isValid) {
+                    allValid = false;
+                }
+            }
+        });
+        return allValid;
+    }, [hiddenInputs, skippedInputs]);
+
     const sfFormValueChanged = () => {
         formRules.current!.process();
-    };
-
-    const dispatchValidity = (inputKey: string, valid: boolean) => {
-         setValidatedInputs(vI => {
-            const newValidatedInputs = {
-                ...vI,
-                [inputKey]: valid
-            };
-            return newValidatedInputs;
-        });
     };
 
     const updateFields = React.useCallback((args: {
@@ -52,7 +64,7 @@ export function FormClient(props: FromContainerProps) {
     }) => {
         if (args.show) {
             setHiddenInputs(hI => {
-                const newHiddenFields = {...hI};
+                const newHiddenFields = { ...hI };
                 delete newHiddenFields[args.show!];
                 return newHiddenFields;
             });
@@ -60,7 +72,7 @@ export function FormClient(props: FromContainerProps) {
 
         if (args.hide) {
             setHiddenInputs(hI => {
-                const newHiddenFields = {...hI};
+                const newHiddenFields = { ...hI };
                 newHiddenFields[args.hide!] = true;
                 return newHiddenFields;
             });
@@ -68,7 +80,7 @@ export function FormClient(props: FromContainerProps) {
 
         if (args.skip) {
             setSkippedInputs(sI => {
-                const newSkippedFields = {...sI};
+                const newSkippedFields = { ...sI };
                 delete newSkippedFields[args.skip!];
                 return newSkippedFields;
             });
@@ -76,12 +88,12 @@ export function FormClient(props: FromContainerProps) {
 
         if (args.unSkip) {
             setSkippedInputs(sI => {
-                const newSkippedFields = {...sI};
+                const newSkippedFields = { ...sI };
                 newSkippedFields[args.unSkip!] = true;
                 return newSkippedFields;
             });
         }
-    },[]);
+    }, []);
 
     const formCreateRef = React.useCallback((node: HTMLDivElement) => {
         if (node !== null) {
@@ -90,7 +102,7 @@ export function FormClient(props: FromContainerProps) {
             formRules.current = fr;
             fr.process();
         }
-      }, [updateFields]);
+    }, [updateFields]);
 
 
     function showSuccessMessage(message: string) {
@@ -116,7 +128,7 @@ export function FormClient(props: FromContainerProps) {
 
         setSuccessMessage('');
 
-       setShowFields(false);
+        setShowFields(false);
     }
 
     function showSubmittedForm() {
@@ -151,7 +163,7 @@ export function FormClient(props: FromContainerProps) {
 
         const genericFormError = 'Form could not be submitted';
         const headerName = 'X-SF-ANTIFORGERY-REQUEST';
-        const headers: {[key: string]: string} = {};
+        const headers: { [key: string]: string } = {};
         headers[headerName] = '';
 
         fetch('/sitefinity/anticsrf', { headers: headers }).then(function (csrfResponse) {
@@ -163,7 +175,7 @@ export function FormClient(props: FromContainerProps) {
                 const formData = new FormData(form);
                 formData.set('sf_antiforgery', headerValue || '');
                 const hiddenInputsTrueKeys = Object.entries(hiddenInputs).filter(([key, value]) => value === true).map(([key, value]) => key);
-                formData.set('sf_FormHiddenFields', hiddenInputsTrueKeys.join(',') );
+                formData.set('sf_FormHiddenFields', hiddenInputsTrueKeys.join(','));
 
                 fetch(viewProps.submitUrl!, { method: 'POST', body: formData }).then(function (formSubmitResponse) {
                     formSubmitResponse.json().then(function (jsonFormSubmitResponse) {
@@ -217,31 +229,15 @@ export function FormClient(props: FromContainerProps) {
 
     const handleSubmit = function (e: React.FormEvent<HTMLFormElement>) {
         e?.preventDefault();
-        setFormSubmitted(true);
-    };
-
-    const allInputsAreValid = React.useMemo(()=>{
-        return Object.entries(validatedInputs)
-            .filter(([inputKey, inputValue]) => !hiddenInputs[inputKey])
-            .map(([inputKey, inputValue])=>{
-                return !skippedInputs[inputKey] && inputValue;
-        }).every((i) => i);
-    }, [validatedInputs, hiddenInputs, skippedInputs]);
-
-    React.useEffect(()=>{
-        if (formSubmitted && allInputsAreValid) {
+        const allKeys = Object.keys(fieldValidatorsRef.current);
+        const allValid = validateFields(allKeys);
+        if (allValid) {
             validFormSubmit();
         }
-        if (formSubmitted) {
-            setTimeout(()=>{
-                setFormSubmitted(false);
-            },10);
-        }
-         // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[formSubmitted, allInputsAreValid]);
+    };
 
     return (
-      <form ref={fromElementRef} action={viewProps.submitUrl} onSubmit={handleSubmit} method="post" {...formDataAttributes}  noValidate={true}>
+      <form ref={fromElementRef} action={viewProps.submitUrl} onSubmit={handleSubmit} method="post" {...formDataAttributes} noValidate={true}>
         <div data-sf-role="success-message" className={classNames(
                 'valid-feedback',
                 successMessage
@@ -251,19 +247,19 @@ export function FormClient(props: FromContainerProps) {
           role="alert" aria-live="assertive">{successMessage || viewProps.successMessage}</div>
         <div data-sf-role="error-message"
           className={classNames(
-                'invalid-feedback',
-                errorMessage
-                    ? [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]
-                    : [StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]]
+                    'invalid-feedback',
+                    errorMessage
+                        ? [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]
+                        : [StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]]
                 )}
           role="alert" aria-live="assertive">
-          { errorMessage }
+          {errorMessage}
         </div>
         <div data-sf-role="loading"
           className={classNames(
-                showLoading
-                    ? [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]
-                    : [StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]]
+                    showLoading
+                        ? [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]
+                        : [StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]]
                 )}>
           <div className="d-flex justify-content-center">
             <div className="spinner-border" role="status">
@@ -272,22 +268,25 @@ export function FormClient(props: FromContainerProps) {
           </div>
         </div>
         <FormContext.Provider value={{
-            formViewProps: viewProps,
-            sfFormValueChanged,
-            hiddenInputs,
-            skippedInputs,
-            formSubmitted,
-            disabledSubmitButton,
-            dispatchValidity
-        }}>
+                formViewProps: viewProps,
+                sfFormValueChanged,
+                hiddenInputs,
+                skippedInputs,
+                disabledSubmitButton,
+                totalFormPages: viewProps.formModel?.ComponentContext.Components.filter((c: any) => c.Name === 'SitefinityFormPage').length || 0,
+                currentFormPage,
+                setCurrentFormPage,
+                registerFieldValidator,
+                validateFields
+            }}>
           <div
             ref={formCreateRef}
             className={classNames(
-                className,
-                showFields
-                    ? [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]
-                    : [StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]]
-                )}
+                        className,
+                        showFields
+                            ? [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]
+                            : [StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]]
+                    )}
             data-sf-role="form-container"
             data-sf-invalid={viewProps.invalidClass}
             data-sf-visibility-inline-visible={viewProps.visibilityClasses[VisibilityStyle.InlineVisible]}
@@ -304,5 +303,5 @@ export interface FromContainerProps {
     children: React.ReactNode;
     className: string | undefined;
     viewProps: FormViewProps;
-    formDataAttributes: {[key: string]: string};
+    formDataAttributes: { [key: string]: string };
 }

@@ -37,9 +37,9 @@ export function CheckboxesClient(props: CheckboxesViewProps<CheckboxesEntity>) {
     const otherChoiceInputRef = React.useRef<HTMLInputElement>(null);
     const [inputValues, setInputValues] = React.useState(props.choices);
     const {
-        formViewProps, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged,
         hiddenInputs, skippedInputs,
-        formSubmitted
+        registerFieldValidator
     } = useContext(FormContext);
     const isHidden = hiddenInputs[checkboxUniqueId];
     const isSkipped = skippedInputs[checkboxUniqueId];
@@ -87,8 +87,8 @@ export function CheckboxesClient(props: CheckboxesViewProps<CheckboxesEntity>) {
         dispatchValueChanged();
     }
 
-    function handleOtherInputInput(event: React.ChangeEvent<HTMLInputElement>) {
-        setOtherInputText(event.target.value);
+    function handleOtherInputInput(event: React.InputEvent<HTMLInputElement>) {
+        setOtherInputText((event.target as HTMLInputElement).value);
     }
 
     const hasValueSelected = React.useMemo(() => {
@@ -111,15 +111,14 @@ export function CheckboxesClient(props: CheckboxesViewProps<CheckboxesEntity>) {
         return true;
     };
 
-    React.useEffect(() => {
-        let isValid = false;
-        if (formSubmitted) {
-            isValid = handleChoiceValidation();
-        }
-        dispatchValidity(checkboxUniqueId, isValid);
+    const validatorRef = React.useRef(handleChoiceValidation);
+    // eslint-disable-next-line react-hooks/refs
+    validatorRef.current = handleChoiceValidation;
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formSubmitted]);
+    React.useEffect(() => {
+        registerFieldValidator(checkboxUniqueId, () => validatorRef.current());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (<fieldset
       data-sf-role="checkboxes-field-container"

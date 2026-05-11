@@ -18,9 +18,9 @@ export function TextFieldClient(props: TextFieldViewProps<TextFieldEntity>) {
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [inputValue, setInputValue] = React.useState(props.predefinedValue || '');
     const {
-        formViewProps, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged,
         hiddenInputs, skippedInputs,
-        formSubmitted
+        registerFieldValidator
     } = useContext(FormContext);
 
     const isHidden = hiddenInputs[textBoxUniqueId];
@@ -28,10 +28,10 @@ export function TextFieldClient(props: TextFieldViewProps<TextFieldEntity>) {
     const [errorMessageText, setErrorMessageText] = useState('');
     let delayTimer: ReturnType<typeof setTimeout>;
     function dispatchValueChanged() {
-       clearTimeout(delayTimer);
-       delayTimer = setTimeout(function () {
+        clearTimeout(delayTimer);
+        delayTimer = setTimeout(function () {
             sfFormValueChanged();
-       }, 300);
+        }, 300);
     }
 
     function setErrorMessage(_input: HTMLInputElement, message: string | null) {
@@ -80,21 +80,15 @@ export function TextFieldClient(props: TextFieldViewProps<TextFieldEntity>) {
             return true;
         }
     };
-    const handleInputEvent = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInputValue((e.target as HTMLInputElement).value);
+    const handleInputEvent = (e: React.FormEvent<HTMLInputElement>) => {
+        setInputValue(e.currentTarget.value);
         handleTextValidation();
         dispatchValueChanged();
     };
 
-    React.useEffect(()=>{
-        let isValid = false;
-        if (formSubmitted) {
-            isValid = handleTextValidation();
-        }
-        dispatchValidity(textBoxUniqueId, isValid);
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formSubmitted]);
+    React.useEffect(() => {
+        registerFieldValidator(textBoxUniqueId, handleTextValidation);
+    }, []);
 
     const rootClass = classNames(
         'mb-3',
@@ -102,13 +96,13 @@ export function TextFieldClient(props: TextFieldViewProps<TextFieldEntity>) {
         isHidden
             ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
             : StylingConfig.VisibilityClasses[VisibilityStyle.Visible]
-        );
+    );
 
     return (<div className={rootClass} data-sf-role="text-field-container">
       <label className="h6" htmlFor={textBoxUniqueId}>{props.label}</label>
       <input id={textBoxUniqueId}
         type={props.inputType}
-        className={classNames('form-control',{ [formViewProps.invalidClass!]: formViewProps.invalidClass && errorMessageText })}
+        className={classNames('form-control', { [formViewProps.invalidClass!]: formViewProps.invalidClass && errorMessageText })}
         ref={inputRef}
         name={props.fieldName!}
         placeholder={props.placeholderText || ''}
@@ -121,12 +115,12 @@ export function TextFieldClient(props: TextFieldViewProps<TextFieldEntity>) {
         onInvalid={handleTextValidation}
         {...props.validationAttributes}
         />
-      { props.instructionalText &&
+      {props.instructionalText &&
         <div id={textBoxInfoMessageId} className="form-text">{props.instructionalText}</div>
-      }
+        }
       {errorMessageText && <div id={textBoxErrorMessageId} data-sf-role="error-message" role="alert" aria-live="assertive" className="invalid-feedback" >
         {errorMessageText}
-      </div>}
+        </div>}
     </div>
     );
 }

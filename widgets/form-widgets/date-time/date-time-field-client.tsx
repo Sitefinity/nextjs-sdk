@@ -18,9 +18,9 @@ export function DateTimeFieldClient(props: DateTimeFieldViewProps<DateTimeFieldE
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [inputValue, setInputValue] = React.useState('');
     const {
-        formViewProps, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged,
         hiddenInputs, skippedInputs,
-        formSubmitted
+        registerFieldValidator
     } = useContext(FormContext);
 
     const isHidden = hiddenInputs[dateTimeFieldUniqueId];
@@ -61,21 +61,15 @@ export function DateTimeFieldClient(props: DateTimeFieldViewProps<DateTimeFieldE
         }
     };
 
-    const handleInputEvent = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInputValue((e.target as HTMLInputElement).value);
+    const handleInputEvent = (e: React.FormEvent<HTMLInputElement>) => {
+        setInputValue(e.currentTarget.value);
         handleDateTimeValidation();
         dispatchValueChanged();
     };
 
     React.useEffect(() => {
-        let isValid = false;
-        if (formSubmitted) {
-            isValid = handleDateTimeValidation();
-        }
-        dispatchValidity(dateTimeFieldUniqueId, isValid);
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formSubmitted]);
+        registerFieldValidator(dateTimeFieldUniqueId, handleDateTimeValidation);
+    }, []);
 
     const rootClass = classNames(
         'mb-3',

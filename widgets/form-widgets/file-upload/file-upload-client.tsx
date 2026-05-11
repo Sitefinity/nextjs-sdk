@@ -11,29 +11,31 @@ import { FileUploadViewProps } from './interface/file-upload.view-props';
 
 export function FileUploadClient(props: FileUploadViewProps<FileUploadEntity>) {
     const {
-        formViewProps, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged,
         hiddenInputs, skippedInputs,
-        formSubmitted
+        registerFieldValidator
     } = React.useContext(FormContext);
     const [initialLoad, setInitialLoad] = React.useState(true);
-    const [ fileInputs, setFileInputs ] = React.useState<{[key: string]: {
-        value?: string;
-        fileSizeMessage?: boolean;
-        fileTypeMessage?: boolean;
-    }}>({
+    const [fileInputs, setFileInputs] = React.useState<{
+        [key: string]: {
+            value?: string;
+            fileSizeMessage?: boolean;
+            fileTypeMessage?: boolean;
+        }
+    }>({
         [props.fieldName]: {}
     });
     let delayTimer: ReturnType<typeof setTimeout>;
     function dispatchValueChanged() {
         clearTimeout(delayTimer);
         delayTimer = setTimeout(function () {
-             sfFormValueChanged();
+            sfFormValueChanged();
         }, 300);
-     }
+    }
 
-    const someInputHasValue = React.useMemo(()=>{
-        return initialLoad || props.required && Object.values(fileInputs).some(i=>i.value);
-    },[fileInputs, props.required, initialLoad]);
+    const someInputHasValue = React.useMemo(() => {
+        return initialLoad || props.required && Object.values(fileInputs).some(i => i.value);
+    }, [fileInputs, props.required, initialLoad]);
 
 
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -49,21 +51,21 @@ export function FileUploadClient(props: FileUploadViewProps<FileUploadEntity>) {
         dispatchValueChanged();
     };
 
-    const handleAddInput = () =>{
-        const newInputs = {...fileInputs};
+    const handleAddInput = () => {
+        const newInputs = { ...fileInputs };
         newInputs[getUniqueId(props.fieldName)] = {};
         setFileInputs(newInputs);
     };
 
-    const handleRemoveInput = (event: React.MouseEvent<HTMLButtonElement>) =>{
-        const newInputs = {...fileInputs};
+    const handleRemoveInput = (event: React.MouseEvent<HTMLButtonElement>) => {
+        const newInputs = { ...fileInputs };
 
         delete newInputs[(event.target as HTMLButtonElement).id.split('remove-')[1]];
         setFileInputs(newInputs);
     };
 
-    const handleFileValidation = ()=>{
-        const newInputs = {...fileInputs};
+    const handleFileValidation = () => {
+        const newInputs = { ...fileInputs };
         let isValid = true;
         const fileInputElements = containerRef.current!.querySelectorAll('input[type="file"]');
         for (let i = 0; i < fileInputElements.length; i++) {
@@ -142,109 +144,104 @@ export function FileUploadClient(props: FileUploadViewProps<FileUploadEntity>) {
         }
 
         setFileInputs(newInputs);
-        const isRequiredFilled = props.required && Object.values(newInputs).some(i=>i.value) || !props.required;
+        const isRequiredFilled = props.required && Object.values(newInputs).some(i => i.value) || !props.required;
         return isRequiredFilled && isValid;
     };
 
-    React.useEffect(()=>{
-        let isValid = false;
-        if (formSubmitted) {
-            isValid = handleFileValidation();
-        }
-        dispatchValidity(props.fieldName, isValid);
+    React.useEffect(() => {
+        registerFieldValidator(props.fieldName, handleFileValidation);
+    }, []);
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[formSubmitted]);
 
-     return ( <div
-       ref={containerRef}
-       className={classNames(
-        'mb-3',
-        props.cssClass,
-        isHidden
-            ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
-            : StylingConfig.VisibilityClasses[VisibilityStyle.Visible]
+    return (<div
+      ref={containerRef}
+      className={classNames(
+            'mb-3',
+            props.cssClass,
+            isHidden
+                ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
+                : StylingConfig.VisibilityClasses[VisibilityStyle.Visible]
         )} data-sf-role="file-field-container">
-       <label className={classNames('h6', 'd-block', labelAdditionalClassList)} htmlFor={props.fieldName}>{props.label}</label>
-       { props.instructionalText &&
-       <div id={fileFieldInfoMessageId} className="form-text mt-1 mb-2">{props.instructionalText}</div>
+      <label className={classNames('h6', 'd-block', labelAdditionalClassList)} htmlFor={props.fieldName}>{props.label}</label>
+      {props.instructionalText &&
+        <div id={fileFieldInfoMessageId} className="form-text mt-1 mb-2">{props.instructionalText}</div>
         }
-       <input data-sf-role="violation-restrictions" type="hidden" value={props.violationRestrictionsJson} />
-       <div data-sf-role="file-field-inputs">
-         { props.widgetContext.requestContext.isEdit ?
-           <div data-sf-role="single-file-input">
-             <input
-               className="form-control"
-               id={props.fieldName}
-               title={props.label}
-               name={props.fieldName}
-               type="file"
-               disabled={isHidden || isSkipped}
-               aria-describedby={ariaDescribedByAttribute}
-               {...props.validationAttributes} />
-           </div> :
-            (
-                Object.entries(fileInputs).map(([inputKey, inputValue]) =>{
-                    const isInvalid = (inputValue.fileSizeMessage || inputValue.fileTypeMessage || (props.required && !someInputHasValue));
-                    return (<div data-sf-role="single-file-input-wrapper" key={inputKey}>
-                      <div
-                        className={classNames('d-flex', 'mb-2')}
-                        data-sf-role="single-file-input">
-                        <input
-                          className={classNames('form-control',
-                                {
-                                    [formViewProps.invalidClass!]: formViewProps.invalidClass
-                                        && isInvalid
-                            })}
-                          id={inputKey}
-                          title={props.label}
-                          name={props.fieldName}
-                          type="file"
-                          onChange={handleFileChange}
-                          onInvalid={handleFileChange}
-                          aria-describedby={ariaDescribedByAttribute}
-                          {...props.validationAttributes} />
+      <input data-sf-role="violation-restrictions" type="hidden" value={props.violationRestrictionsJson} />
+      <div data-sf-role="file-field-inputs">
+        {props.widgetContext.requestContext.isEdit ?
+          <div data-sf-role="single-file-input">
+            <input
+              className="form-control"
+              id={props.fieldName}
+              title={props.label}
+              name={props.fieldName}
+              type="file"
+              disabled={isHidden || isSkipped}
+              aria-describedby={ariaDescribedByAttribute}
+              {...props.validationAttributes} />
+          </div> :
+                (
+                    Object.entries(fileInputs).map(([inputKey, inputValue]) => {
+                        const isInvalid = (inputValue.fileSizeMessage || inputValue.fileTypeMessage || (props.required && !someInputHasValue));
+                        return (<div data-sf-role="single-file-input-wrapper" key={inputKey}>
+                          <div
+                            className={classNames('d-flex', 'mb-2')}
+                            data-sf-role="single-file-input">
+                            <input
+                              className={classNames('form-control',
+                                        {
+                                            [formViewProps.invalidClass!]: formViewProps.invalidClass
+                                                && isInvalid
+                                        })}
+                              id={inputKey}
+                              title={props.label}
+                              name={props.fieldName}
+                              type="file"
+                              onChange={handleFileChange}
+                              onInvalid={handleFileChange}
+                              aria-describedby={ariaDescribedByAttribute}
+                              {...props.validationAttributes} />
 
-                        { props.allowMultipleFiles && Object.entries(fileInputs).length > 1 &&
-                        <button type="button" title="Remove" data-sf-role="remove-input" id={'remove-' + inputKey} onClick={handleRemoveInput} className="btn btn-light ms-1">X</button>
-                       }
-                      </div>
-                      { (props.minFileSizeInMb > 0 || props.maxFileSizeInMb > 0) && inputValue.fileSizeMessage &&
-                      <div data-sf-role="filesize-violation-message" className={classNames('invalid-feedback my-2',
-                      {
-                        [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: isInvalid
-                        }
-                      )} role="alert" aria-live="assertive">
-                        {props.fileSizeViolationMessage}
-                      </div>
-                   }
-                      { (props.allowedFileTypes !== null) && inputValue.fileTypeMessage &&
-                      <div data-sf-role="filetype-violation-message" className={classNames('invalid-feedback my-2',
-                      {
-                        [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: isInvalid
-                        }
-                      )} role="alert" aria-live="assertive">
-                        {props.fileTypeViolationMessage}
-                      </div>
-                     }
-                    </div>);
-                })
+                            {props.allowMultipleFiles && Object.entries(fileInputs).length > 1 &&
+                            <button type="button" title="Remove" data-sf-role="remove-input" id={'remove-' + inputKey} onClick={handleRemoveInput} className="btn btn-light ms-1">X</button>
+                                }
+                          </div>
+                          {(props.minFileSizeInMb > 0 || props.maxFileSizeInMb > 0) && inputValue.fileSizeMessage &&
+                            <div data-sf-role="filesize-violation-message" className={classNames('invalid-feedback my-2',
+                                    {
+                                        [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: isInvalid
+                                    }
+                                )} role="alert" aria-live="assertive">
+                              {props.fileSizeViolationMessage}
+                            </div>
+                            }
+                          {(props.allowedFileTypes !== null) && inputValue.fileTypeMessage &&
+                            <div data-sf-role="filetype-violation-message" className={classNames('invalid-feedback my-2',
+                                    {
+                                        [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: isInvalid
+                                    }
+                                )} role="alert" aria-live="assertive">
+                              {props.fileTypeViolationMessage}
+                            </div>
+                            }
+                        </div>);
+                    })
 
-            )
-        }
-       </div>
-       { props.allowMultipleFiles &&
-       <button type="button" data-sf-role="add-input" onClick={handleAddInput} className="btn btn-secondary my-2">+</button>
+                )
+            }
+      </div>
+      {props.allowMultipleFiles &&
+        <button type="button" data-sf-role="add-input" onClick={handleAddInput} className="btn btn-secondary my-2">+</button>
         }
 
-       { props.required && !someInputHasValue &&
-       <div data-sf-role="required-violation-message" className={classNames(
-        'invalid-feedback',{
-            [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: !someInputHasValue
+      {props.required && !someInputHasValue &&
+        <div data-sf-role="required-violation-message" className={classNames(
+                'invalid-feedback', {
+                [StylingConfig.VisibilityClasses[VisibilityStyle.Visible]]: !someInputHasValue
+            }
+            )} role="alert" aria-live="assertive">
+          {props.requiredErrorMessage.replace('{0}', props.label)}
+        </div>
         }
-          )} role="alert" aria-live="assertive">
-         {props.requiredErrorMessage.replace('{0}', props.label)}
-       </div>
-        }
-     </div>);
+    </div>);
 }

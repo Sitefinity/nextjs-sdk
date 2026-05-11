@@ -26,19 +26,19 @@ export function ParagraphClient(props: ParagraphViewProps<ParagraphEntity>) {
     const inputRef = React.useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = React.useState(props.predefinedValue || '');
     const {
-        formViewProps, sfFormValueChanged, dispatchValidity,
+        formViewProps, sfFormValueChanged,
         hiddenInputs, skippedInputs,
-        formSubmitted
+        registerFieldValidator
     } = useContext(FormContext);
     const isHidden = hiddenInputs[paragraphUniqueId];
     const isSkipped = skippedInputs[paragraphUniqueId];
     const [errorMessageText, setErrorMessageText] = useState('');
     let delayTimer: ReturnType<typeof setTimeout>;
     function dispatchValueChanged() {
-       clearTimeout(delayTimer);
-       delayTimer = setTimeout(function () {
+        clearTimeout(delayTimer);
+        delayTimer = setTimeout(function () {
             sfFormValueChanged();
-       }, 300);
+        }, 300);
     }
 
     function setErrorMessage(_input: HTMLTextAreaElement, message: string | null) {
@@ -85,21 +85,16 @@ export function ParagraphClient(props: ParagraphViewProps<ParagraphEntity>) {
         }
     };
 
-    const handleInputEvent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setInputValue((e.target as HTMLTextAreaElement).value);
+    const handleInputEvent = (e: React.InputEvent<HTMLTextAreaElement>) => {
+        setInputValue(e.currentTarget.value);
         handleTextValidation();
         dispatchValueChanged();
     };
 
-    React.useEffect(()=>{
-        let isValid = false;
-        if (formSubmitted) {
-            isValid = handleTextValidation();
-        }
-        dispatchValidity(paragraphUniqueId, isValid);
+    React.useEffect(() => {
+        registerFieldValidator(paragraphUniqueId, handleTextValidation);
+    }, []);
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[formSubmitted]);
 
     const rootClass = classNames(
         'mb-3',
@@ -107,13 +102,13 @@ export function ParagraphClient(props: ParagraphViewProps<ParagraphEntity>) {
         isHidden
             ? StylingConfig.VisibilityClasses[VisibilityStyle.Hidden]
             : StylingConfig.VisibilityClasses[VisibilityStyle.Visible]
-        );
+    );
 
     return (<div className={rootClass} data-sf-role="paragraph-text-field-container">
       <label className="h6" htmlFor={paragraphUniqueId}>{props.label}</label>
       <textarea id={paragraphUniqueId}
         ref={inputRef}
-        className={classNames('form-control',{
+        className={classNames('form-control', {
                 [formViewProps.invalidClass!]: formViewProps.invalidClass && errorMessageText
             })}
         name={props.fieldName!}
@@ -127,12 +122,12 @@ export function ParagraphClient(props: ParagraphViewProps<ParagraphEntity>) {
         onInvalid={handleTextValidation}
         {...props.validationAttributes}
         />
-      { props.instructionalText &&
+      {props.instructionalText &&
         <div id={paragraphInfoMessageId} className="form-text">{props.instructionalText}</div>
-      }
+        }
       {errorMessageText && <div id={paragraphErrorMessageId} data-sf-role="error-message" role="alert" aria-live="assertive" className="invalid-feedback" >
         {errorMessageText}
-      </div>}
+        </div>}
     </div>
     );
 }

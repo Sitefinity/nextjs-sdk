@@ -26,6 +26,7 @@ export async function IntentBox(props: WidgetContext<IntentBoxEntity>) {
         console.log('Error fetching page URL:', error);
     }
 
+    // eslint-disable-next-line react-hooks/purity
     const inputId = `input_${Math.random().toString(36).substring(2, 11)}`;
 
     const viewProps: IntentBoxViewProps = {

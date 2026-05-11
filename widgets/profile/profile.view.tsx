@@ -42,6 +42,7 @@ export function ProfileDefaultView(props: ProfileViewProps<ProfileEntity>) {
 
     const confirmEmailChangeParam = useMemo(() => {
         if (searchParams.get(EncryptedParam)) {
+            // eslint-disable-next-line react-hooks/set-state-in-render
             setIsConfirmEmailRequest(true);
             return searchParams.get(EncryptedParam);
         }

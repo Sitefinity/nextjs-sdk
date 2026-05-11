@@ -25,6 +25,10 @@ import { NumberFieldEntity } from './form-widgets/number/number-field.entity';
 import { NumberField } from './form-widgets/number/number-field';
 import { DateTimeFieldEntity } from './form-widgets/date-time/date-time-field.entity';
 import { DateTimeField } from './form-widgets/date-time/date-time-field';
+import { FormNavigation } from './form-widgets/form-navigation/form-navigation';
+import { FormNavigationEntity } from './form-widgets/form-navigation/form-navigation.entity';
+import { FormPage } from './form-widgets/form-page/form-page';
+import { FormPageEntity } from './form-widgets/form-page/form-page.entity';
 
 export const SSRFormComponents: { [key: string]: WidgetMetadata } = {
     'SitefinityForm': {
@@ -220,6 +224,35 @@ export const SSRFormComponents: { [key: string]: WidgetMetadata } = {
                 SfFieldType: 'ContentBlock'
             },
             IconName: 'content-block'
+        },
+        ssr: true
+    },
+    'SitefinityFormNavigation': {
+        entity: FormNavigationEntity,
+        componentType: FormNavigation,
+        editorMetadata: {
+            Title: 'Form navigation',
+            Toolbox: 'Forms',
+            Category: 'Layout',
+            HideEmptyVisual: true,
+            InitialProperties: {
+                SfFieldType: 'FormNavigation'
+            },
+            IconName: 'navigation'
+        },
+        ssr: true
+    },
+    'SitefinityFormPage': {
+        entity: FormPageEntity,
+        componentType: FormPage,
+        editorMetadata: {
+            Title: 'Form page',
+            Toolbox: 'Forms',
+            Category: 'Layout',
+            InitialProperties: {
+                SfFieldType: 'FormPage'
+            },
+            IconName: 'content-section'
         },
         ssr: true
     }
