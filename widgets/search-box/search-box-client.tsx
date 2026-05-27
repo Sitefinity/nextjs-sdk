@@ -65,7 +65,8 @@ export function SearchBoxClient(props: SearchBoxViewProps<SearchBoxEntity>) {
             siteId: data.siteId,
             scoringInfo: data.scoringSetting,
             suggestionFields: data.suggestionFields || '',
-            resultsForAllSites: resultsForAllSites
+            resultsForAllSites: resultsForAllSites,
+            filterExpression: data.filterExpression
         }).then((suggestions) => {
             handleOnSearch(suggestions.value);
             setSuggestions(suggestions.value);

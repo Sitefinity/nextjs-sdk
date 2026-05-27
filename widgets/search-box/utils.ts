@@ -22,7 +22,8 @@ export function getSearchBoxParams(searchModel: SearchBoxViewProps<SearchBoxEnti
         suggestionFields: searchModel.suggestionFields,
         servicePath: searchModel.webServicePath,
         orderBy,
-        resultsForAllSites: +searchModel.showResultsForAllIndexedSites
+        resultsForAllSites: +searchModel.showResultsForAllIndexedSites,
+        filterExpression: searchModel.filterExpression
     };
 };
 
@@ -53,6 +54,10 @@ export function getSearchUrl (query: string, searchModel: SearchBoxViewProps<Sea
         queryParams['resultsForAllSites'] = 'True';
     } else if (resultsForAllSites === 2) {
         queryParams['resultsForAllSites'] = 'False';
+    }
+
+    if (searchParams.filterExpression) {
+        queryParams['filterExpression'] = encodeURIComponent(searchParams.filterExpression);
     }
 
     return `${resultsUrl}${separator}${Object.keys(queryParams).map(key => `${key}=${queryParams[key]}`).join('&')}`;

@@ -35,6 +35,7 @@ export async function SearchFacets(props: WidgetContext<SearchFacetsEntity>) {
         webserviceApiKey: props.requestContext.webserviceApiKey,
         attributes: {...dataAttributes, ...customAttributes},
         widgetContext: getMinimumWidgetContext(props)
+
     };
 
     return (

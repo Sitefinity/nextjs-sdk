@@ -13,9 +13,12 @@ import { PageItem } from '../../rest-sdk/dto/page-item';
 import { SearchBoxViewProps } from './search-box.view-props';
 import { RenderView } from '../common/render-view';
 import { Tracer } from '@progress/sitefinity-nextjs-sdk/diagnostics/empty';
+import { ODataFilterSerializer } from '../../rest-sdk/services/odata-filter-serializer';
+import { SearchFilterMetadataProvider } from '../../rest-sdk/services/search-filter-metadata-provider';
+import { FilterConverterService } from '../../rest-sdk';
 
 export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
-    const {span, ctx} = Tracer.traceWidget(props, true);
+    const { span, ctx } = Tracer.traceWidget(props, true);
     const entity = props.model.Properties;
     const requestContext = props.requestContext;
     const dataAttributes = htmlAttributes(props);
@@ -38,7 +41,21 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
                 searchResultsPageUrl = searchResultsPage['ViewUrl'];
             }
 
-        } catch (error) {/* empty */}
+        } catch (error) {/* empty */ }
+    }
+
+    let filterExpression: string | null = null;
+    if (entity.FilterExpression) {
+        // handle invalid json in filter expression by wrapping in try catch and logging error, but not breaking the widget
+        try {
+            JSON.parse(JSON.stringify(entity.FilterExpression));
+            const filter = FilterConverterService.parseComplexFilter(entity.FilterExpression);
+            filterExpression = new ODataFilterSerializer(new SearchFilterMetadataProvider()).serialize({
+                Type: 'search', Filter: filter
+            });
+        } catch (error) {
+            console.error('Error serializing filter expression', error);
+        }
     }
 
     const viewProps: SearchBoxViewProps<SearchBoxEntity> = {
@@ -58,8 +75,9 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
         showResultsForAllIndexedSites: entity.ShowResultsForAllIndexedSites || 0,
         isEdit: requestContext.isEdit,
         webserviceApiKey: requestContext.webserviceApiKey,
-        attributes: {...dataAttributes, ...customAttributes},
-        widgetContext: getMinimumWidgetContext(props)
+        attributes: { ...dataAttributes, ...customAttributes },
+        widgetContext: getMinimumWidgetContext(props),
+        filterExpression: filterExpression
     };
 
     const viewName = props.model.Properties.SfViewName;
@@ -70,8 +88,8 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
         widgetKey={props.model.Name}
         traceSpan={span}
         viewProps={viewProps}>
-        { entity.SearchIndex && <SearchBoxClient {...viewProps} />}
-        { !entity.SearchIndex && <div {...viewProps.attributes} />}
+        {entity.SearchIndex && <SearchBoxClient {...viewProps} />}
+        {!entity.SearchIndex && <div {...viewProps.attributes} />}
       </RenderView>
     );
 }

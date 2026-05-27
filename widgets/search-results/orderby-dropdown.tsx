@@ -22,6 +22,7 @@ export function OrderByDropDown(props: {
     const resultsForAllSites = searchParams['resultsForAllSites'];
     const orderBy = sorting;
     const filter = searchParams['filter'];
+    const filterExpression = searchParams['filterExpression'];
 
     const handleSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const orderValue = event.target.value || orderBy;
@@ -37,6 +38,10 @@ export function OrderByDropDown(props: {
 
         if (filter) {
             newQuery = newQuery + '&filter=' + filter;
+        }
+
+        if (filterExpression) {
+            newQuery = newQuery + '&filterExpression=' + encodeURIComponent(filterExpression);
         }
 
         if (resultsForAllSites === 'True') {

@@ -8,4 +8,5 @@ export interface SuggestionsArgs extends RequestArgs {
     scoringInfo: string;
     suggestionFields: string;
     resultsForAllSites: boolean | null;
+    filterExpression: string | null;
 }

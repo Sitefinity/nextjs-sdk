@@ -20,7 +20,8 @@ export enum FilterOperators {
     ContainsOr = 'any+or',
     ContainsAnd = 'any+and',
     DoesNotContain = 'not+(any+or)',
-    In = 'in'
+    In = 'in',
+    NotStartsWith = 'not+(startswith)',
 };
 
 /**

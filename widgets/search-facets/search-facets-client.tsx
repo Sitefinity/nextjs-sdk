@@ -121,7 +121,8 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
                     null,
                     facets,
                     undefined,
-                    headers
+                    headers,
+                    newSearchParams['filterExpression']
                 );
 
                 const { searchFacets, hasAnyFacetElements }= await updateFacetsViewProps(newSearchParams, facetResponse, selectedFacetsToBeUsed, headers);

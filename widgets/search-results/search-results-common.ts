@@ -48,7 +48,8 @@ export async function performSearch(entity: SearchResultsEntity, searchParams: S
                 indexFields: entity.AdditionalResultFields,
                 additionalHeaders,
                 traceContext,
-                webServicePath: webServicePath
+                webServicePath: webServicePath,
+                filterExpression: searchParams.filterExpression
             });
 
             return searchResults;

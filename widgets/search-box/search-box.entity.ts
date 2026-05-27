@@ -18,6 +18,7 @@ import { Placeholder } from '@progress/sitefinity-widget-designers-sdk/decorator
 import { Required } from '@progress/sitefinity-widget-designers-sdk/decorators/validations';
 import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
 import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
+import { CombinedFilter } from '../../rest-sdk';
 
 @WidgetEntity('SitefinitySearchBox', 'Search box')
 export class SearchBoxEntity {
@@ -83,6 +84,11 @@ export class SearchBoxEntity {
     @DefaultValue('Title,Content')
     @Description('List the fields to be used in the search suggestions. These fields must be included in the search index.')
     SuggestionFields: string | null = null;
+
+    @Category('Advanced')
+    @DisplayName('Filter expression')
+    @Description('[{"Type":1,"Chunks":[{"Value":"Custom filter expression applied to search","Presentation":[]},{"Value":"results from this widget.","Presentation":[2]}]},{"Type":1,"Chunks":[{"Value":"Example","Presentation":[4]},{"Value":"{","Presentation":[2]},{"Value":"\\u00A0\\u00A0 \\"FieldName\\":\\"MyShortTextFieldName\\",","Presentation":[2]},{"Value":"\\u00A0\\u00A0 \\"Operator\\":\\"eq\\",","Presentation":[2]},{"Value":"\\u00A0\\u00A0 \\"FieldValue\\":\\"custom search value\\"","Presentation":[2]},{"Value":"}","Presentation":[2]}]}]')
+    FilterExpression: CombinedFilter | null = null;
 
     @Category('Advanced')
     @DisplayName('Search scope')

@@ -451,7 +451,8 @@ export class RestClient {
             ['resultsForAllSites']: '',
             ['scoringInfo']: args.scoringInfo,
             ['filter']: args.filter,
-            ['indexFields']: args.indexFields
+            ['indexFields']: args.indexFields,
+            ['$filter']: args.filterExpression?.toString() || ''
         };
 
         if (args.resultsForAllSites != null) {
@@ -503,7 +504,8 @@ export class RestClient {
             ['siteId']: args.culture,
             ['scoringInfo']: args.scoringInfo,
             ['suggestionFields']: args.suggestionFields,
-            ['resultsForAllSites']: ''
+            ['resultsForAllSites']: '',
+            ['filterExpression']: args.filterExpression?.toString() || ''
         };
 
         if (args.resultsForAllSites !== null) {
@@ -531,7 +533,8 @@ export class RestClient {
             ['filter']: args.filter,
             ['resultsForAllSites']: args.resultsForAllSites,
             ['searchFields']: args.searchFields,
-            ['facetFields']: facetsStr
+            ['facetFields']: facetsStr,
+            ['$filter']: args.filterExpression?.toString() || ''
         };
 
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();

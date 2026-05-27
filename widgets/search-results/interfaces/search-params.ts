@@ -8,4 +8,5 @@ export interface SearchParams {
     orderBy: string;
     filter: string;
     page: string;
+    filterExpression: string  | null;
 }

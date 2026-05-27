@@ -15,4 +15,5 @@ export interface SearchArgs extends RequestArgs {
     filter: string;
     indexFields: string;
     webServicePath?: string;
+    filterExpression?: string | null;
 }

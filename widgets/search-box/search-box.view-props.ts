@@ -21,4 +21,5 @@ export interface SearchBoxViewProps<T extends SearchBoxEntity> extends ViewProps
     searchAutocompleteItemClass: string;
     isEdit: boolean;
     webserviceApiKey?: string;
+    filterExpression: string | null;
 }

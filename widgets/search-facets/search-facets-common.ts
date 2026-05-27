@@ -10,7 +10,7 @@ import { SearchFacetModel } from './search-facets-class';
 import { SearchFacetsModelBuilder } from './search-facets-model-builder';
 import { SearchFacetsEntity } from './search-facets.entity';
 
-export async function getSearchFacets(searchQuery: string, culture: string, indexCatalogue: string, filter: string, resultsForAllSites: string, searchFields: any, facets: Facet[], ctx?: any, additionalHeaders?: Dictionary): Promise<{[k: string]: FacetResponseDto[]}> {
+export async function getSearchFacets(searchQuery: string, culture: string, indexCatalogue: string, filter: string, resultsForAllSites: string, searchFields: any, facets: Facet[], ctx?: any, additionalHeaders?: Dictionary, filterExpression: string | null = null): Promise<{[k: string]: FacetResponseDto[]}> {
     let searchServiceFacetResponse: FacetFlatResponseDto[] = [];
     try {
         searchServiceFacetResponse = await RestClient.getFacets({
@@ -22,7 +22,8 @@ export async function getSearchFacets(searchQuery: string, culture: string, inde
             searchFields,
             facets,
             additionalHeaders,
-            traceContext: ctx
+            traceContext: ctx,
+            filterExpression
         });
     } catch (_) {
         // noop
@@ -91,7 +92,9 @@ export async function getInitialFacetsWithModels(searchParams: {[key: string]: a
             entity.SearchFields as string,
             facets,
             undefined,
-            additionalHeaders);
+            additionalHeaders,
+            searchParams['filterExpression']
+        );
 
         ret.searchFacets = SearchFacetsModelBuilder.buildFacetsViewProps(entity.SelectedFacets!, facetsDict, facetableFieldsKeys, entity.SortType || '');
     }

@@ -9,4 +9,5 @@ export interface GetFacetsArgs extends RequestArgs {
     resultsForAllSites: string,
     searchFields: string,
     facets: Facet[],
+    filterExpression: string | null;
 }
