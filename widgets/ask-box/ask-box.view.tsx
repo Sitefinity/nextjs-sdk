@@ -6,6 +6,7 @@ import { AskBoxViewProps } from './ask-box.view-props';
 import { classNames } from '../../editor/utils/classNames';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
+import { X_REQUESTED_WITH_HEADER } from '../../proxy/headers';
 
 const dataSfItemAttribute = 'data-sfitem';
 const activeAttribute = 'data-sf-active';
@@ -111,11 +112,15 @@ export function AskBoxDefaultView(props: AskBoxViewProps<AskBoxEntity>) {
             abortControllerRef.current = new AbortController();
             const signal = abortControllerRef.current.signal;
 
-            const requestUrl = `/${RootUrlService.getWebServicePath()}/Default.GetPARAGSuggestions()` +
+            const headers: [string, string][] = [
+                [X_REQUESTED_WITH_HEADER, 'react']
+            ];
+
+            const requestUrl = `${RootUrlService.getServerCmsServiceUrl()}/Default.GetPARAGSuggestions()` +
                 '?knowledgeBoxName=' + encodeURIComponent(props.knowledgeBoxName || '') +
                 '&searchQuery=' + encodeURIComponent(input.value);
 
-            fetch(requestUrl, { signal })
+            fetch(requestUrl, { signal, headers })
                 .then(res => {
                     if (res.status === 200) {
                         res.json().then((data: { value: string[] }) => {

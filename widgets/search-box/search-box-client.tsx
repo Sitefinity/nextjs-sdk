@@ -7,7 +7,6 @@ import { SearchBoxViewProps } from './search-box.view-props';
 import { getSearchBoxParams, getSearchUrl } from './utils';
 import { SearchBoxEntity } from './search-box.entity';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
 import { RestClient } from '../../rest-sdk/rest-client';
 
 const dataSfItemAttribute = 'data-sfitem';

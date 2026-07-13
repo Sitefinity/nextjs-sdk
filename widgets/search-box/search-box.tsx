@@ -66,7 +66,7 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
         searchBoxPlaceholder: entity.SearchBoxPlaceholder,
         searchButtonLabel: entity.SearchButtonLabel,
         searchIndex: entity.SearchIndex,
-        webServicePath: `${RootUrlService.getClientCmsUrl()}/${RootUrlService.getSearchWebServicePath()}/`,
+        webServicePath: `${RootUrlService.getSearchServiceUrl()}/`,
         siteId: requestContext.layout.SiteId,
         suggestionFields: entity.SuggestionFields,
         searchResultsPageUrl: searchResultsPageUrl,
@@ -74,7 +74,6 @@ export async function SearchBox(props: WidgetContext<SearchBoxEntity>) {
         searchAutocompleteItemClass: StylingConfig.SearchAutocompleteItemClass,
         showResultsForAllIndexedSites: entity.ShowResultsForAllIndexedSites || 0,
         isEdit: requestContext.isEdit,
-        webserviceApiKey: requestContext.webserviceApiKey,
         attributes: { ...dataAttributes, ...customAttributes },
         widgetContext: getMinimumWidgetContext(props),
         filterExpression: filterExpression

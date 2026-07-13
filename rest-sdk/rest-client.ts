@@ -38,7 +38,7 @@ import { TaxonDto } from './dto/taxon-dto';
 import { GetTemplatesArgs } from './args/get-templates-args';
 import { PageTemplateCategoryDto } from './dto/page-template-category.dto';
 import { PageTemplateStatisticsDto } from './dto/page-template-statistics.dto';
-import { RENDERER_NAME, getProxyHeaders } from '../proxy/headers';
+import { RENDERER_NAME, X_REQUESTED_WITH_HEADER, getProxyHeaders } from '../proxy/headers';
 import { WidgetModel } from '../editor/widget-framework/widget-model';
 import { GetHierarchicalWidgetModelArgs } from './args/get-hierarchical-widget-model.args';
 import { CommonArgs } from './args/common.args';
@@ -679,7 +679,7 @@ export class RestClient {
     }
 
     public static async getContentLocations(args: CommonArgs): Promise<any> {
-        const wholeUrl = `${RootUrlService.getClientCmsUrl()}/Sitefinity/Services/LocationService/${RestClient.buildQueryParams({itemType: args.type, provider: args.provider})}`;
+        const wholeUrl = `${RootUrlService.getServerCmsUrl() || ''}/Sitefinity/Services/LocationService/${RestClient.buildQueryParams({itemType: args.type, provider: args.provider})}`;
         return this.sendRequest({
             url: wholeUrl,
             method: 'GET',
@@ -713,7 +713,7 @@ export class RestClient {
     public static async changeLocationPriority(args: ChangeLocationPriorityArgs): Promise<any> {
         const direction = args.direction || MovingDirection.Top;
         const directionCode = direction.toString();
-        const wholeUrl = `${RootUrlService.getClientCmsUrl()}/Sitefinity/Services/LocationService/${RestClient.buildQueryParams({'id': args.id, 'direction': directionCode})}`;
+        const wholeUrl = `${RootUrlService.getServerCmsUrl() || ''}/Sitefinity/Services/LocationService/${RestClient.buildQueryParams({'id': args.id, 'direction': directionCode})}`;
         return this.sendRequest({
             url: wholeUrl,
             method: 'PUT',
@@ -1108,7 +1108,7 @@ export class RestClient {
     }
 
     private static buildHeaders(requestData: RequestData) {
-        let headers: { [key:string]: string } = { 'X-Requested-With': 'react' };
+        let headers: { [key:string]: string } = { [X_REQUESTED_WITH_HEADER]: 'react' };
 
         if ((requestData.method === 'POST' || requestData.method === 'PATCH') && !headers['Content-Type']) {
             headers['Content-Type'] = 'application/json';
@@ -1186,13 +1186,7 @@ export class RestClient {
     }
 
     public static buildItemBaseUrl(itemType: string): string {
-        let serviceUrl = null;
-        if (typeof window === 'undefined') {
-            serviceUrl = RootUrlService.getServerCmsServiceUrl();
-        } else {
-            serviceUrl = RootUrlService.getClientServiceUrl();
-        }
-
+        let serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const setName = ServiceMetadata.getSetNameFromType(itemType);
 
         return `${serviceUrl}/${setName}`;

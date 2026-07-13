@@ -8,8 +8,6 @@ import { useSearchParams } from 'next/navigation';
 import { getQueryParams } from '../common/query-params';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { ResetPasswordViewProps } from './interfaces/reset-password.view-props';
-import { Dictionary } from '../../typings/dictionary';
-import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
 
 const PasswordRecoveryQueryStringKey = 'vk';
 export function ResetPasswordDefaultTemplate(props: ResetPasswordViewProps<ResetPasswordEntity>) {
@@ -43,12 +41,7 @@ export function ResetPasswordDefaultTemplate(props: ResetPasswordViewProps<Reset
     });
 
     if (isResetPasswordRequest) {
-      const headers: Dictionary = {};
-      if (props.webserviceApiKey) {
-          headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
-      }
-
-      RestClient.getResetPasswordModel(queryString, undefined, headers).then(resetPasswordModel => {
+      RestClient.getResetPasswordModel(queryString, undefined).then(resetPasswordModel => {
         setPropsClone(currentProps => {
           return {
             ...currentProps,

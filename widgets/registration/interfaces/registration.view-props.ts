@@ -43,5 +43,4 @@ export interface RegistrationViewProps<T extends RegistrationEntity> extends Vie
     requiresQuestionAndAnswer?: boolean;
     visibilityClasses?: {[key: string]: string};
     invalidClass?: string;
-    webserviceApiKey?: string;
 }

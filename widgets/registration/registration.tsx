@@ -87,8 +87,8 @@ function populateViewProps(entity: RegistrationEntity, widgetContext: WidgetCont
     const culture = widgetContext.requestContext.culture;
 
     return {
-        registrationHandlerPath: `/${RootUrlService.getWebServicePath()}/Registration${culture ? `?sf_culture=${culture}` : ''}`,
-        resendConfirmationEmailHandlerPath: `/${RootUrlService.getWebServicePath()}/ResendConfirmationEmail${culture ? `?sf_culture=${culture}` : ''}`,
+        registrationHandlerPath: `${RootUrlService.getServerCmsServiceUrl(true)}/Registration${culture ? `?sf_culture=${culture}` : ''}`,
+        resendConfirmationEmailHandlerPath: `${RootUrlService.getServerCmsServiceUrl(true)}/ResendConfirmationEmail${culture ? `?sf_culture=${culture}` : ''}`,
         externalLoginHandlerPath: '/sitefinity/external-login-handler',
         postRegistrationAction: entity.PostRegistrationAction,
         labels: {
@@ -119,7 +119,6 @@ function populateViewProps(entity: RegistrationEntity, widgetContext: WidgetCont
         },
         visibilityClasses: StylingConfig.VisibilityClasses,
         invalidClass: StylingConfig.InvalidClass,
-        webserviceApiKey: widgetContext.requestContext.webserviceApiKey,
         attributes: { ...dataAttributes, ...customAttributes, ...widgetAttributes },
         widgetContext: getMinimumWidgetContext(widgetContext)
     };

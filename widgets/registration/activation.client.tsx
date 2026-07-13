@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { RegistrationFormProps } from './interfaces/registration-form-props';
-import { serializeForm, SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
+import { serializeForm } from '../common/utils';
+import { X_REQUESTED_WITH_HEADER } from '../../proxy/headers';
 
 export function ActivationClient(props: RegistrationFormProps) {
     const { viewProps } = props;
@@ -27,16 +28,14 @@ export function ActivationClient(props: RegistrationFormProps) {
         const url = (form.attributes as any)['action'].value;
 
         let model = { model: serializeForm(form) };
-        const headers: Record<string, string> = {};
-        if (props.viewProps.webserviceApiKey) {
-            headers[SF_WEBSERVICE_API_KEY_HEADER] = props.viewProps.webserviceApiKey;
-        }
 
         window
             .fetch(url, {
                 method: 'POST',
                 body: JSON.stringify(model),
-                headers
+                headers: {
+                    [X_REQUESTED_WITH_HEADER]: 'react'
+                }
             })
             .then(() => {
                 if (sendAgain) {

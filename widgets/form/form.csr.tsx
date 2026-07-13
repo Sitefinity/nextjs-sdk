@@ -22,7 +22,6 @@ import { TransferableRequestContext } from '../../editor/request-context';
 import { FormViewProps, getFormRulesViewProps, getFormHiddenFields } from './form.view-props';
 import { ErrorCodeException } from '../../rest-sdk/errors/error-code.exception';
 import { Dictionary } from '../../typings/dictionary';
-import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
 
 export function FormCSR(props: WidgetContext<FormEntity>) {
     const entity = props.model.Properties;
@@ -48,9 +47,6 @@ export function FormCSR(props: WidgetContext<FormEntity>) {
     const [error, setError] = useState<string>('');
 
     const additionalHeaders: Dictionary = {};
-    if (props.requestContext.webserviceApiKey) {
-        additionalHeaders[SF_WEBSERVICE_API_KEY_HEADER] = props.requestContext.webserviceApiKey;
-    }
 
     const getFormModel = (formDto: FormDto) => {
         const currentQueryParams: {[key: string]: string} = {...queryParams};

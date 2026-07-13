@@ -21,5 +21,4 @@ export interface ChangePasswordViewProps<T extends ChangePasswordEntity> extends
     redirectUrl?: string;
     postPasswordChangeMessage?: string;
     isLive: boolean;
-    webserviceApiKey?: string;
 }

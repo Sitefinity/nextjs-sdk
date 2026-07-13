@@ -41,8 +41,7 @@ export async function SearchResults(props: WidgetContext<SearchResultsEntity>) {
         sorting: entity.Sorting.toString(),
         sortByLabel: entity.SortByLabel,
         totalCount: 0,
-        webServicePath: `${RootUrlService.getClientCmsUrl()}/${RootUrlService.getSearchWebServicePath()}`,
-        webserviceApiKey: props.requestContext.webserviceApiKey,
+        webServicePath: `${RootUrlService.getSearchServiceUrl()}`,
         attributes: {...dataAttributes, ...customAttributes},
         widgetContext: getMinimumWidgetContext(props)
     };

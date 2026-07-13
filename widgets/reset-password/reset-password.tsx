@@ -64,8 +64,8 @@ function populateViewProps(entity: ResetPasswordEntity, widgetContext: WidgetCon
   const customAttributes = getCustomAttributes(entity.Attributes, 'ResetPassword');
 
   return {
-    resetUserPasswordHandlerPath: `/${RootUrlService.getWebServicePath()}/ResetUserPassword`,
-    sendResetPasswordEmailHandlerPath: `/${RootUrlService.getWebServicePath()}/SendResetPasswordEmail`,
+    resetUserPasswordHandlerPath: `${RootUrlService.getServerCmsServiceUrl(true)}/ResetUserPassword`,
+    sendResetPasswordEmailHandlerPath: `${RootUrlService.getServerCmsServiceUrl(true)}/SendResetPasswordEmail`,
     visibilityClasses: StylingConfig.VisibilityClasses,
     invalidClass: StylingConfig.InvalidClass,
     membershipProviderName: entity.MembershipProviderName,
@@ -89,7 +89,6 @@ function populateViewProps(entity: ResetPasswordEntity, widgetContext: WidgetCon
       invalidEmailFormatMessage: entity.InvalidEmailFormatMessage,
       fieldIsRequiredMessage: entity.FieldIsRequiredMessage
     },
-    webserviceApiKey: widgetContext.requestContext.webserviceApiKey,
     attributes: { ...dataAttributes, ...customAttributes },
     widgetContext: getMinimumWidgetContext(widgetContext)
   };

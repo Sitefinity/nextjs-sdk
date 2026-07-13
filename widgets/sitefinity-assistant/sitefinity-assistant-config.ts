@@ -14,8 +14,7 @@ export class SitefinityAssistantConfig {
         const hostname = process.env.SF_ASSISTANT_CDN_HOSTNAME;
         if (!hostname) {
             throw new Error(
-                'SF_ASSISTANT_CDN_HOSTNAME environment variable is not configured. ' +
-                'Please set this to your CDN hostname for Sitefinity Assistant resources.'
+                'CdnHostname is not configured in SitefinityAssistantConfig.'
             );
         }
         return hostname;
@@ -42,9 +41,9 @@ export class SitefinityAssistantConfig {
      * Gets the chat service endpoint URL
      */
     static getChatServiceUrl(assistantType: string | null): string {
-        const webServicePath = RootUrlService.getWebServicePath();
+        const serviceUlr = RootUrlService.getServerCmsServiceUrl(true);
         return assistantType === AssistantApiConstants.PARAG ?
-                `/${webServicePath}/AgenticRag/` :
-                `/${webServicePath}/SitefinityAssistantChatService/`;
+                `${serviceUlr}/AgenticRag/` :
+                `${serviceUlr}/SitefinityAssistantChatService/`;
     }
 }

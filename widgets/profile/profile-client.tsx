@@ -5,13 +5,14 @@ import { ProfileViewProps } from './interfaces/profile.view-props';
 import { ProfileEntity } from './profile.entity';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { classNames } from '../../editor/utils/classNames';
-import { invalidateElement, isValidEmail, SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
+import { invalidateElement, isValidEmail } from '../common/utils';
 import { SecurityService } from '../../services/security-service';
 import { ProfileViewMode } from './interfaces/profile-view-mode';
 import { ActivationMethod } from '../../rest-sdk/dto/registration-settings';
 import { ProfileForm } from './profile-form';
 import { useRouter } from 'next/navigation';
 import { ProfilePostUpdateAction } from './interfaces/profile-post-update-action';
+import { X_REQUESTED_WITH_HEADER } from '../../proxy/headers';
 
 export interface ProfileClientProps {
     viewProps: ProfileViewProps<ProfileEntity>;
@@ -205,15 +206,12 @@ export function ProfileClient(props: ProfileClientProps) {
 
         const requestBody = serializeForm(form);
 
-        const headers: Record<string, string> = {};
-        if (props.viewProps.webserviceApiKey) {
-            headers[SF_WEBSERVICE_API_KEY_HEADER] = props.viewProps.webserviceApiKey;
-        }
-
         window.fetch(url, {
             method: 'POST',
             body: requestBody,
-            headers
+            headers: {
+                [X_REQUESTED_WITH_HEADER]: 'react'
+            }
         }).then((response) => {
             let status = response.status;
             if (status === 0 || (status >= 200 && status < 400)) {

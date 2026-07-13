@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { VisibilityStyle } from '../styling/visibility-style';
-import { invalidDataAttr, isValidEmail, serializeForm, SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
+import { invalidDataAttr, isValidEmail, serializeForm } from '../common/utils';
 import { classNames } from '../../editor/utils/classNames';
 import { getQueryParams } from '../common/query-params';
 import { useSearchParams } from 'next/navigation';
@@ -10,6 +10,7 @@ import { RegistrationFormProps } from './interfaces/registration-form-props';
 import { SecurityService } from '../../services/security-service';
 import { ExternalLoginBase, ExternalProviderData } from '../external-login-base';
 import { getUniqueId } from '../../editor/utils/getUniqueId';
+import { X_REQUESTED_WITH_HEADER } from '../../proxy/headers';
 
 export function RegistrationFormClient(props: RegistrationFormProps) {
     const searchParams = useSearchParams();
@@ -101,10 +102,10 @@ export function RegistrationFormClient(props: RegistrationFormProps) {
 
         let model = { model: serializeForm(form) };
 
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (props.viewProps.webserviceApiKey) {
-            headers[SF_WEBSERVICE_API_KEY_HEADER] = props.viewProps.webserviceApiKey;
-        }
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            [X_REQUESTED_WITH_HEADER]: 'react'
+        };
 
         window.fetch(url, {
             method: 'POST',

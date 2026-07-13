@@ -32,7 +32,7 @@ export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>)
     };
 
     const viewProps: ChangePasswordViewProps<ChangePasswordEntity> = {
-        changePasswordHandlerPath: `/${RootUrlService.getWebServicePath()}/ChangePassword`,
+        changePasswordHandlerPath: `${RootUrlService.getServerCmsServiceUrl(true)}/ChangePassword`,
         visibilityClasses: StylingConfig.VisibilityClasses,
         invalidClass: StylingConfig.InvalidClass,
         postPasswordChangeAction: entity.PostPasswordChangeAction,
@@ -48,7 +48,6 @@ export async function ChangePassword(props: WidgetContext<ChangePasswordEntity>)
           externalProviderMessageFormat: entity.ExternalProviderMessageFormat
         },
         isLive: props.requestContext.isLive,
-        webserviceApiKey: props.requestContext.webserviceApiKey,
         attributes: {...dataAttributes, ...getCustomAttributes(entity.Attributes, 'ChangePassword'), ...widgetAttributes},
         widgetContext: getMinimumWidgetContext(props)
     };

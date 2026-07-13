@@ -8,10 +8,6 @@ export class RootUrlService {
         return publicUrl;
     }
 
-    public static getClientServiceUrl() {
-        return `${RootUrlService.getClientCmsUrl()}/${RootUrlService.getWebServicePath()}`;
-    }
-
     public static getServerCmsUrl() {
         let rootUrl: string = process.env['SF_CMS_URL'] as string;
         if (rootUrl && rootUrl.endsWith('/')) {
@@ -21,8 +17,11 @@ export class RootUrlService {
         return rootUrl;
     }
 
-    public static getServerCmsServiceUrl() {
-        return `${RootUrlService.getServerCmsUrl() || ''}/${RootUrlService.getWebServicePath()}`;
+    public static getServerCmsServiceUrl(proxy: boolean = false) {
+        // Tests run in an environment where window is defined, so we need to add a clause to workaround it.
+        return (typeof window === 'undefined' || process.env.NODE_ENV === 'test') && !proxy
+            ? `${RootUrlService.getServerCmsUrl() || ''}/${RootUrlService.getWebServicePath()}`
+            : `/sfrenderer/proxy/${RootUrlService.getWebServicePath()}`;
     }
 
     public static getWebServicePath() {
@@ -48,5 +47,12 @@ export class RootUrlService {
         }
 
         return this.getWebServicePath();
+    }
+
+    public static getSearchServiceUrl() {
+        // Tests run in an environment where window is defined, so we need to add a clause to workaround it.
+        return process.env.NODE_ENV === 'test'
+            ? `${RootUrlService.getClientCmsUrl()}/${RootUrlService.getSearchWebServicePath()}`
+            : `/sfrenderer/proxy/${RootUrlService.getSearchWebServicePath()}`;
     }
 }

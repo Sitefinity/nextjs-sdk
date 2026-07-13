@@ -31,7 +31,7 @@ ErrorBoundaryCustomProps,
       if (this.props.context.requestContext.isEdit) {
         const errorProps = {
           context: this.props.context,
-          error: this.state.error.message + '\n' + this.state.error.stack
+          error: this.state.error.message
         };
         const element = React.createElement(WidgetExecutionError, errorProps);
         return (element);

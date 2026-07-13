@@ -11,7 +11,7 @@ import { SearchFacetsEntity } from './search-facets.entity';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getQueryParams, setQueryParams } from '../common/query-params';
 import { Dictionary } from '../../typings/dictionary';
-import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
+import { X_SF_RENDERER_REQUEST_HEADER } from '../../proxy/headers';
 
 const FILTER_QUERY_PARAM = 'filter';
 
@@ -39,11 +39,6 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
     const [sf, setSearchFacets] = useState<SearchFacetModel[]>([]);
     const [hasFacetElements, setHasAnyFacetElements] = useState<boolean>(false);
     const [selectedFacets, setSelectedFacets] = useState<SelectedFacetsState>({});
-
-    const headers: Dictionary = {};
-    if (viewProps.webserviceApiKey) {
-        headers[SF_WEBSERVICE_API_KEY_HEADER] = viewProps.webserviceApiKey;
-    }
 
     function setInitialSelectedFacets(sf: SearchFacetModel[]) {
         const filterQuery = getQueryParams(searchParamsNext)[FILTER_QUERY_PARAM];
@@ -93,7 +88,7 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
     };
 
     useEffect(() => {
-        getInitialFacetsWithModels(queryParams, viewProps.widgetContext.model.Properties, headers).then(({searchFacets, hasAnyFacetElements}) => {
+        getInitialFacetsWithModels(queryParams, viewProps.widgetContext.model.Properties).then(({searchFacets, hasAnyFacetElements}) => {
             setSearchFacets(searchFacets);
             setHasAnyFacetElements(hasAnyFacetElements);
             setInitialSelectedFacets(searchFacets);
@@ -121,15 +116,14 @@ export function SearchFacetsClient(viewProps: SearchFacetsViewProps<SearchFacets
                     null,
                     facets,
                     undefined,
-                    headers,
                     newSearchParams['filterExpression']
                 );
 
-                const { searchFacets, hasAnyFacetElements }= await updateFacetsViewProps(newSearchParams, facetResponse, selectedFacetsToBeUsed, headers);
+                const { searchFacets, hasAnyFacetElements }= await updateFacetsViewProps(newSearchParams, facetResponse, selectedFacetsToBeUsed);
                 setSearchFacets(searchFacets);
                 setHasAnyFacetElements(hasAnyFacetElements);
             } else {
-                getInitialFacetsWithModels(queryParams, viewProps.widgetContext.model.Properties, headers).then(({searchFacets, hasAnyFacetElements}) => {
+                getInitialFacetsWithModels(queryParams, viewProps.widgetContext.model.Properties).then(({searchFacets, hasAnyFacetElements}) => {
                     setSearchFacets(searchFacets);
                     setHasAnyFacetElements(hasAnyFacetElements);
                 });

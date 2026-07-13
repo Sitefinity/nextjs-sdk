@@ -30,6 +30,9 @@ export * from './services/render-widget-service';
 export * from './services/renderer-contract';
 export * from './services/rest-client-for-context';
 export * from './services/sanitizer-service';
+export * from './services/server-context';
 
 export * from './server-side-cookie';
 export * from './server-side-headers';
+
+export * from './proxy/headers';

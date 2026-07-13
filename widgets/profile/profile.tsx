@@ -100,8 +100,8 @@ function populateViewProps(entity: ProfileEntity, widgetContext: WidgetContext<P
     const customAttributes = getCustomAttributes(entity.Attributes, 'Profile');
 
     return {
-        updateProfileHandlerPath: `/${RootUrlService.getWebServicePath()}/users/updateProfile`,
-        sendAgainActivationLinkUrl: `/${RootUrlService.getWebServicePath()}/users/sendAgain`,
+        updateProfileHandlerPath: `${RootUrlService.getServerCmsServiceUrl(true)}/users/updateProfile`,
+        sendAgainActivationLinkUrl: `${RootUrlService.getServerCmsServiceUrl(true)}/users/sendAgain`,
         labels: {
             header: entity.EditProfileHeaderLabel,
             firstNameLabel: entity.FirstNameLabel,
@@ -135,7 +135,6 @@ function populateViewProps(entity: ProfileEntity, widgetContext: WidgetContext<P
         readEditModeAction: entity.ReadEditModeAction,
         visibilityClasses: StylingConfig.VisibilityClasses,
         invalidClass: StylingConfig.InvalidClass,
-        webserviceApiKey: widgetContext.requestContext.webserviceApiKey,
         attributes: { ...dataAttributes, ...customAttributes },
         widgetContext: getMinimumWidgetContext(widgetContext)
     };

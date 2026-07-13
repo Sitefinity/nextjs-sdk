@@ -26,7 +26,7 @@ import { UrlParams } from './page-params';
 import { env } from 'process';
 import { WidgetMetadata, WidgetViewsRegistration } from '../editor/widget-framework/widget-metadata';
 import { widgetRegistry } from '@widgetregistry';
-import { isReactClientComponent, SF_WEBSERVICE_API_KEY } from '../widgets/common/utils';
+import { isReactClientComponent } from '../widgets/common/utils';
 import { RequestContext } from '../editor/request-context';
 
 export async function RenderPage({ params, searchParams, relatedFields, templates }: { params: UrlParams | Promise<UrlParams>, searchParams: Dictionary | Promise<Dictionary>, relatedFields?: string[], templates?: TemplateRegistry }) {
@@ -105,8 +105,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         isPreview,
         isLive,
         url: pageParams?.slug.join('/'),
-        pageNode: layout.Fields as PageItem,
-        webserviceApiKey: process.env[SF_WEBSERVICE_API_KEY]
+        pageNode: layout.Fields as PageItem
     };
 
     // get all list widgets

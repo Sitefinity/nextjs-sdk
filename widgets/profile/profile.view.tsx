@@ -8,8 +8,7 @@ import { ProfileClient } from './profile-client';
 import { RestClient } from '../../rest-sdk/rest-client';
 import { RootUrlService } from '../../rest-sdk/root-url.service';
 import { SecurityService } from '../../services/security-service';
-import { SF_WEBSERVICE_API_KEY_HEADER } from '../common/utils';
-import { Dictionary } from '../../typings/dictionary';
+import { X_REQUESTED_WITH_HEADER } from '../../proxy/headers';
 
 const EncryptedParam = 'qs';
 export function ProfileDefaultView(props: ProfileViewProps<ProfileEntity>) {
@@ -54,13 +53,8 @@ export function ProfileDefaultView(props: ProfileViewProps<ProfileEntity>) {
         }
     }, [context?.isLive, confirmEmailChangeParam]);
 
-    const additionalHeaders: Dictionary = {};
-    if (props.webserviceApiKey) {
-        additionalHeaders[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
-    }
-
     const getUserData = async () => {
-        const user = await RestClient.getCurrentUser({ additionalHeaders }).then((user) => {
+        const user = await RestClient.getCurrentUser().then((user) => {
             const hasUser = (user && user.IsAuthenticated);
             if (hasUser) {
                 return user;
@@ -107,18 +101,15 @@ export function ProfileDefaultView(props: ProfileViewProps<ProfileEntity>) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const headers: Record<string, string> = {};
-    if (props.webserviceApiKey) {
-        headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
-    }
-
     const handleEmailChange = (confirmEmailChangeParam: string) => {
         const serviceUrl = RootUrlService.getServerCmsServiceUrl();
         const wholeUrl = `${serviceUrl}/users/changeEmail${RestClient.buildQueryParams({ qs: encodeURIComponent(confirmEmailChangeParam) })}`;
 
         window.fetch(wholeUrl, {
             method: 'GET',
-            headers
+            headers: {
+                [X_REQUESTED_WITH_HEADER]: 'react'
+            }
         }).then((response) => {
             const status = response.status;
             if (status === 0 || (status >= 200 && status < 400)) {
@@ -157,7 +148,9 @@ export function ProfileDefaultView(props: ProfileViewProps<ProfileEntity>) {
             window.fetch(sendAgainActivationLinkUrl, {
                 method: 'POST',
                 body: requestBody,
-                headers
+                headers: {
+                    [X_REQUESTED_WITH_HEADER]: 'react'
+                }
             });
         });
 

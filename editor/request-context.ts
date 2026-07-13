@@ -12,7 +12,6 @@ export interface RequestContext<T = LayoutServiceResponse> {
     isLive: boolean;
     url: string;
     pageNode: PageItem;
-    webserviceApiKey?: string;
 }
 
 export type TransferableRequestContext = RequestContext<PartialLayoutServiceResponse>;

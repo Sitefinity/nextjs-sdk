@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { VisibilityStyle } from '../styling/visibility-style';
-import { SF_WEBSERVICE_API_KEY_HEADER, invalidDataAttr, invalidateElement, isValidEmail, serializeForm } from '../common/utils';
+import { invalidDataAttr, invalidateElement, isValidEmail, serializeForm } from '../common/utils';
 import { classNames } from '../../editor/utils/classNames';
 import { ResetPasswordViewProps } from './interfaces/reset-password.view-props';
 import { ResetPasswordEntity } from './reset-password.entity';
 import { getUniqueId } from '../../editor/utils/getUniqueId';
+import { X_REQUESTED_WITH_HEADER } from '../../proxy/headers';
 
 export function ForgottenPasswordFormClient(props: ResetPasswordViewProps<ResetPasswordEntity>) {
     const emailInputId = getUniqueId('sf-email-', props.widgetContext.model.Id);
@@ -29,10 +30,10 @@ export function ForgottenPasswordFormClient(props: ResetPasswordViewProps<ResetP
         let model = { model: serializeForm(formRef.current!) };
         let submitUrl = (formRef.current!.attributes as any)['action'].value;
 
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (props.webserviceApiKey) {
-            headers[SF_WEBSERVICE_API_KEY_HEADER] = props.webserviceApiKey;
-        }
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            [X_REQUESTED_WITH_HEADER]: 'react'
+        };
 
         window.fetch(submitUrl, { method: 'POST', body: JSON.stringify(model), headers })
             .then(() => {
