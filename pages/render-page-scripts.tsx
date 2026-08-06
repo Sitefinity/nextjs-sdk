@@ -32,6 +32,17 @@ function RenderPageHeadScript(script: PageScript, scriptAttributes: { [key: stri
     if (script.IsNoScript) {
         return <noscript key={index} {...scriptAttributes} dangerouslySetInnerHTML={{ __html: script.Value || '' }} />;
     } else {
+        if (!script.Source && scriptAttributes.type?.toLowerCase() === 'application/ld+json') {
+            return (
+              <script
+                key={index}
+                {...scriptAttributes}
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: (script.Value || '').replace(/</g, '\\u003c') }}
+                />
+            );
+        }
+
         if (script.Source) {
             // eslint-disable-next-line @next/next/no-before-interactive-script-outside-document
             return <Script key={index} {...scriptAttributes} src={script.Source} strategy="beforeInteractive" />;

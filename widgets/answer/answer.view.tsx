@@ -35,6 +35,7 @@ export interface AnswerStaticConfig {
         endpoint: string;
         showSources: boolean;
         showFeedbackButtons: boolean | null;
+        additionalHeaders: { [key: string]: string };
     };
 }
 
@@ -82,7 +83,8 @@ export function AnswerDefaultView(props: AnswerViewProps<AnswerEntity>) {
             serviceType: 'ProgressARAGChatService',
             endpoint: SitefinityAssistantConfig.getChatServiceUrl(AssistantApiConstants.PARAG),
             showSources: props.showSources,
-            showFeedbackButtons: props.showFeedback
+            showFeedbackButtons: props.showFeedback,
+            additionalHeaders: { 'X-Requested-With': 'react' }
         }
     };
 
