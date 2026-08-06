@@ -125,8 +125,7 @@ export async function SitefinityAssistant(props: WidgetContext<SitefinityAssista
                 sourcesHeaderText: entity.SourcesHeader,
                 additionalQueryParams: {
                     sf_site: props.requestContext.layout.SiteId
-                },
-                additionalHeaders: { 'X-Requested-With': 'react' }
+                }
             }
         };
 

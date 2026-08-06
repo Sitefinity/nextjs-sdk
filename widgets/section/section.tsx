@@ -63,26 +63,18 @@ export async function Section(props: WidgetContext<SectionEntity>) {
     );
 }
 
-function populateColumns(context: WidgetContext<SectionEntity>): ColumnHolder[] {        
+function populateColumns(context: WidgetContext<SectionEntity>): ColumnHolder[] {
     let columns: ColumnHolder[] = [];
     const properties = context.model.Properties;
-    const columnNames = new Set(Array.from({ length: properties.ColumnsCount }, (_, index) =>
-        `${ColumnNamePrefix}${index + 1}`));
 
     for (let i = 0; i < properties.ColumnsCount; i++) {
-        const currentName = `${ColumnNamePrefix}${i + 1}`;
+        let currentName = `${ColumnNamePrefix}${i + 1}`;
 
         const classAttribute = `col-md-${properties.ColumnProportionsInfo![i]}`;
         const classAttributes = [classAttribute];
         let children: Array<ComponentContainer> = [];
         if (context.model.Children) {
-            children = context.model.Children.filter(child =>
-                child.PlaceHolder === currentName ||
-                (context.requestContext.isEdit && i === 0 && !columnNames.has(child.PlaceHolder))).map((x => {
-                if (x.PlaceHolder !== currentName) {
-                    x.Orphaned = true;
-                }
-
+            children = context.model.Children.filter(x => x.PlaceHolder === currentName).map((x => {
                 let ret: WidgetContext<any> = {
                     model: x,
                     metadata: getMinimumMetadata(RenderWidgetService.widgetRegistry.widgets[x.Name], context.requestContext.isEdit),
@@ -238,4 +230,3 @@ function populateSection(properties: SectionEntity, requestContext: Transferable
     sectionObject.Attributes['className'] = sectionClasses.filter(x => x).join(' ');
     return Promise.resolve(sectionObject);
 }
-
