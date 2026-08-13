@@ -49,6 +49,8 @@ export function AskBoxDefaultView(props: AskBoxViewProps<AskBoxEntity>) {
     const buildResultsUrl = (query: string) => {
         const knowledgeBoxName = props.knowledgeBoxName || '';
         const searchConfigurationName = props.searchConfigurationName;
+        const contentTypes = props.contentTypes;
+        const lastModified  = props.lastModified;
         const trimmedQuery = query.trim();
 
         if (props.resultsPageUrl) {
@@ -58,16 +60,39 @@ export function AskBoxDefaultView(props: AskBoxViewProps<AskBoxEntity>) {
             if (searchConfigurationName) {
                 url += '&searchConfigurationName=' + encodeURIComponent(searchConfigurationName);
             }
+
+            if (contentTypes) {
+                url += '&contentTypes=' + encodeURIComponent(contentTypes);
+            }
+
+            if (lastModified) {
+                url += '&lastModified=' + encodeURIComponent(lastModified);
+            }
+
             return url;
         } else {
             const params = new URLSearchParams(searchParams.toString());
             params.set('knowledgeBoxName', knowledgeBoxName);
             params.set('searchQuery', trimmedQuery);
+
             if (searchConfigurationName) {
                 params.set('searchConfigurationName', searchConfigurationName);
             } else {
                 params.delete('searchConfigurationName');
             }
+
+            if (contentTypes) {
+                params.set('contentTypes', contentTypes);
+            } else {
+                params.delete('contentTypes');
+            }
+
+            if (lastModified) {
+                params.set('lastModified', lastModified);
+            } else {
+                params.delete('lastModified');
+            }
+
             params.delete('page');
             return pathname + '?' + params.toString();
         }

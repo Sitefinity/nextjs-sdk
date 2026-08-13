@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { SearchFacetModel } from './search-facets-class';
 import { SearchFacetsViewProps } from './search-facets.view-props';
 import { FacetGroup } from './components/facet-group';
@@ -10,8 +10,6 @@ import { getFacets, getInitialFacetsWithModels, getSearchFacets, getSelectedFace
 import { SearchFacetsEntity } from './search-facets.entity';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getQueryParams, setQueryParams } from '../common/query-params';
-import { Dictionary } from '../../typings/dictionary';
-import { X_SF_RENDERER_REQUEST_HEADER } from '../../proxy/headers';
 
 const FILTER_QUERY_PARAM = 'filter';
 

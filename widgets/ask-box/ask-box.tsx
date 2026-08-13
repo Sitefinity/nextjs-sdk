@@ -12,7 +12,56 @@ import { StylingConfig } from '../styling/styling-config';
 import { VisibilityStyle } from '../styling/visibility-style';
 import { RenderView } from '../common/render-view';
 import { AskBoxDefaultView } from './ask-box.view';
+import { DateTimeFilterValue } from '@progress/sitefinity-widget-designers-sdk';
 
+export function resolveLastModifiedDate(filter: DateTimeFilterValue | null): string {
+    if (!filter) {
+        return '';
+    }
+
+    if (filter.PeriodType === 'last') {
+        const now = new Date();
+        const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+        switch (filter.TimeSpanInterval) {
+            case 'days':
+                date.setUTCDate(date.getUTCDate() - filter.TimeSpanValue);
+                break;
+            case 'weeks':
+                date.setUTCDate(date.getUTCDate() - filter.TimeSpanValue * 7);
+                break;
+            case 'months':
+                date.setUTCMonth(date.getUTCMonth() - filter.TimeSpanValue);
+                break;
+            case 'years':
+                date.setUTCFullYear(date.getUTCFullYear() - filter.TimeSpanValue);
+                break;
+            default:
+                return '';
+        }
+
+        return date.toISOString();
+    }
+
+    if (filter.PeriodType === 'period') {
+        if (!filter.FromDate) {
+            return '';
+        }
+
+        const fromDate = new Date(filter.FromDate as unknown as string);
+        if (Number.isNaN(fromDate.getTime())) {
+            return '';
+        }
+
+        return new Date(Date.UTC(
+            fromDate.getUTCFullYear(),
+            fromDate.getUTCMonth(),
+            fromDate.getUTCDate()
+        )).toISOString();
+    }
+
+    return '';
+}
 
 export async function AskBox(props: WidgetContext<AskBoxEntity>) {
     const { span, ctx } = Tracer.traceWidget(props, true);
@@ -45,6 +94,8 @@ export async function AskBox(props: WidgetContext<AskBoxEntity>) {
         placeholder: entity.Placeholder,
         buttonLabel: entity.ButtonLabel,
         suggestionsLabel: entity.SuggestionsLabel,
+        contentTypes: entity.ContentTypes ? entity.ContentTypes.join(',') : '',
+        lastModified: resolveLastModifiedDate(entity.ModifiedDateFilter),
         activeClass: StylingConfig.ActiveClass,
         visibilityClassHidden: StylingConfig.VisibilityClasses[VisibilityStyle.Hidden],
         searchAutocompleteItemClass: StylingConfig.SearchAutocompleteItemClass,

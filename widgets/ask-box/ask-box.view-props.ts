@@ -12,4 +12,6 @@ export interface AskBoxViewProps<T extends AskBoxEntity> extends ViewPropsBase<T
     activeClass: string;
     visibilityClassHidden: string;
     searchAutocompleteItemClass: string;
+    contentTypes: string;
+    lastModified: string;
 }

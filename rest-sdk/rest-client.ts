@@ -153,8 +153,9 @@ export class RestClient {
      * @returns {Promise<T>} The requested item.
      */
     public static getItem<T extends SdkItem>(args: ItemArgs): Promise<T> {
-        const filteredSimpleFields = this.getSimpleFields(args.type, args.fields || ['*']);
-        const filteredRelatedFields = this.getRelatedFields(args.type, args.fields || []);
+        const selectedFields = this.resolveSelectedFields(args.type, args.fields, args.additionalFields);
+        const filteredSimpleFields = this.getSimpleFields(args.type, selectedFields.length > 0 ? selectedFields : ['*']);
+        const filteredRelatedFields = this.getRelatedFields(args.type, selectedFields);
 
         let queryParams = {
             '$select': filteredSimpleFields.join(','),
@@ -204,8 +205,10 @@ export class RestClient {
      * @returns {Promise<CollectionResponse>} The wrepper object with a collection of the matched items if such exist. Otherwise an empty collection.
      */
     public static getItems<T extends SdkItem>(args: GetAllArgs): Promise<CollectionResponse<T>> {
-        const filteredSimpleFields = this.getSimpleFields(args.type, args.fields || []);
-        const filteredRelatedFields = this.getRelatedFields(args.type, args.fields || []);
+        const selectedFields = this.resolveSelectedFields(args.type, args.fields, args.additionalFields);
+
+        const filteredSimpleFields = this.getSimpleFields(args.type, selectedFields);
+        const filteredRelatedFields = this.getRelatedFields(args.type, selectedFields);
 
         let queryParams: { [key: string]: any } = {
             '$count': args.count,
@@ -928,6 +931,23 @@ export class RestClient {
         args.additionalQueryParams['@param'] = `[${args.templateNames.map(x => `'${x}'`).join(',')}]`;
         const wholeUrl = `${RootUrlService.getServerCmsUrl()}/${apiPath}/pages/Default.GetTemplateStatistics(templateNames=@param, renderer='${RENDERER_NAME}')${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, args.additionalQueryParams))}`;
         return RestClient.sendRequest<{ value: PageTemplateStatisticsDto[] } >({ url: wholeUrl, headers: args.additionalHeaders, additionalFetchData: args.additionalFetchData }).then(x => x.value);
+    }
+
+    private static resolveSelectedFields(type: string, fields?: string[], additionalFields?: string[]): string[] {
+        let effectiveFields = fields || [];
+        const allFieldsSelected = effectiveFields.length === 1 && effectiveFields[0] === '*';
+
+        // Append additional fields to the ones selected by default
+        if (!allFieldsSelected && additionalFields && additionalFields.length > 0) {
+            const selectedByDefaultFields = effectiveFields.length > 0
+                ? effectiveFields
+                : ServiceMetadata.getSelectedByDefaultFields(type);
+
+            const uniqueAdditional = additionalFields.filter(f => !selectedByDefaultFields.includes(f));
+            effectiveFields = [...selectedByDefaultFields, ...uniqueAdditional];
+        }
+
+        return effectiveFields;
     }
 
     private static getSimpleFields(type: string, fields: string[]): string[] {

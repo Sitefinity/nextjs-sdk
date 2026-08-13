@@ -19,8 +19,10 @@ import { Required } from '@progress/sitefinity-widget-designers-sdk/decorators/v
 import { Content } from '@progress/sitefinity-widget-designers-sdk/decorators/content';
 import { ConditionalVisibility } from '@progress/sitefinity-widget-designers-sdk/decorators/conditional-visibility';
 import { Margins } from '@progress/sitefinity-widget-designers-sdk/decorators/margins';
+import { ContentTypeSelector, DateRange, DateTimeFilterValue, DateTimeMode, FromToMode } from '@progress/sitefinity-widget-designers-sdk';
 
 const SetupSectionName = 'AI ask box setup';
+const KnowledgeScopeSectionName  = 'Knowledge scope';
 
 @WidgetEntity('SitefinityAskBox', 'AI ask box')
 export class AskBoxEntity {
@@ -63,6 +65,17 @@ export class AskBoxEntity {
     @TableView({ Reorderable: true })
     @DataType(ComplexType.Enumerable, 'string')
     Suggestions: string[] = [];
+
+    @ContentSection(KnowledgeScopeSectionName, 0)
+    @DisplayName('Base answers on...')
+    @Description('Choose which content types this widget can use as knowledge when searching or answering questions.')
+    @ContentTypeSelector({ CanSelectAll: true, IsMultipleSelection: true, IsLifecycleContentType : true, UseFullTypeName: true })
+    ContentTypes: string[] = [];
+
+    @ContentSection(KnowledgeScopeSectionName, 1)
+    @DisplayName('Content modified')
+    @DateRange(DateTimeMode.DateOnly, FromToMode.FromOnly)
+    ModifiedDateFilter: DateTimeFilterValue | null = null;
 
     @ContentSection(ContentSectionTitles.DisplaySettings, 0)
     @ViewSelector([{ Title: 'Default', Name: 'Default', Value: 'Default', Icon: null }])

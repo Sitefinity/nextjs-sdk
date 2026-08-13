@@ -21,13 +21,13 @@ import { setHostServerContext } from '../services/server-context';
 import { TemplateRegistry } from '../editor/default-template-registry';
 import { initRegistry, WidgetRegistry } from '../editor/widget-framework/widget-registry';
 import { WidgetModel } from '../editor/widget-framework/widget-model';
-import { JSX } from 'react';
 import { UrlParams } from './page-params';
 import { env } from 'process';
 import { WidgetMetadata, WidgetViewsRegistration } from '../editor/widget-framework/widget-metadata';
 import { widgetRegistry } from '@widgetregistry';
 import { isReactClientComponent } from '../widgets/common/utils';
 import { RequestContext } from '../editor/request-context';
+import { renderPageTemplate } from './render-page-template';
 
 export async function RenderPage({ params, searchParams, relatedFields, templates }: { params: UrlParams | Promise<UrlParams>, searchParams: Dictionary | Promise<Dictionary>, relatedFields?: string[], templates?: TemplateRegistry }) {
     const host = (await headers()).get('host') || '';
@@ -127,32 +127,20 @@ export async function RenderPage({ params, searchParams, relatedFields, template
     const liveUrl = '/' + pageParams?.slug.join('/') + '?' + new URLSearchParams(queryParams).toString();
 
     let pageTemplate;
+    let hasOrphanedControls = layout.ComponentContext.OrphanedControls.length > 0;
     if (layout.TemplateName && templates && templates[layout.TemplateName]) {
         let template = templates[layout.TemplateName];
+
         if (template && template.templateFunction) {
-            const sortedWidgets: {[key: string]: (JSX.Element | null) [] } = {};
-            layout.ComponentContext.Components.forEach(widget => {
-                const placeholder = widget.PlaceHolder;
-                if (!sortedWidgets[placeholder]) {
-                    sortedWidgets[placeholder] = [];
-                }
-
-                sortedWidgets[placeholder].push(RenderWidgetService.createComponent(widget, requestContext, ctx));
+            const templateResult = renderPageTemplate({
+                templateFunction: template.templateFunction,
+                widgets: layout.ComponentContext.Components,
+                orphanedControls: layout.ComponentContext.OrphanedControls,
+                requestContext,
+                traceContext: ctx
             });
-
-            if (isEdit) {
-                layout.ComponentContext.OrphanedControls.forEach(widget => {
-                    const placeholder = 'Body';
-                    if (!sortedWidgets[placeholder]) {
-                        sortedWidgets[placeholder] = [];
-                    }
-
-                    widget.Orphaned = true;
-                    sortedWidgets[placeholder].push(RenderWidgetService.createComponent(widget, requestContext, ctx));
-                });
-            }
-
-            pageTemplate = template.templateFunction({ widgets: sortedWidgets, requestContext: requestContext });
+            pageTemplate = templateResult.pageTemplate;
+            hasOrphanedControls = templateResult.hasOrphanedControls;
         }
     }
 
@@ -238,7 +226,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
           registry={registryForFrontend}/>
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} /> }
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} /> }
-        {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={requestContext} registry={registryForEdit} />}
+        {isEdit && <RenderPageClient layout={layout} metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} context={requestContext} registry={registryForEdit} hasOrphanedControls={hasOrphanedControls} />}
         {!isEdit && requestContext.layout?.ComponentContext.HasLazyComponents && <RenderLazyWidgetsClient metadata={ServiceMetadata.serviceMetadataCache} taxonomies={ServiceMetadata.taxonomies} url={liveUrl} registry={registryForFrontend} />}
         {pageTemplate}
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyBottom} /> }

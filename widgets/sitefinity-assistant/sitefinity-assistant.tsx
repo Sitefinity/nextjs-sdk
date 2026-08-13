@@ -7,6 +7,7 @@ import { SitefinityAssistantApiClient } from './sitefinity-assistant-api-client'
 import { RestClient } from '@progress/sitefinity-nextjs-sdk/rest-sdk';
 import Script from 'next/script';
 import { AssistantApiConstants } from './assistant-api-constants';
+import { X_REQUESTED_WITH_HEADER } from '../../proxy/headers';
 
 // Re-export DisplayMode for use in other components
 export { DisplayMode } from './sitefinity-assistant.entity';
@@ -125,7 +126,8 @@ export async function SitefinityAssistant(props: WidgetContext<SitefinityAssista
                 sourcesHeaderText: entity.SourcesHeader,
                 additionalQueryParams: {
                     sf_site: props.requestContext.layout.SiteId
-                }
+                },
+                additionalHeaders: { [X_REQUESTED_WITH_HEADER]: 'react' }
             }
         };
 

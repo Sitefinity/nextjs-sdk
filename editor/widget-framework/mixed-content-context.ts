@@ -6,7 +6,8 @@ export interface MixedContentContext {
         Item: {
             [key: string]: any;
         }
-    }[]
+    }[],
+    CustomProperties?: { [itemId: string]: ContentCustomProperties }
 }
 
 export interface ContentContext {
@@ -18,4 +19,8 @@ export interface ContentVariation {
     Source: string;
     Filter: { Key: string, Value: string };
     DynamicFilterByParent?: boolean;
+}
+
+export interface ContentCustomProperties {
+    SelectedThumbnailName?: string;
 }

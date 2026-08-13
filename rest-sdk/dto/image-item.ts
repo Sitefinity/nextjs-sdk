@@ -7,5 +7,6 @@ export interface ImageItem extends SdkItem {
     AlternativeText: string;
     Width: number;
     Height: number;
-    Thumbnails: ThumbnailItem[]
+    Thumbnails: ThumbnailItem[];
+    SelectedThumbnail?: ThumbnailItem;
 }

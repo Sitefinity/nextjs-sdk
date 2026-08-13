@@ -7,6 +7,7 @@ import { AnswerEntity } from './answer.entity';
 import { AnswerViewProps } from './answer.view-props';
 import { SitefinityAssistantConfig } from '../sitefinity-assistant/sitefinity-assistant-config';
 import { AssistantApiConstants } from '../sitefinity-assistant/assistant-api-constants';
+import { X_REQUESTED_WITH_HEADER } from '../../proxy/headers';
 
 export interface AnswerStaticConfig {
     id: string;
@@ -35,6 +36,7 @@ export interface AnswerStaticConfig {
         endpoint: string;
         showSources: boolean;
         showFeedbackButtons: boolean | null;
+        additionalHeaders: { [key: string]: string };
     };
 }
 
@@ -52,6 +54,8 @@ export function AnswerDefaultView(props: AnswerViewProps<AnswerEntity>) {
     const searchQuery = searchParams.get('searchQuery');
     const knowledgeBoxName = searchParams.get('knowledgeBoxName');
     const configurationName = searchParams.get('searchConfigurationName');
+    const contentTypes  = searchParams.get('contentTypes');
+    const lastModified = searchParams.get('lastModified');
 
     const containerRef = useRef<HTMLDivElement>(null);
     const isFirstRender = useRef(true);
@@ -82,7 +86,8 @@ export function AnswerDefaultView(props: AnswerViewProps<AnswerEntity>) {
             serviceType: 'ProgressARAGChatService',
             endpoint: SitefinityAssistantConfig.getChatServiceUrl(AssistantApiConstants.PARAG),
             showSources: props.showSources,
-            showFeedbackButtons: props.showFeedback
+            showFeedbackButtons: props.showFeedback,
+            additionalHeaders: { [X_REQUESTED_WITH_HEADER]: 'react' }
         }
     };
 
@@ -92,7 +97,9 @@ export function AnswerDefaultView(props: AnswerViewProps<AnswerEntity>) {
             ...staticConfig.serviceSettings,
             knowledgeBoxName,
             configurationName,
-            initialPrompt: searchQuery
+            initialPrompt: searchQuery,
+            contentTypes,
+            lastModified
         }
     });
 

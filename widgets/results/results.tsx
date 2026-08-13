@@ -38,6 +38,8 @@ async function performFind(
     searchQuery: string,
     knowledgeBoxName: string,
     configurationName: string | undefined,
+    contentTypes: string | undefined,
+    lastModified: string | undefined,
     traceContext?: any
 ): Promise<FindResultItem[]> {
     try {
@@ -49,6 +51,8 @@ async function performFind(
                 KnowledgeBoxName: knowledgeBoxName,
                 Query: searchQuery,
                 ConfigurationName: configurationName,
+                ContentTypes: contentTypes ? contentTypes.split(',').map(type => type.trim()) : undefined,
+                LastModified: lastModified,
                 Show: ['basic', 'origin', 'values'],
                 Take: 200
             },
@@ -107,6 +111,8 @@ export async function Results(props: WidgetContext<ResultsEntity>) {
     const searchQuery = requestContext.searchParams?.['searchQuery'];
     const knowledgeBoxName = requestContext.searchParams?.['knowledgeBoxName'];
     const searchConfigurationName = requestContext.searchParams?.['searchConfigurationName'];
+    const contentTypes = requestContext.searchParams?.['contentTypes'];
+    const lastModified = requestContext.searchParams?.['lastModified'];
 
     let searchResults: FindResultItem[] | null = null;
     let resultsHeader = entity.NoResultsHeader.replace('{0}', searchQuery || '');
@@ -116,6 +122,8 @@ export async function Results(props: WidgetContext<ResultsEntity>) {
             searchQuery,
             knowledgeBoxName,
             searchConfigurationName,
+            contentTypes,
+            lastModified,
             ctx
         );
 

@@ -319,6 +319,16 @@ export class ServiceMetadata {
         }).filter(x => !!x);
     }
 
+    public static getSelectedByDefaultFields(type: string): string[] {
+        let definition = ServiceMetadata.serviceMetadataCache.definitions[type];
+        let propertiesObject = definition['properties'];
+
+        return Object.keys(propertiesObject).filter((key) => {
+            const fieldMeta = propertiesObject[key];
+            return fieldMeta !== null && typeof fieldMeta === 'object' && fieldMeta['Telerik.Sitefinity.V1.SelectedByDefault'];
+        });
+    }
+
     /**
      * Gets the name of the taxonomy field for a given type by taxonomy name if such field exists on the type.
      * @param type The full type name of the item type.

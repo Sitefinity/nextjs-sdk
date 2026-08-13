@@ -8,7 +8,23 @@ import { LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
 import { SdkItem } from '../rest-sdk/dto/sdk-item';
 import { WidgetRegistry } from '../editor/widget-framework/widget-registry';
 
-export function RenderPageClient({ layout, metadata, taxonomies, context, registry }: { layout: LayoutServiceResponse, metadata: ServiceMetadataDefinition, taxonomies: SdkItem[], context: RequestContext, registry: WidgetRegistry }) {
+interface RenderPageClientProps {
+    layout: LayoutServiceResponse;
+    metadata: ServiceMetadataDefinition;
+    taxonomies: SdkItem[];
+    context: RequestContext;
+    registry: WidgetRegistry;
+    hasOrphanedControls: boolean;
+}
+
+export function RenderPageClient({
+    layout,
+    metadata,
+    taxonomies,
+    context,
+    registry,
+    hasOrphanedControls
+}: RenderPageClientProps) {
     RenderWidgetService.widgetRegistry = registry;
 
     ServiceMetadata.serviceMetadataCache = metadata;
@@ -19,7 +35,7 @@ export function RenderPageClient({ layout, metadata, taxonomies, context, regist
         const start = new Date().getTime();
         const handle = window.setInterval(() => {
             document.body.setAttribute('data-sfcontainer', 'Body');
-            if (layout.ComponentContext.OrphanedControls.length > 0) {
+            if (hasOrphanedControls) {
                 document.body.setAttribute('data-sforphans', 'true');
             }
 
