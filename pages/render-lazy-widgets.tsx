@@ -19,7 +19,7 @@ export async function RenderLazyWidgets({ searchParams }: { searchParams: Dictio
     const queryParams = searchParams instanceof Promise ? await searchParams : searchParams;
     setHostServerContext(hostHeader);
 
-    const pageUrl = queryParams['pageUrl'];
+    const pageUrl = RestClient.normalizePagePath(queryParams['pageUrl']);
     const cookie = (await cookies()).toString();
 
     const lazyWidgets = await RestClient.getLazyWidgets({

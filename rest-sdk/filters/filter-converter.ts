@@ -37,7 +37,7 @@ export class FilterConverterService {
     }
 
     public static parseComplexFilter(filter: FilterClause | CombinedFilter | RelationFilter | DateOffsetPeriod): CombinedFilter | FilterClause | RelationFilter {
-        if (filter.hasOwnProperty('FieldName') && filter.hasOwnProperty('FieldValue')) {
+        if (filter.hasOwnProperty('FieldName') && (filter.hasOwnProperty('FieldValue') || this.isOperandlessOperator(filter))) {
             const filterClause = <FilterClause>filter;
             return filterClause;
         } else if (filter.hasOwnProperty('Name') && filter.hasOwnProperty('Operator')) {
@@ -101,5 +101,12 @@ export class FilterConverterService {
 
             return parsedCombined;
         }
+    }
+
+    /** Only the presence operators are allowed to omit FieldValue. */
+    private static isOperandlessOperator(filter: object): boolean {
+        const operator = (<FilterClause>filter).Operator;
+
+        return operator === FilterOperators.IsEmpty || operator === FilterOperators.IsNotEmpty;
     }
 }

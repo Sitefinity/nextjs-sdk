@@ -24,7 +24,7 @@ export class SitefinityAssistantEntity {
     @ContentSection('AI assistant', 0)
     @DisplayName('AI assistant type')
     @DataType(KnownFieldTypes.Choices)
-    @Choice({ ServiceUrl: '/Default.GetAvailableAssistantModules()', ServiceWarningMessage: 'No AI assistants are found.' })
+    @Choice({ ServiceUrl: 'Default.GetAvailableAssistantModules()', ServiceWarningMessage: 'No AI assistants are found.' })
     @Placeholder('Select assistant type')
     @Description('[{"Type":1,"Chunks":[{"Value":"Sitefinity AI Assistant: ","Presentation":[0]},{"Value":"Answers from your site\'s published content only.","Presentation":[]}]},{"Type":1,"Chunks":[{"Value":"Progress Agentic RAG: ","Presentation":[0]},{"Value":"Answers from the selected Agentic RAG connection.","Presentation":[]}]}]')
     AssistantType: string | null = null;
@@ -33,7 +33,7 @@ export class SitefinityAssistantEntity {
     @DisplayName('Agentic RAG connection')
     @Description('A connection to a specific knowledge box in Progress Agentic RAG. Select which connection this widget should use to answer questions.')
     @DataType(KnownFieldTypes.Choices)
-    @Choice({ ServiceUrl: '/Default.GetConfiguredKnowledgeBoxes()', ServiceWarningMessage: 'No Agentic RAG connections are found.' })
+    @Choice({ ServiceUrl: 'Default.GetConfiguredKnowledgeBoxes(widgetName=\'Assistant\')', ServiceWarningMessage: 'No Agentic RAG connections are found.' })
     @Placeholder('Select connection')
     @ConditionalVisibility('{"conditions":[{"fieldName":"AssistantType","operator":"Equals","value":"PARAG"}]}')
     KnowledgeBoxName: string | null = null;
@@ -42,7 +42,7 @@ export class SitefinityAssistantEntity {
     @DisplayName('Search configuration')
     @Description('A saved set of search settings that the AI assistant uses to find content.')
     @DataType(KnownFieldTypes.Choices)
-    @Choice({ ServiceUrl: '/Default.GetSearchConfigurations(knowledgeBoxName=\'{0}\')', ServiceCallParameters: '[{ "knowledgeBoxName" : "{0}"}]' })
+    @Choice({ ServiceUrl: 'Default.GetSearchConfigurations(knowledgeBoxName=\'{0}\')', ServiceCallParameters: '[{ "knowledgeBoxName" : "{0}"}]' })
     @ConditionalVisibility('{"conditions":[{"fieldName":"AssistantType","operator":"Equals","value":"PARAG"}]}')
     ConfigurationName: string | null = null;
 
@@ -51,7 +51,7 @@ export class SitefinityAssistantEntity {
     @Description('[{"Type":1,"Chunks":[{"Value":"AI assitants are created and managed in","Presentation":[]},{"Value":"Administration > AI assistants","Presentation":[2]}]}]')
     @DataType(KnownFieldTypes.Choices)
     @Placeholder('Select')
-    @Choice({ ServiceUrl: '/Default.GetAiAssistantChoices()', ServiceWarningMessage: 'No AI assistants are found.' })
+    @Choice({ ServiceUrl: 'Default.GetAiAssistantChoices()', ServiceWarningMessage: 'No AI assistants are found.' })
     @DefaultValue('')
     @ConditionalVisibility('{"conditions":[{"fieldName":"AssistantType","operator":"Equals","value":"SAIA"}]}')
     AssistantApiKey: string | null = null;
@@ -158,7 +158,7 @@ export class SitefinityAssistantEntity {
     @DisplayName('CSS for custom design')
     @Placeholder('type URL or path to file...')
     CustomCss: string | null = null;
-    
+
     @Category(PropertyCategory.Advanced)
     @ContentSection('Labels and messages', 0)
     @DefaultValue('Helpful')

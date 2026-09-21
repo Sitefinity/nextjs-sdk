@@ -105,6 +105,10 @@ export class ODataFilterSerializer {
             case FilterOperators.LessThanOrEqual:
                 const serializedValue = this.serializeFilterValue(filter.FieldValue, filter.FieldName, filterContext);
                 return `(${fieldNameWithPrefix} ${filter.Operator} ${serializedValue})`;
+            case FilterOperators.IsNotEmpty:
+                return `${fieldNameWithPrefix}/any()`;
+            case FilterOperators.IsEmpty:
+                return `not ${fieldNameWithPrefix}/any()`;
             case FilterOperators.ContainsOr:
             case FilterOperators.DoesNotContain:
                 let containsOrFilter = this.getContainsTypeOperatorsFilterExpression(filter, filterContext, fieldNameWithPrefix, nextVariableName, 'or');

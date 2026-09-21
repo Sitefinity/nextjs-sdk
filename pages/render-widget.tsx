@@ -32,7 +32,7 @@ export async function RenderWidget({ searchParams }: { searchParams: Dictionary 
     const isEdit = queryParams['sfaction'] === 'edit';
     const isPreview = queryParams['sfaction'] === 'preview';
     const isLive = !(isEdit || isPreview);
-    const pageUrl = queryParams['pageUrl'] as string;
+    const pageUrl = RestClient.normalizePagePath(queryParams['pageUrl'] as string);
 
     let path = pageUrl;
     let query = '';
@@ -59,7 +59,7 @@ export async function RenderWidget({ searchParams }: { searchParams: Dictionary 
         metadataHash: layout.MetadataHash,
         queryParams: {
             sf_culture: layout.Culture,
-            sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''
+            sf_site: isEdit || layout.Site?.IsSubFolder ? layout.SiteId : ''
         }
     });
 

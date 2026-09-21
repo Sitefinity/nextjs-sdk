@@ -92,7 +92,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
         metadataHash: layout.MetadataHash,
         queryParams: {
             sf_culture: layout.Culture,
-            sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''
+            sf_site: isEdit || layout.Site?.IsSubFolder ? layout.SiteId : ''
         }
     });
 
@@ -222,7 +222,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
       <>
         <PageFrontEndUtilLoader metadata={ServiceMetadata.serviceMetadataCache}
           taxonomies={ServiceMetadata.taxonomies}
-          additionalQueryParams={{ sf_culture: layout.Culture, sf_site: isEdit || layout.Site.IsSubFolder ? layout.SiteId : ''}}
+          additionalQueryParams={{ sf_culture: layout.Culture, sf_site: isEdit || layout.Site?.IsSubFolder ? layout.SiteId : ''}}
           registry={registryForFrontend}/>
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.Head} /> }
         {!isTesting && <RenderPageScripts layout={layout} scriptLocation={PageScriptLocation.BodyTop} /> }

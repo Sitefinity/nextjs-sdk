@@ -3,7 +3,7 @@
  */
 export interface FilterClause {
     FieldName: string,
-    FieldValue: any,
+    FieldValue?: any,
     Operator: FilterOperators | string,
 }
 
@@ -20,6 +20,8 @@ export enum FilterOperators {
     ContainsOr = 'any+or',
     ContainsAnd = 'any+and',
     DoesNotContain = 'not+(any+or)',
+    IsEmpty = 'isempty',
+    IsNotEmpty = 'isnotempty',
     In = 'in',
     NotStartsWith = 'not+(startswith)',
 };

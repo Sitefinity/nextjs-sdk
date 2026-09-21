@@ -62,6 +62,9 @@ import { ChangeTemplateArgs } from './args/change-template-args';
 import { EMTPY_GUID } from '../editor/utils/guid';
 import { State } from './dto/state';
 
+/** Matches a url scheme prefix (`http:`, `https:`, and any other scheme) at the start of a string. */
+const ABSOLUTE_URL_SCHEME_REGEX = /^[a-z][a-z0-9+.-]*:/i;
+
 /**
  * Provides implementation for communicating with the Sitefinity REST API services.
  * This class is used to perform CRUD operations on items, search for items, and manage content in Sitefinity.
@@ -771,6 +774,10 @@ export class RestClient {
     public static async getPageLayout(args: GetPageLayoutArgs): Promise<LayoutResponse> {
         let layoutResponse: LayoutServiceResponse;
 
+        // The page path is caller supplied (query string on the /render and /render-lazy routes) and the request
+        // below carries the visitor cookie or the SF access key, so it must never be able to change the target host.
+        const pagePath = RestClient.normalizePagePath(args.pagePath);
+
         let headers: { [key: string]: string } = args.additionalHeaders || {};
 
         RestClient.addAuthHeaders(args.cookie, headers);
@@ -799,7 +806,7 @@ export class RestClient {
         }
 
         const sysParamsQueryString = RestClient.buildQueryParams(queryParams);
-        let url = `${args.pagePath}${sysParamsQueryString}`;
+        let url = `${pagePath}${sysParamsQueryString}`;
         if (process.env.NEXT_PUBLIC_SF_NEXT_GEN === 'true' || process.env.NEXT_PUBLIC_SF_NEXT_GEN === '1') {
             if (url[0] !== '/') {
                 url = '/' + url;
@@ -809,14 +816,14 @@ export class RestClient {
             const queryParams = Object.assign({ '@param': encodedUrl });
             url = `${RootUrlService.getServerCmsServiceUrl()}/Default.Model(url=@param)${RestClient.buildQueryParams(RestClient.getQueryParams(undefined, queryParams))}`;
         } else {
-            if (!args.pagePath.includes('http') && !args.pagePath.includes('https')) {
-                if (!url.startsWith('/')) {
-                    url = '/' + url;
-                }
-
-                url = RootUrlService.getServerCmsUrl() + url;
+            if (!url.startsWith('/')) {
+                url = '/' + url;
             }
+
+            url = RootUrlService.getServerCmsUrl() + url;
         }
+
+        RestClient.assertCmsHost(url);
 
         let requestData: RequestData = { url: url, headers: headers, method: 'GET' };
 
@@ -1089,6 +1096,56 @@ export class RestClient {
         }
 
         return result;
+    }
+
+    /**
+     * Reduces an absolute or protocol-relative url to a CMS-relative path.
+     * Ordinary relative paths (including ones that merely contain the substring `http`) are returned untouched.
+     */
+    public static normalizePagePath(pagePath: string): string {
+        if (!pagePath) {
+            return pagePath;
+        }
+
+        const isProtocolRelative = pagePath.startsWith('//');
+        if (!isProtocolRelative && !ABSOLUTE_URL_SCHEME_REGEX.test(pagePath)) {
+            return pagePath;
+        }
+
+        let parsed: URL;
+        try {
+            parsed = new URL(pagePath, RootUrlService.getServerCmsUrl());
+        } catch {
+            throw new ErrorCodeException('BadRequest', `Invalid page path '${pagePath}'.`);
+        }
+
+        // Scheme and authority (userinfo, host, port) are discarded on purpose - only the path is honored.
+        return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    }
+
+    /**
+     * Guards the security invariant that auth headers (session cookie, SF_ACCESS_KEY, SF_WEBSERVICE_API_KEY)
+     * are only ever sent to the configured Sitefinity CMS host.
+     */
+    private static assertCmsHost(url: string) {
+        const cmsUrl = RootUrlService.getServerCmsUrl();
+        if (!cmsUrl) {
+            // No absolute CMS url configured - the request stays relative and cannot reach a foreign host.
+            return;
+        }
+
+        let target: URL;
+        let cms: URL;
+        try {
+            cms = new URL(cmsUrl);
+            target = new URL(url, cms);
+        } catch {
+            throw new ErrorCodeException('BadRequest', `Invalid request url '${url}'.`);
+        }
+
+        if (target.origin !== cms.origin) {
+            throw new ErrorCodeException('BadRequest', `Refusing to send an authenticated request to '${target.origin}'.`);
+        }
     }
 
     public static addAuthHeaders(cookie: string | undefined, headers: {[key: string]: string}) {
