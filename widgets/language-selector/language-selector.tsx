@@ -136,7 +136,8 @@ async function getLocalizedHomePageUrl(traceContext: any, properties: LanguageSe
             culture: culture
         });
 
-        if (localizedHomePage.AvailableLanguages.includes(culture) &&
+        if (localizedHomePage &&
+            localizedHomePage.AvailableLanguages.includes(culture) &&
             !localizedHomePage.ViewUrl.includes(PREVIEW_ACTION_QUERY_PARAM_STRING) &&
             !localizedHomePage.ViewUrl.includes(PREVIEW_ACTION_PATH_STRING)) {
             localizedHomePageUrl = localizedHomePage?.ViewUrl;

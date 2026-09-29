@@ -52,6 +52,19 @@ export class SanitizerService {
         return DOMPurify.sanitize(input || '', finalConfig);
     }
 
+    public sanitizeElement(element: HTMLElement): HTMLElement | null {
+        const tagName = element.tagName.toLowerCase();
+        const isUnknownElement = typeof HTMLUnknownElement !== 'undefined' && element instanceof HTMLUnknownElement;
+        const config = isUnknownElement
+            ? { additionalTags: [...(Array.isArray(this.defaultConfig.ADD_TAGS) ? this.defaultConfig.ADD_TAGS : []), tagName] }
+            : null;
+        const sanitizedHtml = this.sanitizeHtml(element.outerHTML, config);
+        const template = document.createElement('template');
+        template.innerHTML = sanitizedHtml;
+
+        return template.content.firstElementChild as HTMLElement | null;
+    }
+
     public configure(config: SanitizerConfig) {
         this.defaultConfig = this.parseConfig(config);
     }

@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import { TransferableRequestContext } from '../../editor/request-context';
 import { EVENTS, PersonalizedWidgetsPayload, useSfEvents } from '../../pages/useSfEvents';
+import { SanitizerService } from '../../services/sanitizer-service';
 import React from 'react';
 
 interface RenderNodeValues {
     tag: string;
-    innterHtml: string;
-    attributes: {[key: string]: any};
+    innerHtml: string;
+    attributes: Record<string, unknown>;
 };
 
 export function RenderLazyForSSR(props: {id: string, requestContext: TransferableRequestContext}) {
@@ -17,20 +18,19 @@ export function RenderLazyForSSR(props: {id: string, requestContext: Transferabl
 
     useEffect(() => {
         if (htmls && htmls[props.id] && htmls[props.id].ssr) {
-            const mock = document.createElement('div');
-            mock.innerHTML = htmls[props.id].data as string;
+            const responseDocument = new DOMParser().parseFromString(htmls[props.id].data as string, 'text/html');
             const renderNodes: RenderNodeValues[] = [];
-            mock.childNodes.forEach(x => {
+            responseDocument.body.childNodes.forEach(x => {
                 if (x.nodeType === Node.ELEMENT_NODE) {
-                    const currentChild = x as Element;
-                    const tag = currentChild.tagName.toLowerCase();
-                    const attributes = currentChild.attributes;
-                    const attrObj: {[key: string]: any} = extractAttributes(attributes);
+                    const sanitizedChild = SanitizerService.getInstance().sanitizeElement(x as HTMLElement);
+                    if (!sanitizedChild) {
+                        return;
+                    }
 
                     renderNodes.push({
-                        tag,
-                        innterHtml: currentChild.innerHTML,
-                        attributes: attrObj
+                        tag: sanitizedChild.tagName.toLowerCase(),
+                        innerHtml: sanitizedChild.innerHTML,
+                        attributes: extractAttributes(sanitizedChild.attributes)
                     });
                 }
             });
@@ -44,9 +44,9 @@ export function RenderLazyForSSR(props: {id: string, requestContext: Transferabl
     <>
       {renderValues.map((x, i) => {
             return React.createElement(x.tag, {
-                dangerouslySetInnerHTML: {__html: x.innterHtml},
-                key: `lazy-${props.id}-${i}`,
-                ...x.attributes
+                ...x.attributes,
+                dangerouslySetInnerHTML: {__html: x.innerHtml},
+                key: `lazy-${props.id}-${i}`
             });
         })}
     </>
@@ -54,11 +54,11 @@ export function RenderLazyForSSR(props: {id: string, requestContext: Transferabl
 }
 
 function extractAttributes(attributes: NamedNodeMap) {
-    const attrObj: {[key: string]: any} = {};
+    const attrObj: Record<string, unknown> = {};
 
     for (const attr of attributes) {
         let attrName = attr.name;
-        let attrValue: any = attr.value;
+        let attrValue: unknown = attr.value;
 
         switch (attrName) {
             case 'class': attrName = 'className'; break;

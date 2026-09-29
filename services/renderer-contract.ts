@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 import { MetadataModel } from '@progress/sitefinity-widget-designers-sdk/metadata';
 import { RestClient } from '../rest-sdk/rest-client';
 import { LayoutServiceResponse } from '../rest-sdk/dto/layout-service.response';
+import { SanitizerService } from './sanitizer-service';
 
 export class RendererContractImpl implements RendererContract {
 
@@ -26,12 +27,15 @@ export class RendererContractImpl implements RendererContract {
             return new Promise((resolve, reject) => {
                 fetch(`/render?sfaction=edit&sf_culture=${args.dataItem.culture}&sf_site=${args.siteId}&widgetSegmentId=${args.widgetSegmentId}&itemId=${args.dataItem.key}&widgetId=${args.model.Id}&itemType=${(args.dataItem as any).metadata.typeFullName}&pageUrl=${encodeURIComponent((args.dataItem as any).data['EditUrl'])}&segment=${args.segmentId}`).then((response) => {
                     response.text().then((html) => {
-                        let rootDoc = document.createElement('html');
-                        rootDoc.innerHTML = html;
+                        const rootDoc = new DOMParser().parseFromString(html, 'text/html');
                         const wrapper = rootDoc.querySelector('div[id=\'widgetPlaceholder\']');
-                        if (wrapper) {
+                        const element = wrapper?.firstElementChild as HTMLElement | null;
+                        const sanitizedElement = element
+                            ? SanitizerService.getInstance().sanitizeElement(element)
+                            : null;
+                        if (sanitizedElement) {
                             resolve(<RenderResult>{
-                                element: wrapper.firstElementChild as HTMLElement,
+                                element: sanitizedElement,
                                 content: '',
                                 scripts: []
                             });

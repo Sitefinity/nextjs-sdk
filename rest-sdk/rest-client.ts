@@ -507,7 +507,7 @@ export class RestClient {
             ['indexName']: args.indexCatalogue,
             ['searchQuery']: encodeURIComponent(args.searchQuery).toLowerCase(),
             ['sf_culture']: args.culture,
-            ['siteId']: args.culture,
+            ['siteId']: args.siteId,
             ['scoringInfo']: args.scoringInfo,
             ['suggestionFields']: args.suggestionFields,
             ['resultsForAllSites']: '',
@@ -1069,10 +1069,6 @@ export class RestClient {
     public static buildQueryParams(queryParams: { [key: string]: string | undefined } | undefined) {
         if (!queryParams) {
             return '';
-        }
-
-        if (!queryParams) {
-            queryParams = {};
         }
 
         if (typeof window === 'undefined') {

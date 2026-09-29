@@ -25,10 +25,8 @@ export function RenderLazyWidgetsClient({ metadata, taxonomies, url, registry }:
             const sendRequest = function () {
                 fetch(renderLazyWidgetsUrl).then((response) => {
                     response.text().then((lazyWidgetsHtml: string) => {
-                        const fakeHtmlElement = document.createElement('html');
-                        fakeHtmlElement.innerHTML = lazyWidgetsHtml;
-
-                        const wrappingElement = fakeHtmlElement.querySelector('div[id=\'widgetPlaceholder\']');
+                        const responseDocument = new DOMParser().parseFromString(lazyWidgetsHtml, 'text/html');
+                        const wrappingElement = responseDocument.querySelector('div[id=\'widgetPlaceholder\']');
                         if (!wrappingElement) {
                             return;
                         }
@@ -41,7 +39,7 @@ export function RenderLazyWidgetsClient({ metadata, taxonomies, url, registry }:
                                 if (widgetId) {
                                     const isCSR = lazyWidgetContainer.getAttribute('data-sfmodel');
                                     if (isCSR) {
-                                        const model = JSON.parse(lazyWidgetContainer.innerHTML);
+                                        const model = JSON.parse(lazyWidgetContainer.textContent ?? '');
                                         models[widgetId] = {
                                             ssr: false,
                                             data: model
@@ -79,4 +77,3 @@ export function RenderLazyWidgetsClient({ metadata, taxonomies, url, registry }:
 
     return null;
 }
-
