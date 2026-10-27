@@ -42,7 +42,7 @@ export async function RenderPage({ params, searchParams, relatedFields, template
     let layoutResponse: LayoutResponse | null = null;
 
     if (pageParams && pageParams.slug && pageParams.slug.length > 0) {
-        if (pageParams.slug.some(x => x === '_next') || pageParams.slug[pageParams.slug.length - 1].indexOf('.') !== -1) {
+        if (pageParams.slug.some(x => x === '_next')) {
             notFound();
         }
     }

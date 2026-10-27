@@ -45,7 +45,7 @@ export async function pageMetadata({ params, searchParams }: PageParams): Promis
     }
 
     if (pageParams && pageParams.slug && pageParams.slug.length > 0) {
-        if (pageParams.slug.some(x => x === '_next') || pageParams.slug[pageParams.slug.length - 1].indexOf('.') !== -1) {
+        if (pageParams.slug.some(x => x === '_next')) {
             return {};
         }
     }
