@@ -233,7 +233,9 @@ export class SearchFacetsModelBuilder {
     static hasAnyFacetElements(searchFacets: SearchFacetModel[]): boolean {
         let hasAnyFacetElements: boolean = false;
         if (searchFacets && searchFacets.length) {
-            hasAnyFacetElements = searchFacets.some((sf) => sf.FacetElements.length);
+            hasAnyFacetElements = searchFacets.some((sf) => sf.FacetElements.length ||
+                SearchFacetModelExtensions.ShowNumberCustomRange(sf) ||
+                SearchFacetModelExtensions.ShowDateCustomRanges(sf));
         }
 
         return hasAnyFacetElements;

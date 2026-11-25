@@ -855,7 +855,10 @@ export class RestClient {
         }
 
         if (httpLayoutResponse.status === 302 && httpLayoutResponse.headers.has('urlparameters')) {
-            let urlParameters = (httpLayoutResponse.headers.get('urlparameters') as string).split('/');
+            // Sitefinity writes non-ASCII values as raw UTF-8 bytes, but fetch exposes each header byte as a Latin-1
+            // character, so a Korean classification segment would otherwise arrive as mojibake.
+            const urlParameters = Buffer.from(httpLayoutResponse.headers.get('urlparameters') as string, 'latin1')
+                .toString('utf8').split('/');
             args.pagePath = httpLayoutResponse.headers.get('location') as string;
             const layoutRecursive = await this.getPageLayout(args);
             layoutRecursive.layout!.UrlParameters = urlParameters;

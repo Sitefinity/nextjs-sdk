@@ -8,6 +8,7 @@ export interface SearchFacetModel {
     FacetTitle: string;
     FacetFieldType: string;
     FacetFieldName: string;
+    HasSearchResults?: boolean;
 }
 
 export class SearchFacetModelExtensions {
@@ -22,13 +23,15 @@ export class SearchFacetModelExtensions {
     }
 
     static ShowNumberCustomRange(facet: SearchFacetModel): boolean | undefined {
-        return facet.facetField!.FacetFieldSettings!.DisplayCustomRange &&
+        return facet.HasSearchResults !== false &&
+            facet.facetField!.FacetFieldSettings!.DisplayCustomRange &&
             (facet.FacetFieldType === SearchIndexAdditionalFieldType.NumberWhole ||
                 facet.FacetFieldType === SearchIndexAdditionalFieldType.NumberDecimal);
     }
 
     static ShowDateCustomRanges(facet: SearchFacetModel): boolean | undefined {
-        return facet.facetField!.FacetFieldSettings!.RangeType === 1 &&
+        return facet.HasSearchResults !== false &&
+            facet.facetField!.FacetFieldSettings!.RangeType === 1 &&
             facet.facetField!.FacetFieldSettings!.DisplayCustomRange &&
             facet.FacetFieldType === SearchIndexAdditionalFieldType.DateAndTime;
     }

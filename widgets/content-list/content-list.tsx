@@ -34,6 +34,7 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
     let detailViewProps: ContentListDetailProps<ContentListEntity> = {} as any;
     let masterViewProps: ContentListMasterProps<ContentListEntity> = {} as any;
     let isDetailView = false;
+    let renderEmpty = false;
 
     if (properties.ContentViewDisplayMode === ContentViewDisplayMode.Automatic) {
         if (context.detailItem && context.detailItem.ItemType === type && properties.DetailPageMode === DetailPageSelectionMode.SamePage) {
@@ -52,13 +53,23 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
         if (type) {
             const selectedContent = properties!.SelectedItems!.Content[0];
             const itemIdsOrdered = properties!.SelectedItems!.ItemIdsOrdered;
-            const detailProps = handleDetailView({
-                Id: itemIdsOrdered ? itemIdsOrdered![0]: '',
-                ItemType: selectedContent.Type,
-                ProviderName: selectedContent.Variations![0]?.Source
-            }, props);
-            detailViewProps = detailProps;
-            isDetailView = true;
+            if (itemIdsOrdered && itemIdsOrdered.length > 0) {
+                const detailProps = handleDetailView({
+                    Id: itemIdsOrdered[0],
+                    ItemType: selectedContent.Type,
+                    ProviderName: selectedContent.Variations![0]?.Source
+                }, props);
+                detailViewProps = detailProps;
+                isDetailView = true;
+            } else if (context.detailItem && context.detailItem.ItemType === type && properties.DetailPageMode === DetailPageSelectionMode.SamePage) {
+                // No manual selection - render the item resolved from the request URL, if any.
+                detailViewProps = handleDetailView(context.detailItem, props);
+                isDetailView = true;
+            } else {
+                renderEmpty = true;
+            }
+        } else {
+            renderEmpty = true;
         }
     } else if (properties.ContentViewDisplayMode === ContentViewDisplayMode.Master) {
         masterViewProps = await handleListView(props, context, pageNumber, ctx);
@@ -74,7 +85,7 @@ export async function ContentList(props: WidgetContext<ContentListEntity>) {
     const result = (
       <>
         { isDetailView && <ContentListDetail {...detailViewProps} /> }
-        { !isDetailView && <ContentListMaster {...masterViewProps} /> }
+        { !isDetailView && !renderEmpty && <ContentListMaster {...masterViewProps} /> }
         { Tracer.endSpan(span) }
       </>
     );

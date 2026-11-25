@@ -34,6 +34,11 @@ export async function getSearchFacets(searchQuery: string, culture: string, inde
     );
 }
 
+// The facet counts reflect the current search, so no positive count means no results.
+function hasSearchResults(facetResponse: { [k: string]: FacetResponseDto[] }): boolean {
+    return Object.values(facetResponse).some((responses) => responses?.some((r) => r.Count > 0));
+}
+
 export function getSelectedFacetsToBeUsed(searchFacets: SearchFacetModel[]) {
     const selectedFacetsToBeUsed: FacetField[] = [];
     searchFacets.forEach((f) => {
@@ -51,6 +56,8 @@ export async function updateFacetsViewProps(newSearchParams: { [key: string]: st
     const facetableFieldsFromIndex: FacetsViewModelDto[] = await RestClient.getFacatebleFields({ indexCatalogue: newSearchParams.indexCatalogue, additionalHeaders });
     const facetableFieldsKeys: string[] = facetableFieldsFromIndex.map((x: FacetsViewModelDto) => x.FacetableFieldNames.length ? x.FacetableFieldNames[0]: '' );
     const searchFacets = SearchFacetsModelBuilder.buildFacetsViewProps(selectedFacetsToBeUsed, facetResponse, facetableFieldsKeys, '');
+    const hasResults = hasSearchResults(facetResponse);
+    searchFacets.forEach((f) => f.HasSearchResults = hasResults);
     return {
         searchFacets,
         hasAnyFacetElements: SearchFacetsModelBuilder.hasAnyFacetElements(searchFacets)
@@ -97,6 +104,8 @@ export async function getInitialFacetsWithModels(searchParams: {[key: string]: a
         );
 
         ret.searchFacets = SearchFacetsModelBuilder.buildFacetsViewProps(entity.SelectedFacets!, facetsDict, facetableFieldsKeys, entity.SortType || '');
+        const hasResults = hasSearchResults(facetsDict);
+        ret.searchFacets.forEach((f) => f.HasSearchResults = hasResults);
     }
 
     ret.hasAnyFacetElements = SearchFacetsModelBuilder.hasAnyFacetElements(ret.searchFacets);
